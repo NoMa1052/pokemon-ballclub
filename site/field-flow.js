@@ -5,6 +5,10 @@
  positionPickerHTML=()=>'';
  const oldDC=openDC;openDC=function(){if(!run.hand)oldDC()};
  const oldSpin=doSpin;doSpin=function(...args){if(run.hand)return;run.handUndo=null;run.handFeedback=null;return oldSpin(...args)};
+ let rosterJustFilled=false;
+ const basePlace=handPlace;handPlace=function(s){const before=run.picks.length,done=basePlace(s);if(done&&!run.hand&&before<run.size&&run.picks.length===run.size)rosterJustFilled=true;return done};
+ function rosterStamp(){document.querySelector('.roster-stamp')?.remove();const el=document.createElement('div');el.className='roster-stamp';el.setAttribute('role','status');
+  el.innerHTML=`<span>Roster complete</span><small>${run.size} of ${run.size} · Team rating ${teamOvr()}</small>`;document.body.append(el);setTimeout(()=>el.remove(),matchMedia('(prefers-reduced-motion: reduce)').matches?1800:2200)}
  const oldRelease=releasePlayer;releasePlayer=function(s){if(run.hand)return false;return oldRelease(s)};
  function dialog(title,body,wire){
   $('flowReview')?.remove();const source=document.activeElement,el=document.createElement('div');el.id='flowReview';el.className='flow-review simple-review';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','flowReviewTitle');
@@ -41,12 +45,15 @@
   for(const id of ['fieldFlow','flowReview','handToast','handDock'])$(id)?.remove();
   const h=run.hand,m=h?BYID.get(h.held):null,f=run.handFeedback;
   document.body.classList.toggle('field-deciding',!!m);
-  if(!m){lastHand=null;if(f&&run.handUndo&&!run.locked){const toast=document.createElement('div');toast.id='handToast';toast.className='hand-toast';toast.setAttribute('role','status');toast.innerHTML=`<span>${esc(f.name)} placed at ${f.spot}</span><button class="btn quiet" id="handUndo">Undo</button>`;document.body.append(toast);$('handUndo').onclick=()=>{handUndoAction();render()}}return}
+  if(!m){lastHand=null;
+   if(f&&run.handUndo&&!run.locked){const chip=document.createElement('div');chip.id='handToast';chip.className='undo-chip';chip.setAttribute('role','status');chip.innerHTML=`<span>${esc(f.name)} to ${f.spot}</span><button type="button" id="handUndo">Undo</button>`;$('draft').prepend(chip);$('handUndo').onclick=()=>{handUndoAction();render()}}
+   if(rosterJustFilled){rosterJustFilled=false;rosterStamp()}
+   return}
   setOverall(m);
   const open=slotList().filter(s=>!run.slots[s]).sort((a,b)=>posOvr(m,b)-posOvr(m,a)),best=open[0];
   const bar=document.createElement('div');bar.id='fieldFlow';bar.className='field-flow placement-strip';
   bar.innerHTML=`<div class="placement-title">${tok(m)}<div><small class="placement-task">Choose a position</small><h3>${h.kind==='move'?'Move':'Place'} ${esc(m.name)}</h3><span>${best?`Recommended: ${lbl(best)} · ${posOvr(m,best)}`:'Choose a position'}</span></div><small>${run.picks.length}/${run.size}</small></div><div class="placement-actions"><button class="btn quiet" data-history-mon="${m.id}">Card</button><button class="btn quiet" id="heldRatings">All ratings</button>${run.handUndo?'<button class="btn quiet" id="handUndo">Undo</button>':''}<button class="btn quiet" id="handCancel">Cancel</button></div>${h.kind==='move'?`<div class="placement-release">${run.releases?run.second?'<span class="hint" role="status">Release opens after your second Master Ball pick</span>':`<button class="btn" id="handReleaseAsk">Release ${esc(m.name)}</button><span class="hint">1 per run · can't be undone</span>`:'<span class="hint" role="status">Release used this run</span>'}</div>`:''}`;
-  $('field').before(bar);$('draft').hidden=true;
+  if(matchMedia('(min-width: 821px)').matches)$('draft').after(bar);else $('field').before(bar);$('draft').hidden=true;
   if(lastHand===null)requestAnimationFrame(()=>bar.scrollIntoView({block:'start',behavior:'smooth'}));lastHand=m.id;
   if($('handUndo'))$('handUndo').onclick=()=>{handUndoAction();render()};$('handCancel').onclick=()=>{handCancel();render()};
   $('heldRatings').onclick=()=>showRatings(m);
