@@ -61,7 +61,8 @@
   const tone=/^[AS]/.test(res.grade)?'#5fd38d':/^B/.test(res.grade)?'#8fd3ff':/^C/.test(res.grade)?'#ffcb05':'#ff8a70';
   const playoff=post.champ?['Champions',ws?'World Series '+ws[1]+'–'+ws[2]:'World Series']:post.made?['Lost',outcome.replace(/^Lost the /,'')]:['Missed','Needs 88 wins'];
   const head=document.createElement('div');head.className='season-head';
-  head.innerHTML=`<div class="season-rec" aria-label="${res.wins} wins and ${162-res.wins} losses"><small>Final · 162 games</small><b>${res.wins}–${162-res.wins}</b>${best?`<span>${esc(best)}</span>`:''}</div>
+  head.innerHTML=`<div class="season-eyebrow"><span>Final · ${isPack()?'Packs':'Spin'} · ${run.size===11?'Quick':'Standard'}</span>${best?`<em class="${/New personal/.test(best)?'pb':''}">${esc(best)}</em>`:''}</div>
+   <div class="season-rec" aria-label="${res.wins} wins and ${162-res.wins} losses"><b>${res.wins}–${162-res.wins}</b></div>
    <div class="season-tiles"><div><small>Grade</small><span class="season-pennant" style="--tone:${tone}">${esc(res.grade)}</span></div>
    <div><small>Team OVR</small><b>${Number(teamOvr())}</b></div>
    <div class="${post.champ?'is-champ':''}"><small>Playoffs</small><b class="season-word">${esc(playoff[0])}</b><em>${esc(playoff[1])}</em></div></div>
