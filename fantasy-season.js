@@ -21,14 +21,32 @@ return `<button type="button" class="fantasy-player postseason-rating-row" data-
 <span class="fantasy-main"><span class="fantasy-player-top"><b>${esc(m.name)}</b><small>${esc(lbl(slot))}</small></span><span class="fantasy-stats">${stats.map(([k,v])=>`<span><small>${k}</small><b>${v}</b></span>`).join('')}</span></span>
 <span class="fantasy-rating ${tone(rating)}"><b>${rating}</b><small>OVR</small></span><span class="fantasy-arrow" aria-hidden="true">›</span></button>`;
 };
+// Season sheet, laid out like the back of a baseball card: the headline numbers big, the rest as a plain list.
+const ord=n=>n+(['th','st','nd','rd'][(n%100-20)%10]||['th','st','nd','rd'][n%100]||'th');
+const teamRank=(slot,key,low)=>{const me=run.result?.me;if(!me)return null;
+ const pool=FIELD_SLOTS.includes(slot)?(me.order||[]).map(h=>h.st):[...(me.rot||[]).filter(p=>p.role!=='FILL'),me.cl,me.pen].filter(p=>p?.st).map(p=>p.st);
+ const mine=getLine(slot)?.data?.s;if(!mine||pool.length<2)return null;const v=key(mine);
+ return 1+pool.filter(st=>low?key(st)<v:key(st)>v).length;};
 const sheetStats=(slot,m,line)=>{
 const rating=posOvr(m,slot);
-const head=`<div class="fantasy-sheet-intro"><span class="fantasy-sprite">${picture(m)}</span><div><small>${esc(SLOT_NAME[slot])}</small><b>${esc(m.name)}</b><span>${m.types.map(cap).map(esc).join(' / ')}</span></div><span class="fantasy-rating ${tone(rating)}"><b>${rating}</b><small>OVR</small></span></div>`;
+const sub=line?.kind==='bat'?`${esc(SLOT_NAME[slot])} · Batting ${ord(line.order)}`:esc(SLOT_NAME[slot]);
+const head=`<div class="fantasy-sheet-intro"><span class="fantasy-sprite">${picture(m)}</span><div><small>${sub}</small><b>${esc(m.name)}</b><span>${m.types.map(cap).map(esc).join(' / ')}</span></div><span class="fantasy-rating ${tone(rating)}"><b>${rating}</b><small>OVR</small></span></div>`;
 if(!line?.data)return head+'<p>Season statistics unavailable.</p>';
-const d=line.data,s=d.s;
-const pairs=line.kind==='bat'?[['Batting order',line.order],['AVG',fmt(d.avg)],['OBP',fmt(d.obp)],['SLG',fmt(d.slg)],['OPS',fmt(d.ops)],['PA',s.pa],['AB',s.ab],['H',s.h],['2B',s.d],['3B',s.t],['HR',s.hr],['R',s.r],['RBI',s.rbi],['BB',s.bb],['K',s.k],['SB',s.sb],['CS',s.cs]]:
-[['ERA',d.era.toFixed(2)],['IP',d.innings],['G',s.g],['GS',s.gs],['W',s.w],['L',s.l],['SV',s.sv],['H',s.h],['R',s.r],['HR',s.hr],['BB',s.bb],['K',s.k]];
-return head+`<h4>${line.kind==='bat'?'Batting':'Pitching'} · 162-game season</h4><div class="fantasy-stat-grid">${pairs.map(([k,v])=>`<div><small>${k}</small><b>${v}</b></div>`).join('')}</div><p class="fantasy-season-note">From your completed season simulation.</p>`;
+const d=line.data,s=d.s,bat=line.kind==='bat';
+const big=(label,value,rank)=>`<div class="ss-big"><b>${value}</b><small>${label}</small>${rank?`<em class="${rank===1?'top':''}">${rank===1?'Team best':ord(rank)+' on team'}</em>`:''}</div>`;
+const rows=(title,pairs)=>`<section class="ss-list"><h5>${title}</h5>${pairs.map(([k,v])=>`<div><span>${k}</span><b>${v}</b></div>`).join('')}</section>`;
+if(bat){
+ const pa=Math.max(1,s.pa);
+ return head+`<div class="ss-slash" aria-label="Slash line ${fmt(d.avg)} average, ${fmt(d.obp)} on-base, ${fmt(d.slg)} slugging">
+   <div><b>${fmt(d.avg)}</b><small>AVG</small></div><i>/</i><div><b>${fmt(d.obp)}</b><small>OBP</small></div><i>/</i><div><b>${fmt(d.slg)}</b><small>SLG</small></div>
+   <span class="ss-ops">${fmt(d.ops)}<small>OPS</small></span></div>
+  <div class="ss-bigs">${big('HR',s.hr,teamRank(slot,x=>x.hr))}${big('RBI',s.rbi,teamRank(slot,x=>x.rbi))}${big('Runs',s.r,teamRank(slot,x=>x.r))}${big('Hits',s.h,teamRank(slot,x=>x.h))}</div>
+  <div class="ss-lists">${rows('At the plate',[['Plate appearances',s.pa],['At bats',s.ab],['Doubles',s.d],['Triples',s.t]])}${rows('Eye and speed',[['Walks',`${s.bb} <small>${Math.round(s.bb/pa*100)}%</small>`],['Strikeouts',`${s.k} <small>${Math.round(s.k/pa*100)}%</small>`],['Stolen bases',s.sb],['Caught stealing',s.cs]])}</div>`;
+}
+const ipf=s.outs/3,whip=ipf?((s.h+s.bb)/ipf).toFixed(2):'0.00',k9=ipf?(s.k*9/ipf).toFixed(1):'0.0';
+return head+`<div class="ss-slash ss-pitch"><div><b>${d.era.toFixed(2)}</b><small>ERA</small></div><div><b>${whip}</b><small>WHIP</small></div><div><b>${d.innings}</b><small>IP</small></div></div>
+ <div class="ss-bigs">${big('Record',`${s.w}–${s.l}`,null)}${big('Strikeouts',s.k,teamRank(slot,x=>x.k))}${big('Saves',s.sv,s.sv?teamRank(slot,x=>x.sv):null)}${big('K per 9',k9,null)}</div>
+ <div class="ss-lists">${rows('Workload',[['Games',s.g],['Starts',s.gs],['Batters faced',s.bf??(s.outs+s.h+s.bb)],['Pitches per inning',ipf?((s.outs+s.h+s.bb)*3.8/ipf).toFixed(1):'0.0']].slice(0,2))}${rows('Allowed',[['Hits',s.h],['Runs',s.r],['Home runs',s.hr],['Walks',s.bb]])}</div>`;
 };
 let active=null;
 function inspect(slot,trigger){

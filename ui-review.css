@@ -200,3 +200,29 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 #season .posted-link::after{content:" ›";color:#e8c766}
 #season .posted-link:hover{color:#ffe08a}
 #season .posted-link:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* ---- Player season sheet: baseball-card back ---- */
+.fantasy-modal .fantasy-sheet-intro small{font:600 12px var(--f-body);color:#b6c3d5}
+.fantasy-modal .ss-slash{display:flex;align-items:flex-end;gap:6px;margin:16px 0 0;padding:14px 14px 12px;border-radius:12px;background:#0b1b33;border:1px solid rgba(244,238,220,.12)}
+.fantasy-modal .ss-slash>div{display:flex;flex-direction:column;align-items:flex-start}
+.fantasy-modal .ss-slash b{font:700 30px/1 var(--f-data);color:var(--cream);font-variant-numeric:tabular-nums}
+.fantasy-modal .ss-slash small{font:600 11px var(--f-data);letter-spacing:.12em;color:#b6c3d5;margin-top:4px}
+.fantasy-modal .ss-slash i{font:400 26px/1 var(--f-data);color:rgba(244,238,220,.3);font-style:normal;padding-bottom:16px}
+.fantasy-modal .ss-ops{margin-left:auto;display:flex;flex-direction:column;align-items:center;padding:6px 10px;border-radius:8px;background:#ffcb05;color:#0b1b33;font:700 20px/1 var(--f-data)}
+.fantasy-modal .ss-ops small{color:#0b1b33!important;margin-top:3px}
+.fantasy-modal .ss-pitch{justify-content:space-between}
+.fantasy-modal .ss-pitch>div{align-items:center;flex:1}
+.fantasy-modal .ss-bigs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:8px}
+.fantasy-modal .ss-big{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:10px;background:rgba(244,238,220,.06);text-align:center}
+.fantasy-modal .ss-big b{font:700 24px/1 var(--f-data);color:var(--cream)}
+.fantasy-modal .ss-big small{font:600 11px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:#b6c3d5}
+.fantasy-modal .ss-big em{font:600 10px var(--f-body);font-style:normal;color:#8fa3bd}
+.fantasy-modal .ss-big em.top{color:#ffcb05}
+.fantasy-modal .ss-lists{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:380px){.fantasy-modal .ss-lists{grid-template-columns:1fr}}
+.fantasy-modal .ss-list h5{margin:0 0 4px;font:600 11px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#e8c766}
+.fantasy-modal .ss-list div{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid rgba(244,238,220,.08);font:500 14px var(--f-body);color:#d5dce8}
+.fantasy-modal .ss-list div:last-child{border-bottom:0}
+.fantasy-modal .ss-list b{font:600 16px var(--f-data);color:var(--cream);font-variant-numeric:tabular-nums}
+.fantasy-modal .ss-list b small{font:500 11px var(--f-body);color:#8fa3bd;margin-left:3px}
+.fantasy-modal .ss-list{border:0!important;box-shadow:none!important;padding:0!important;margin:0!important;background:none!important}
