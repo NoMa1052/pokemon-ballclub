@@ -230,8 +230,8 @@
     const ds=dialogs(),active=ds.at(-1)||null;
     [...document.querySelector('.wrap').children].forEach(c=>c.inert=!!active&&!c.contains(active));
     ds.forEach(d=>{d.setAttribute('aria-modal','true');d.inert=d!==active;});
-    if(active===focusedDialog){if(active&&!active.contains(document.activeElement)){const first=focusables(active)[0];if(first)first.focus({preventScroll:true});}return;}
-    if(active){if(!focusedDialog)returnFocus=document.activeElement;focusedDialog=active;const first=focusables(active)[0];if(first)first.focus({preventScroll:true});else{active.tabIndex=-1;active.focus({preventScroll:true});}}
+    if(active===focusedDialog){if(active&&!active.contains(document.activeElement)){const first=active.querySelector('[data-autofocus]')||focusables(active)[0];if(first)first.focus({preventScroll:true});}return;}
+    if(active){if(!focusedDialog)returnFocus=document.activeElement;focusedDialog=active;const first=active.querySelector('[data-autofocus]')||focusables(active)[0];if(first)first.focus({preventScroll:true});else{active.tabIndex=-1;active.focus({preventScroll:true});}}
     else{focusedDialog=null;if(returnFocus?.isConnected&&!returnFocus.disabled)returnFocus.focus({preventScroll:true});returnFocus=null;}
   }
   new MutationObserver(syncDialogs).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
