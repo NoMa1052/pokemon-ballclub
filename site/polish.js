@@ -87,7 +87,7 @@
       const cue=throwBox.querySelector('.tapcue');if(cue&&!spinning)cue.textContent=isPack()?'Swipe across the seam · or tap':'Tap the ball to spin';
       const sub=throwBox.querySelector('.throw-sub');if(sub)sub.textContent=run.unrevealed?'Your choices are ready. Open to continue.':isPack()?'Choose one card, then give it a position.':'One type + one region. Pick a Pokémon, then its position.';
     }
-    const pb=$('playBtn');if(pb){pb.textContent='Play your season';const note=document.querySelector('.simulate-note');if(note)note.textContent='Your lineup is final when the season starts.';}
+    const pb=$('playBtn');if(pb){pb.textContent='Submit team';const note=document.querySelector('.simulate-note');if(note)note.textContent='Your lineup is final when the season starts.';}
     document.querySelectorAll('#doubleBtn,#rvTake2').forEach(b=>b.classList.add('master-ball-control'));
     if(isPack())$('poolHead')?.remove();
     if(run.moving&&!run.locked&&!run.result){
