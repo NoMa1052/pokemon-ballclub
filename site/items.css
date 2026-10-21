@@ -1,0 +1,93 @@
+.candy-sheet .candy-option{display:flex;align-items:center;gap:12px;min-height:88px;padding:14px 0;width:100%;text-align:left}
+.candy-sheet .candy-option>.tok{width:52px!important;height:52px!important;min-width:52px!important;max-width:52px!important;flex:0 0 52px!important;aspect-ratio:1;border-width:2px}
+.candy-sheet .candy-option>.tok img{max-width:100%;max-height:100%;object-fit:contain}
+.candy-sheet .candy-option>span{flex:1;min-width:0;display:grid;gap:4px}
+.candy-sheet .candy-option b{font-size:15px;line-height:1.35;overflow-wrap:anywhere}
+.candy-sheet .candy-option>strong{flex:none;text-align:right;font-size:17px;line-height:1.4;white-space:nowrap}
+.candy-sheet .candy-option>strong small{display:block;font-size:12px;color:inherit}
+.candy-sheet .candy-option>strong.gain{color:#9ddab4}.candy-sheet .candy-option>strong.loss{color:#ff947e}.candy-sheet .candy-option>strong.neutral{color:#b3c0d2}
+.candy-sheet .candy-group{margin-top:24px}.candy-sheet .candy-group h3{font:700 17px/1.4 "Barlow",sans-serif;margin:0 0 4px;color:var(--cream)}
+.candy-sheet .candy-sort-note{font-size:12px;line-height:1.5;color:#b3c0d2;margin:10px 0 0}
+
+.candy-sheet .candy-heading{display:flex;align-items:center;gap:10px;min-width:0}
+.candy-sheet .candy-heading>img{width:48px;height:48px;object-fit:contain;image-rendering:pixelated;flex:none;filter:drop-shadow(0 3px 5px #0004)}
+.candy-sheet .candy-heading h2{margin:0;font-size:clamp(20px,5vw,28px);line-height:1.2}
+.candy-sheet .sheet-top{gap:12px;padding:18px 20px}
+.candy-sheet .candy-intro{margin:0 0 18px;font-size:14px;line-height:1.5;color:#d5dfed}
+.candy-sheet .candy-intro>span{display:block;font-size:12px;color:#aebdd0;margin-top:6px}
+.candy-sheet .candy-group{margin:18px 0 0;padding:0;border:0}
+.candy-sheet .candy-group+.candy-group{margin-top:26px;padding-top:0;border:0}
+.candy-sheet .candy-group h3{display:flex;align-items:center;gap:12px;margin:0 0 6px;padding:0 0 9px;border-bottom:1px solid #eed78a40;background:none;font-size:16px;color:#eedba7}
+.candy-sheet .candy-group h3::before,.candy-sheet .candy-group h3::after{display:none!important;background:none!important}
+.candy-sheet .candy-option{padding:14px 0;min-height:84px;border-bottom:1px solid #ffffff12}
+.candy-sheet .candy-option:last-child{border-bottom:0}
+.candy-sheet .candy-option b{font-size:14px}.candy-sheet .candy-option small{font-size:11px}
+.candy-sheet .candy-option>strong{font-size:16px}.candy-sheet .candy-option>strong small{font-size:11px;margin-top:2px}
+
+
+/* Phase 1: touch-friendly readability and pack layout. Keep the existing ballpark theme. */
+/* A placement notification must never cover a dialog's content or choices. */
+body:has(.sheet:not([hidden])) #handToast,
+body:has(#flowReview) #handToast { display:none!important; }
+
+/* Center the lower pair in the five-card pack without changing card scale. */
+.rv-grid:has(> .rv-mini:nth-child(5):last-child){
+  grid-template-columns:repeat(6,minmax(0,1fr));
+}
+.rv-grid:has(> .rv-mini:nth-child(5):last-child) > .rv-mini{grid-column:span 2;min-width:0;}
+.rv-grid:has(> .rv-mini:nth-child(5):last-child) > .rv-mini:nth-child(4){grid-column:2 / span 2;}
+.rv-grid:has(> .rv-mini:nth-child(5):last-child) > .rv-mini:nth-child(5){grid-column:4 / span 2;}
+
+/* Minimum legibility while retaining the compact card layouts. */
+.reveal .rv-mini .tc-name{font-size:13px!important;line-height:1.2!important;}
+#draft .compact-info > small,#draft .compact-fit{font-size:13px!important;line-height:1.45!important;}
+#draft .ux-sorts .chip{min-height:42px!important;}
+.candy-control:disabled{opacity:.72!important;min-width:162px;}
+@media(max-width:600px){
+  #sizeSeg button,#lbBtn{min-height:44px!important;}
+  .rv-grid{gap:8px;}
+  .reveal .rv-mini .tc-name{font-size:12.5px!important;}
+  .candy-sheet .candy-option{min-height:88px;}
+}
+
+
+/* Phase 2: Spin results, position selection and reading order. */
+body:not(.is-packs) #draft .poolhead:not(.legend){
+  background:linear-gradient(110deg,#1c483d,#14352f)!important;
+  border-left:4px solid var(--tc,#e3b54f);border-radius:9px;
+  box-shadow:inset 0 -2px 0 #061b173d;min-height:52px;
+}
+body:not(.is-packs) #draft .poolhead:not(.legend) .tchip{background:#071d2070!important;border:1px solid #eef0db26;color:#fff7de;}
+body:not(.is-packs) #draft .poolhead .reg{color:#f7f4e9;text-shadow:none;}
+body:not(.is-packs) #draft .poolhead .reg small{color:#e5e7d6;opacity:.9;}
+body:not(.is-packs) #draft .field-jump{
+  display:inline-flex;align-items:center;gap:6px;
+  width:fit-content;min-height:42px;padding:7px 12px!important;
+  margin:5px 0 0 auto!important;
+  border:1px solid #6d8aa3a8;border-radius:8px;
+  background:#142d4b;color:#f4eedc;font:600 13px/1.2 'Barlow',sans-serif!important;
+  text-decoration:none;
+}
+body:not(.is-packs) #draft .field-jump::before{content:'↘';font-size:16px;line-height:1;}
+body:not(.is-packs) #draft .spin-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px!important;}
+body:not(.is-packs) #draft .spin-actions .btn{display:flex;flex-direction:column;justify-content:center;align-items:center;min-width:0;min-height:67px!important;border-radius:9px;font:700 13px/1.25 'Barlow',sans-serif!important;padding:9px 6px!important;}
+body:not(.is-packs) #draft .spin-actions .btn small{font:500 11px/1.35 'Barlow',sans-serif!important;color:#c7d7e6!important;margin-top:4px;}
+body:not(.is-packs) #draft .spin-actions .btn:disabled{opacity:.48;}
+body:not(.is-packs) #draft .ux-sorts{display:flex;align-items:center;gap:7px!important;flex-wrap:wrap;margin:12px 0 10px;}
+body:not(.is-packs) #draft .ux-sorts .chip{min-height:42px!important;padding:9px 12px!important;}
+#fieldFlow.placement-strip{border:1px solid #60789999;border-left:3px solid #e8be67;border-radius:11px;padding:12px 14px;}
+#fieldFlow .placement-title h3{font-size:19px!important;}
+#fieldFlow .placement-title span{display:inline-block;color:#f6d98a;font:600 13px/1.4 'Barlow',sans-serif;}
+#fieldFlow .placement-actions{gap:8px;margin-top:10px;}
+#fieldFlow .placement-actions .btn{min-height:42px!important;padding:7px 10px!important;border:1px solid #647d99a1;border-radius:8px;color:#ebf0e6;background:#1a3555;line-height:1.2;}
+#fieldFlow .placement-actions #heldRatings{border-color:#c4a35e;color:#ffe1a2;}
+#fieldFlow .placement-actions #handReleaseAsk{color:#ffad9c;}
+.field-deciding #field .tag.empty.fit-best,.field-deciding #pen .tag.empty.fit-best{outline:2px solid #e6c871;outline-offset:2px;border-radius:9px;}
+.field-deciding #field .tag.empty.fit-best .flow-fit,.field-deciding #pen .tag.empty.fit-best .flow-fit{background:#efce7e;color:#15253a;font-weight:800;}
+@media(max-width:390px){
+ body:not(.is-packs) #draft .spin-actions{gap:6px;}
+ body:not(.is-packs) #draft .spin-actions .btn{font-size:12px!important;padding:7px 4px!important;min-height:70px!important;}
+ body:not(.is-packs) #draft .spin-actions .btn small{font-size:10px!important;}
+ #fieldFlow .placement-actions{gap:6px;}
+ #fieldFlow .placement-actions .btn{font-size:12px!important;}
+}

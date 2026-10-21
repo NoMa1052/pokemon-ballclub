@@ -1,0 +1,81 @@
+/* The wrapper is a photographed foil packet; all ripped parts use the same photo. */
+.pack{width:min(222px,59vw)!important;aspect-ratio:922/1706!important;filter:drop-shadow(0 12px 13px rgba(0,0,0,.35))!important;isolation:isolate;touch-action:pan-y;overflow:visible!important}
+.pack>.pk-art{z-index:2;transition:none!important;filter:none!important}
+.pack .pk-cap,.pack .pk-tear,.pack .pk-swipe,.pack .pk-inside,.pack .pk-glare{display:none!important}
+.pack::before,.pack::after{display:none!important}
+.pk-loose,.pk-cut{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pk-loose{z-index:4;opacity:0;will-change:transform,clip-path;filter:drop-shadow(0 3px 3px #0007)}
+.pk-cut{z-index:3;overflow:visible}
+.pk-cut path{stroke:#f4eedc;stroke-width:.7;stroke-linejoin:round;filter:drop-shadow(0 0 2px #fff7)}
+.pk-mouth{position:absolute;left:5%;right:5%;top:10%;height:10%;background:linear-gradient(#040a11,#14243b);border-radius:9% 9% 0 0;z-index:1;opacity:calc(var(--rip)*.9)}
+/* A moving light traces the seam; no tag, arrows, or emoji over the wrapper. */
+.pk-tracer{position:absolute;left:5%;right:5%;top:12.8%;height:1px;z-index:5;pointer-events:none;background:linear-gradient(90deg,transparent,#f4eedc44 12%,#f4eedc44 88%,transparent);overflow:visible}
+.pk-tracer i{position:absolute;left:0;top:-1px;width:30%;height:3px;border-radius:50%;background:linear-gradient(90deg,transparent,#fff3beaa 25%,#fff 58%,#fff3beaa 75%,transparent);box-shadow:0 0 8px #fff6;animation:foil-trace 2.4s ease-in-out infinite}
+.pack.dragging .pk-tracer,.pack.rip-complete .pk-tracer{opacity:0;transition:opacity .1s}
+@keyframes foil-trace{0%,12%{left:-8%;opacity:0}25%{opacity:.95}72%{opacity:.95}90%,100%{left:78%;opacity:0}}
+.pk-intro.continuing{animation:opening-backdrop .26s ease-out both}
+.pk-intro.continuing .pki-pack{animation:pkiShake .62s .38s ease-in both}
+@keyframes opening-backdrop{from{background-color:transparent;opacity:0}to{opacity:1}}
+.pack.dragging{rotate:none!important;cursor:grabbing}
+.pack.strip-off .pk-loose{transform:translate(38px,-100px) rotate(-34deg)!important;opacity:0!important;transition:transform .13s ease-in,opacity .13s ease-in}
+.pki-pack{aspect-ratio:922/1706!important;width:min(222px,59vw)!important}
+.throw.hero{scroll-margin-top:18px}
+.is-packs .throw.hero .throw-txt{display:grid!important;gap:3px!important}
+.is-packs .throw.hero{gap:8px!important;padding-top:8px!important}
+.is-packs .throw.hero .throw-sub{margin-top:4px;font-size:13px!important;max-width:32ch!important}
+.is-packs .throw.hero .tapcue{margin-top:2px;color:var(--cream)!important}
+@media(max-width:820px){.pack{width:min(204px,57vw)!important}.pki-pack{width:min(222px,59vw)!important}.is-packs #draft{padding:12px!important}.is-packs .throw.hero{padding:6px!important}}
+@media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}.pk-cut path{filter:none}}
+
+@media(prefers-reduced-motion:reduce){.pk-tracer i{animation:none;left:35%;opacity:.6}.pk-intro.continuing{animation:none}}
+
+/* Keep the tear and handoff on a single animation timeline. */
+.pack.dragging,.pack.rip-complete{animation:none!important;rotate:none!important;transition:none!important}
+.pack>.pk-art{will-change:clip-path}
+.pk-loose{filter:none!important}
+.pk-cut path{filter:none!important}
+.pack.strip-off .pk-loose{transition:transform .19s cubic-bezier(.2,.7,.3,1),opacity .19s ease-out;transform:translate3d(48px,-90px,0) rotate(-28deg)!important}
+.pk-intro.continuing .pki-pack{animation:none!important;will-change:transform}
+.pk-intro.continuing{animation:opening-backdrop .3s ease-out both}
+@keyframes opening-backdrop{from{background-color:transparent}to{background-color:rgba(5,10,20,.94)}}
+.pki-beams{width:100vmax;height:100vmax;margin:-50vmax 0 0 -50vmax;will-change:transform,opacity}
+.pki-glow,.pki-cards i,.pki-pack>.pk-art{will-change:transform,opacity}
+.pk-mouth{box-shadow:0 -3px 12px #f4eedc44}
+.pk-intro.t-gold .pki-glow,.pk-intro.t-shiny .pki-glow,.pk-intro.t-leg .pki-glow{filter:saturate(1.2)}
+@media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
+
+/* Flexible foil trails behind a tear tip that stays under the finger. */
+.pk-foil-piece{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;opacity:0;will-change:transform;backface-visibility:visible}
+.pk-tear-tip{position:absolute;width:8px;height:8px;z-index:6;border-radius:50%;background:#fff5dc;box-shadow:0 0 9px 3px #fff5dc88;transform:translate(-50%,-50%);pointer-events:none;opacity:0}
+.pack.strip-off .pk-foil-piece{opacity:0!important;translate:18px -48px;transition:translate .32s cubic-bezier(.2,.7,.3,1),opacity .32s ease-out}
+.pk-intro .pki-pack>.pk-art{animation-delay:1.52s}
+.pk-intro .pki-cards i{animation-delay:calc(1.48s + var(--i)*.035s)}
+.pk-intro .pki-flash{animation-delay:1.46s}
+.pk-intro .pki-sparks i{animation-delay:calc(1.5s + var(--t))}
+.pk-intro .pki-glow,.pk-intro .pki-beams{animation-duration:2.35s}
+@media(prefers-reduced-motion:reduce){.pack.strip-off .pk-foil-piece{transition:none}}
+
+/* Direct unwrapping: the real card emerges, without a second opening screen. */
+.direct-opening{position:fixed;inset:0;z-index:70;pointer-events:auto;overflow:hidden;cursor:pointer}
+.direct-wrapper,.direct-foil{position:absolute;will-change:transform,opacity;pointer-events:none}
+.direct-wrapper>.pk-art{position:absolute;inset:0;width:100%;height:100%}
+.direct-wrapper{z-index:2;filter:drop-shadow(0 12px 12px #0005)}
+.direct-foil{z-index:3}
+.direct-seam{position:absolute;height:25px;background:radial-gradient(ellipse,var(--c1),transparent 70%);filter:blur(3px);z-index:4;pointer-events:none;will-change:transform,opacity}
+
+/* Card backs leave the foil first, then turn over after the wrapper clears. */
+.pk-mouth{display:none!important}.pk-cut path{stroke:#e6d9b3;stroke-width:.3;opacity:.65}
+.direct-opening{perspective:1000px}
+.direct-back{position:absolute;z-index:1;box-sizing:border-box;border:3px solid #f4eedc;border-radius:12px;background:repeating-linear-gradient(45deg,#ffffff08 0 4px,transparent 4px 9px),linear-gradient(160deg,#24497f,#0b1b33);box-shadow:inset 0 0 0 5px #0b1b33,inset 0 0 0 7px #e3350d,0 10px 24px #0006;backface-visibility:hidden;will-change:transform}
+.opening-back-ball{position:absolute;left:50%;top:50%;width:46%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:4px solid #111;background:linear-gradient(#e3350d 0 45%,#111 45% 55%,#f7f4ea 55%)}
+.opening-back-ball::after{content:'';position:absolute;left:50%;top:50%;width:25%;aspect-ratio:1;transform:translate(-50%,-50%);border:4px solid #111;border-radius:50%;background:#f7f4ea}
+.direct-rays{position:absolute;left:50%;top:45%;width:100vmax;height:100vmax;margin:-50vmax 0 0 -50vmax;background:repeating-conic-gradient(var(--c1) 0 5deg,transparent 5deg 15deg,var(--c2) 15deg 18deg,transparent 18deg 30deg);mask:radial-gradient(circle,#000 0,transparent 48%);-webkit-mask:radial-gradient(circle,#000 0,transparent 48%);animation:direct-rays 1.7s ease-out both, pkiSpin 10s linear infinite;pointer-events:none}
+.direct-aura{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--c1) 45%,transparent),transparent 65%);animation:direct-aura 1.7s ease-out both;pointer-events:none}
+@keyframes direct-rays{0%{opacity:0}30%{opacity:.35}70%{opacity:.55}100%{opacity:0}}
+@keyframes direct-aura{0%{opacity:0}35%,75%{opacity:.8}100%{opacity:0}}
+.reveal.rarity-lit{background:radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--opening-color) 22%,#16305a) 0,#0b1730 48%,#060b16 85%)}
+
+/* The pack contains a visible stack, not one oversized card. */
+.direct-stack{position:absolute;z-index:1;will-change:transform;perspective:1000px;transform-style:preserve-3d}
+.direct-stack>.direct-back{inset:0;width:100%;height:100%;transform-origin:50% 80%;will-change:transform,opacity}
+.direct-wrapper{filter:none}

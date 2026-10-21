@@ -1,0 +1,307 @@
+/* Calm game chrome, with the existing trading cards and baseball identity. */
+:root{--ux-line:rgba(244,238,220,.2);--ux-text:#f4eedc;--ux-muted:#b6c3d5}
+.wrap{max-width:1120px}
+.top{padding-block:6px!important;margin-bottom:0!important}
+.mark.logo img{width:168px!important;filter:none!important}
+.brand-stitch{margin-bottom:16px!important;opacity:.5}
+.board{box-shadow:0 0 0 1px rgba(244,238,220,.22)!important;border-radius:12px!important;padding:7px!important}
+.bd-cell{padding:8px 6px!important;min-width:0;gap:5px!important}
+.bd-lab{font-family:"Barlow",sans-serif!important;font-size:12px!important;font-weight:600!important;letter-spacing:.02em!important;text-transform:none!important}
+.ux-score{font:600 29px/1 "Barlow",sans-serif;color:var(--cream);font-variant-numeric:tabular-nums;min-height:29px}
+.ux-score small{font-size:15px;opacity:.75}
+.bd-sub{font:500 11px/1.3 "Barlow",sans-serif!important;color:#c2d2c6;min-height:15px}
+.keep-counts{font-size:12px;white-space:nowrap;display:block}
+.bd-cell:last-child:has(.keep-counts) .ux-score{display:none}
+.bd-cell:last-child:has(.keep-counts) .bd-sub{align-self:center;font-size:14px;min-height:30px;display:grid;place-items:center}
+.draft-progress{display:block;width:72px;height:4px;background:rgba(0,0,0,.25);border-radius:2px;margin:4px auto}
+.draft-progress i{display:block;height:100%;border-radius:2px;background:var(--cream)}
+.settings{gap:10px!important;margin-top:14px!important}
+#sizeSeg button{display:grid;gap:1px;justify-items:center;padding:8px 12px!important;min-height:44px}
+#sizeSeg button b{font:600 15px/1.1 "Barlow",sans-serif!important}
+#sizeSeg button small{font:500 11px/1.1 "Barlow",sans-serif!important;letter-spacing:0!important}
+.seg{border:1px solid var(--ux-line)!important;box-shadow:none!important}
+.seg button{min-height:44px}
+.sg-t small{font-family:"Barlow",sans-serif!important;font-size:12px!important;letter-spacing:0!important;text-transform:none!important}
+.panel{box-shadow:none!important;border:1px solid var(--ux-line)!important}
+.panel::before,.throw.hero::before{opacity:.45}
+.btn{min-height:44px;font-family:"Barlow",sans-serif!important;font-weight:600!important;font-size:15px!important;text-transform:none!important;letter-spacing:0!important;border-radius:9px!important;border-width:1px!important}
+.btn.primary{font-size:17px!important;border-radius:12px!important;box-shadow:0 3px 0 #a8250a!important;padding:12px 18px!important}
+.hint,.note,.throw-sub{font-family:"Barlow",sans-serif!important;font-size:15px!important;line-height:1.5!important;color:var(--ux-muted)!important}
+.throw.hero{gap:13px!important;padding:16px 12px!important}
+.throw.hero .throw-txt{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+.throw.hero .throw-txt>b{font:600 20px/1.2 "Barlow",sans-serif!important;text-transform:none!important;letter-spacing:0!important}
+.throw.hero .throw-txt small{font:500 13px/1.2 "Barlow",sans-serif!important;letter-spacing:0!important;text-transform:none!important;margin-top:5px}
+.tapcue{font:600 15px/1.3 "Barlow",sans-serif!important;letter-spacing:0!important;color:var(--cream)!important;text-transform:none!important}
+.throw-sub{max-width:34ch!important}
+.spinctl{gap:8px!important;grid-template-columns:repeat(3,minmax(0,1fr))}
+.spinctl .label{display:none}
+.spinctl .btn{flex:1 1 110px;display:grid;gap:3px;padding:9px 10px!important;font-size:14px!important;text-align:center}
+.spinctl .btn small{font:500 11px/1.2 "Barlow",sans-serif;color:var(--ux-muted)}
+.spinctl.keeprow{padding-top:5px}
+.spinctl.keeprow .btn{flex:1}
+.ux-sorts{gap:6px!important}
+.ux-sorts .label{display:none}
+.ux-sorts .chip{font:600 13px/1 "Barlow",sans-serif!important;text-transform:none!important;letter-spacing:0!important;min-height:36px;padding:8px 10px!important;border-width:1px!important}
+[hidden]{display:none!important}
+.compact-cand{display:flex!important;align-items:center!important;gap:12px;padding:14px 12px!important;min-height:88px!important;text-align:left}
+.compact-cand .tok{width:48px!important;height:48px;margin:0!important}
+.compact-info{min-width:0;display:grid;gap:4px}
+.compact-info>b{font:600 18px/1.2 "Barlow",sans-serif!important;color:var(--cream);display:flex;align-items:center;gap:8px}
+.compact-info>small{font:500 12px/1.3 "Barlow",sans-serif;color:var(--ux-muted)}
+.compact-fit{font:500 12px/1.35 "Barlow",sans-serif;color:var(--ux-muted)}
+.compact-fit b{color:var(--cream)}
+.rare-label{font-size:10px;color:#ffe08a;border:1px solid currentColor;border-radius:4px;padding:2px 4px}
+.cand.withovr .nmrow b{font-family:"Barlow",sans-serif!important;font-weight:600!important;font-size:20px!important}
+.cand.withovr>span>small{font-size:12px!important}
+.cand.withovr .ovr i{font:600 11px/1.3 "Barlow",sans-serif!important;letter-spacing:0!important}
+.cand.withovr .sb{font-family:"Barlow",sans-serif!important}
+.cand.withovr .sb i{font-family:"Barlow",sans-serif!important;text-transform:none!important;font-size:13px!important}
+.cand.withovr .why{font-family:"Barlow",sans-serif;font-size:12px!important}
+.placebar{border:1px solid var(--ux-line)!important;border-radius:10px!important}
+.slotchip{min-height:48px;text-align:center;grid-template-columns:1fr auto!important}
+.slotchip b,.slotchip em{font-family:"Barlow",sans-serif!important}
+.tag .tok{box-shadow:0 2px 5px rgba(0,0,0,.2)!important}
+.tag.open .tok{animation:none!important;outline-width:2px!important}
+.tag.moving .tok{outline-color:var(--red)!important;outline-width:3px!important}
+.tag .nm{max-width:110px!important}
+.field{border:1px solid var(--ux-line)!important}
+.move-inspector{display:grid;gap:12px}
+.move-title{display:flex;align-items:center;gap:12px}
+.move-title .tok{width:46px;flex:none}
+.move-title>div{flex:1;min-width:0}
+.move-title h3{font:600 21px/1.2 "Barlow",sans-serif;margin:4px 0}
+.move-title .hint{font-size:12px!important;margin:0}
+.move-title .label{font:500 11px "Barlow",sans-serif;letter-spacing:.04em;text-transform:uppercase}
+.move-title .btn{padding:7px 10px}
+.move-instruction{margin:0;font:500 14px/1.4 "Barlow",sans-serif;color:var(--ux-muted)}
+.move-positions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.move-spot{border:1px solid var(--ux-line);border-radius:9px;background:#0b1b33;color:var(--cream);padding:9px 6px;min-height:62px;text-align:left;cursor:pointer}
+.move-spot>span{display:flex;justify-content:space-between;gap:3px;font:600 14px/1.2 "Barlow",sans-serif}
+.move-spot>span b{color:#f3ce66;font-size:18px}
+.move-spot small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 11px/1.2 "Barlow",sans-serif;color:var(--ux-muted);margin-top:6px}
+.move-spot.current{opacity:.55;border-style:dashed;cursor:default}
+.move-spot.comparing{border-color:#f3ce66;background:#28332e}
+.swap-preview{border:1px solid #e5c76e;border-radius:10px;background:#0b1b33;padding:14px;display:grid;gap:10px;font:500 14px/1.4 "Barlow",sans-serif}
+.swap-preview h4{margin:0;font-size:15px}
+.swap-player{display:grid;gap:3px;padding-bottom:8px;border-bottom:1px solid var(--ux-line)}
+.swap-player span{color:var(--ux-muted)}
+.gain{color:#8fddb0}.loss{color:#ffa18e}
+.swap-preview p{margin:0}.swap-preview small{color:var(--ux-muted);font-size:12px}
+.player-stats{border-top:1px solid var(--ux-line);padding-top:12px;font-family:"Barlow",sans-serif}
+.player-stats summary{cursor:pointer;font-size:14px;padding:4px 0;min-height:36px}
+.ux-statgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:12px 0}
+.ux-statgrid>span{display:flex;justify-content:space-between;padding:7px 9px;background:#0b1b33;border-radius:6px;font-size:13px}
+.ux-statgrid b{font-size:15px}.player-stats .hint{font-size:13px!important}
+.quickstart{padding:8px 0 20px}
+.intro-line{font:500 18px/1.4 "Barlow",sans-serif;color:var(--cream);margin:0 0 24px}
+.quick-steps{padding:0;margin:0 0 26px;list-style:none;counter-reset:step;display:grid;gap:22px}
+.quick-steps li{counter-increment:step;position:relative;padding-left:43px;display:grid;gap:5px;font-family:"Barlow",sans-serif}
+.quick-steps li::before{content:counter(step);position:absolute;left:0;top:0;display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--ux-line);border-radius:50%;color:var(--cream);font-weight:600}
+.quick-steps b{font-size:17px;color:var(--cream)}
+.quick-steps span{font-size:15px;line-height:1.45;color:var(--ux-muted)}
+.quickstart>.btn{width:100%}
+.full-rules{border-top:1px solid var(--ux-line);padding-top:16px}
+.full-rules>summary{font:600 15px "Barlow",sans-serif;cursor:pointer;padding:10px 0}
+.full-rules section{margin-top:20px}
+.sheet-in{border:1px solid var(--ux-line)!important;border-radius:14px!important}
+.sheet-body{padding:18px!important}
+.sheet-body h3::after{opacity:.4}
+.sheet-body .hint{font-size:15px!important}
+.keygrid div small{font-size:12px}
+.rv-stage{background:none;border:0;padding:0;color:inherit;appearance:none}
+.rv-stage:focus-visible{outline:2px solid var(--cream);outline-offset:6px;border-radius:12px}
+.card-nav{display:flex;justify-content:center;gap:6px;margin:6px 0 10px}
+.card-dot{width:36px;height:36px;border-radius:50%;border:1px solid var(--ux-line);background:#0b1b33;color:var(--ux-muted);font:600 13px "Barlow",sans-serif;cursor:pointer}
+.card-dot[aria-current=true]{background:var(--cream);color:var(--navy);border-color:var(--cream)}
+.cardrow .pcard:not([aria-pressed=true]) .tc-bars,.cardrow .pcard:not([aria-pressed=true]) .tc-meta{display:none}
+.cardrow .pcard[aria-pressed=true] .tc-meta{font-size:12px}
+.cardrow{align-items:start!important}
+.cardrow .pcard{position:relative}
+.cardrow .pcard[aria-pressed=true]{outline:2px solid var(--cream);outline-offset:3px;border-radius:16px}
+.dpick{border:1px solid var(--ux-line)!important}
+.dchip.best{animation:none!important}
+.dchip em{display:none!important}
+.cardrow .tc-name{font-family:"Barlow",sans-serif!important;font-weight:600!important}
+.has-results .grid{display:none!important}
+.has-results #season{max-width:850px;margin:24px auto}
+.result-mode{margin:0 0 14px;font:600 13px "Barlow",sans-serif;color:var(--ux-muted)}
+.res-top{gap:20px!important}
+.share{display:flex;gap:10px;margin:20px 0!important}
+.share .btn{flex:1}
+.share .btn:first-child{background:var(--cream);color:var(--navy);border-color:var(--cream)}
+.submit{padding:16px!important;border:1px solid var(--ux-line)!important;border-radius:10px!important}
+.tbl{overflow-x:auto!important}.tbl:focus-visible{outline:2px solid var(--cream)}
+.tbl table{min-width:500px;font:500 14px "Barlow",sans-serif!important}
+.tbl th{font:600 12px "Barlow",sans-serif!important}
+.stand summary{position:relative;padding-right:20px!important}
+.stand summary::after{content:"⌄";position:absolute;right:5px;top:50%;transform:translateY(-50%);color:#615b4c;font:600 17px "Barlow",sans-serif}
+.stand details[open] summary::after{content:"⌃"}
+.stand .tm small{font-family:"Barlow",sans-serif!important;font-size:12px!important}
+.stand .tm b{font-family:"Barlow",sans-serif!important;font-size:15px!important;text-transform:none!important}
+.stand-head{font-family:"Barlow",sans-serif!important;font-size:12px!important}
+.lbroster{font-family:"Barlow",sans-serif!important}
+.ux-dialog{position:fixed;inset:0;z-index:100;background:rgba(4,10,20,.85);display:grid;place-items:center;padding:20px}
+.ux-dialog-card{width:min(100%,440px);background:#13294d;color:var(--cream);border:1px solid var(--ux-line);border-radius:16px;padding:25px;font-family:"Barlow",sans-serif;box-shadow:0 15px 60px #0008}
+.ux-dialog-card h2{font:600 23px/1.2 "Barlow",sans-serif;margin:0 0 12px}
+.ux-dialog-card p{font-size:16px;line-height:1.5;color:var(--ux-muted)}
+.dialog-actions{display:flex;gap:10px;margin-top:22px}.dialog-actions>.btn{flex:1}
+button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--cream);outline-offset:3px}
+.simulate-note{margin:0;text-align:center;font-size:13px!important}
+.dc-grade small{font:500 12px "Barlow",sans-serif!important}
+
+/* Wrapper: slender seals, printed foil, and a tear that follows your finger. */
+.pack{width:min(220px,58vw)!important;aspect-ratio:240/340!important;transform:none!important;filter:drop-shadow(0 14px 18px #0006)!important;touch-action:pan-y;--rip:0}
+.pack .pk-art{z-index:1}
+.pack .pk-art .pack-topseal{display:none}
+.pack::before,.pack::after{display:none!important}
+.pk-glare{opacity:0!important;inset:8% 2% 7%!important}
+.pack.tilting .pk-glare{opacity:.32!important}
+.pack .pk-cap{height:6.5%!important;top:0!important;border-radius:1px!important;background:repeating-linear-gradient(90deg,#fff0 0 2px,#10243b55 2px 2.7px),linear-gradient(90deg,#89949d,#d2d9dc 16%,#a6b1b8 43%,#dfe3e5 70%,#788793)!important;z-index:4!important;clip-path:polygon(0 0,100% 0,100% 85%,97% 100%,94% 85%,91% 100%,88% 85%,85% 100%,82% 85%,79% 100%,76% 85%,73% 100%,70% 85%,67% 100%,64% 85%,61% 100%,58% 85%,55% 100%,52% 85%,49% 100%,46% 85%,43% 100%,40% 85%,37% 100%,34% 85%,31% 100%,28% 85%,25% 100%,22% 85%,19% 100%,16% 85%,13% 100%,10% 85%,7% 100%,4% 85%,0 100%)!important;transform-origin:100% 100%!important}
+.pack:not(.wobble) .pk-cap{transform:translate(calc(var(--rip)*15px),calc(var(--rip)*-25px)) rotate(calc(var(--rip)*-17deg))!important;filter:drop-shadow(0 calc(var(--rip)*4px) calc(var(--rip)*4px) #0005)}
+.pack .pk-inside{height:10%!important;top:3%!important;left:2%!important;right:2%!important;clip-path:inset(0 calc((1 - var(--rip))*100%) 0 0);background:linear-gradient(#070e17,#21354c)!important;z-index:3}
+.pack .pk-tear{top:6.5%!important;height:2px!important;left:1%!important;right:1%!important;transform:none!important;background:linear-gradient(90deg,#f4eedc calc(var(--rip)*100%),#f4eedc33 0)!important;opacity:1!important;z-index:5!important}
+.pack .pk-swipe{top:calc(6.5% - 10px)!important;left:2%!important;width:20px!important;height:20px!important;background:#f4eedc!important;box-shadow:0 0 0 4px #f4eedc22!important;transform:translateX(calc(var(--rip)*195px))!important;animation:none!important;opacity:.65}
+.pack .pk-swipe::before{content:"→"!important;position:absolute;inset:0;display:grid;place-items:center;color:#0b1b33;font:600 13px "Barlow",sans-serif}
+.pack .pk-swipe::after{display:none!important}
+.pack.dragging .pk-swipe{opacity:1}.pack.dragging{rotate:0 0 1 calc(var(--rip)*-2deg)!important}
+.pack.snap .pk-cap,.pack.snap .pk-swipe{transition:transform .22s ease-out!important}
+.pack.rip-complete .pk-cap{transform:translate(40px,-60px) rotate(-30deg)!important;opacity:0;transition:transform .16s ease-out,opacity .16s}
+.pki-pack{aspect-ratio:240/340!important}
+@media(max-width:820px){
+  .wrap{padding-inline:14px!important}
+  .mark.logo img{width:150px!important}
+  .grid{display:flex!important;flex-direction:column;gap:18px!important}
+  .grid>section{order:2}.grid>#draft{order:1;width:100%;box-sizing:border-box}
+  .grid>#draft:empty{display:none}
+  .cands:not(.cardrow){max-height:none!important;overflow:visible!important}
+  .compact-cand{min-height:84px!important}
+  .sheet-in{width:calc(100% - 20px)!important;max-height:calc(100dvh - 26px)!important}
+  .sheet-body{padding:16px!important}
+  .panel.draft{padding:14px!important}
+  .hint,.throw-sub{font-size:15px!important}
+  .move-positions{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .move-spot{min-height:66px}
+  .tag .nm{font:600 11px/1.2 "Barlow",sans-serif!important}
+  .tag .tok{width:40px!important}
+  .field .tag{min-height:44px}
+  .staff .tag .nm{max-width:100%!important}
+  .penhead b{font-family:"Barlow",sans-serif!important}
+  .stand-head{grid-template-columns:24px 1fr 30px 30px 45px!important}
+  .stand .lblist summary{grid-template-columns:24px 1fr 30px 30px 45px!important}
+  .stand-head>span:nth-child(5),.stand .gb{display:none!important}
+  .stand .tm b{font-size:15px!important}
+  .res-top{display:grid!important;grid-template-columns:64px 1fr;gap:12px!important}
+  .res-top>div:last-child{grid-column:1/-1}
+  .bigrec{font-size:56px!important}
+  .pennant{width:64px!important;height:60px!important}
+  .awards{grid-template-columns:1fr!important}
+  .tc-bars{font-family:"Barlow",sans-serif!important}
+}
+@media(max-width:380px){.bd-lab{font-size:11px!important}.ux-score{font-size:25px}.keep-counts{font-size:11px}.move-positions{grid-template-columns:repeat(3,minmax(0,1fr))}.move-title{gap:8px}.move-title h3{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.pack .pk-cap,.pack .pk-swipe{transition:none!important}.pack.rip-complete .pk-cap{transition:none}.tag.open .tok{animation:none!important}}
+
+.selected-detail{width:100%;box-sizing:border-box;border:1px solid rgba(244,238,220,.25)!important;border-radius:10px;background:#13294d!important}
+.other-choices>summary{font:600 14px/1.3 "Barlow",sans-serif;cursor:pointer;min-height:44px;padding:12px 0;box-sizing:border-box;color:var(--cream)}
+.other-choices{min-width:0}.other-choices .cands{margin-top:10px}
+
+.bd-sub{text-transform:none!important;letter-spacing:0!important;white-space:normal!important;max-width:100%;opacity:1!important}
+.board .bd-cell{grid-template-rows:auto 32px minmax(15px,auto)!important}
+.board .bd-cell:has(.keep-counts){grid-template-rows:auto 1fr!important}
+.keep-counts{display:grid;gap:4px;white-space:normal!important;font-size:12px;text-align:left}
+.keep-counts>span{display:flex;justify-content:space-between;gap:8px}
+@media(max-width:820px){.grid{align-items:stretch!important}.grid>section{width:100%;min-width:0}.bd-sub{font-size:10px!important}.bd-lab{font-size:11px!important}.board{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+
+.board.result{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+
+/* Compact Spin choices and paired slot reels. */
+.spin-reels{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(100%,340px);margin:12px auto}
+.spin-reel{overflow:hidden;border:1px solid #8191a8;border-radius:12px;background:linear-gradient(#081325,#1d3454 48%,#081325);box-shadow:inset 0 2px 10px #0008,0 2px 0 #0005;padding:10px 5px;text-align:center}
+.spin-reel small{display:block;font-size:10px;letter-spacing:.15em;color:var(--muted)}
+.spin-reel b{display:block;font-family:var(--f-display);font-size:23px;line-height:32px;color:var(--chalk)}
+.spin-reel.rolling b{animation:slot-roll .09s linear infinite}
+@keyframes slot-roll{from{transform:translateY(-20px);opacity:.4}to{transform:translateY(20px);opacity:.8}}
+body:not(.is-packs) .pokeball.wobble{animation:spin-ball .55s linear infinite}
+@keyframes spin-ball{to{transform:rotate(360deg)}}
+.spin-actions{margin:10px 0!important}.field-jump{font-size:12px;padding:6px 10px;justify-self:end}
+.spin-pages{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0;font-size:12px;color:var(--muted)}
+.spin-pages .btn{padding:8px 12px;font-size:14px}
+#cands .cand[hidden]{display:none!important}
+body:not(.is-packs) #cands .compact-cand{padding:10px 12px;min-height:78px}
+@media(prefers-reduced-motion:reduce){.spin-reel.rolling b{animation:none}}
+
+body:not(.is-packs) #cands.spin-scroll{max-height:min(360px,46dvh)!important;overflow-y:auto!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.spin-actions .btn{min-width:0!important;white-space:normal!important;overflow-wrap:anywhere;padding:9px 6px!important;line-height:1.2}
+.spin-actions .btn small{white-space:normal!important;font-size:10px!important}
+.spin-reel b{height:32px;overflow:hidden;font-size:clamp(17px,5vw,23px)}
+.reel-track{display:block;will-change:transform}.reel-track>span{display:block;height:32px;line-height:32px;white-space:nowrap}
+
+/* Keep iOS reveal inside the visible screen and lock the draft underneath. */
+html.rv-root{overflow:hidden!important;overscroll-behavior:none}
+body.rv-open{position:fixed;top:var(--reveal-scroll,0px);left:0;right:0;width:100%;overflow:hidden!important}
+body.rv-open>.wrap{visibility:hidden}
+.reveal{top:0;bottom:auto;height:100dvh;min-height:100dvh;max-height:100dvh;overflow-x:hidden;overscroll-behavior:contain;padding-bottom:max(16px,env(safe-area-inset-bottom))}
+.rv-stage{min-height:0;flex:1 1 0}
+.rv-top,.rv-hint{flex:0 0 auto}
+.rv-stage>.tcard{width:min(300px,78vw,calc((100dvh - 130px)*.64))}
+@media(max-height:650px){.rv-stage .tc-art{aspect-ratio:1.6}.rv-hint{font-size:11px;margin-top:8px}.rv-stage .tc-meta{font-size:10px}.rv-stage .tc-in{padding:8px}}
+
+/* Vintage stadium scoreboard: enamel green, brass plates, mechanical digits. */
+.board{border:2px solid #f0dfb6!important;border-radius:8px!important;padding:10px 8px!important;background:radial-gradient(circle at 8px 8px,#bbab7c 0 1.5px,#081c16 2px,transparent 3px),radial-gradient(circle at calc(100% - 8px) 8px,#bbab7c 0 1.5px,#081c16 2px,transparent 3px),radial-gradient(circle at 8px calc(100% - 8px),#bbab7c 0 1.5px,#081c16 2px,transparent 3px),radial-gradient(circle at calc(100% - 8px) calc(100% - 8px),#bbab7c 0 1.5px,#081c16 2px,transparent 3px),repeating-linear-gradient(100deg,#ffffff02 0 1px,transparent 1px 4px),linear-gradient(135deg,#0c4935,#073d2b 50%,#052e23)!important;box-shadow:inset 0 0 0 3px #0a2119,inset 0 0 0 4px #ad8644,0 0 0 3px #10241e,0 0 0 5px #ad8644,0 6px 0 5px #041b16,0 12px 20px #0006!important;margin-block:6px 20px!important}
+.board .bd-cell{border-left:1px solid #d7c49780!important;box-shadow:inset 2px 0 #041e1899;padding:5px 7px!important;gap:8px!important;grid-template-rows:26px 46px minmax(16px,auto)!important;align-content:start}
+.board .bd-cell:first-child{border-left:none!important;box-shadow:none}
+.board .bd-lab{display:flex;align-items:center;justify-content:center;width:100%;height:26px;padding:3px 5px;border:1px solid #d2a44b;background:linear-gradient(#092a22,#041a15);clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 50%,calc(100% - 8px) 100%,8px 100%,0 50%);font:700 12px/1.1 var(--f-display)!important;text-transform:uppercase!important;letter-spacing:.01em!important;white-space:normal;color:#f4eedc;text-shadow:0 1px 0 #000}
+.board .ux-score{display:flex;align-items:center;justify-content:center;gap:3px;min-height:46px;width:100%;font-family:var(--f-data);font-size:35px;font-weight:800;line-height:1}
+.score-digit{position:relative;display:grid;place-items:center;min-width:29px;height:44px;padding:0 5px;color:#f4eedc;border:1px solid #030b08;border-radius:4px;background:radial-gradient(circle at 4px 4px,#737165 0 1px,transparent 1.5px),radial-gradient(circle at calc(100% - 4px) calc(100% - 4px),#737165 0 1px,transparent 1.5px),linear-gradient(#262a28 0,#111613 49%,#050a08 50%,#141a16 100%);box-shadow:inset 0 1px 2px #ffffff20,0 2px 3px #0007;text-shadow:0 2px 0 #000}
+.board .ux-score small{font:700 15px/1 var(--f-data);color:#c4c4b4;opacity:1;white-space:nowrap}
+.board .bd-sub{font-size:11px!important;color:#c1c9b5;min-height:16px;text-align:center}
+.board .draft-progress{height:9px;width:100%;max-width:104px;margin:3px auto;border:1px solid #b6b291;border-radius:3px;background:repeating-linear-gradient(90deg,#041e19 0 7px,#567164 8px,#041e19 9px);box-shadow:inset 0 1px 3px #000}
+.board .draft-progress i{background:linear-gradient(#e4d4a3,#a58e49);border-radius:1px}
+.board .bd-cell:has(.keep-counts){grid-template-rows:26px 1fr!important}
+.board .keep-counts{width:100%;padding:5px 8px;background:#0b1711;border:1px solid #020d08;border-radius:4px;box-shadow:inset 0 1px 2px #ffffff15;font:600 12px/1.2 var(--f-data);color:#c1c9b5}
+.board .keep-counts b{color:#f4eedc}
+@media(max-width:820px){.board{padding:8px 4px!important}.board .bd-cell{padding:4px 4px!important;gap:6px!important;grid-template-rows:25px 40px minmax(16px,auto)!important}.board .bd-lab{font-size:9px!important;height:25px;padding:3px 2px}.board .ux-score{font-size:29px;min-height:40px;gap:2px}.score-digit{height:38px;min-width:21px;padding:0 3px}.board .ux-score small{font-size:12px}.board .bd-sub{font-size:9px!important}.board .bd-cell:has(.keep-counts){grid-template-rows:25px 1fr!important}.board .keep-counts{font-size:11px;padding:4px 5px}}
+@media(max-width:360px){.board .bd-lab{font-size:8px!important}.board .ux-score{font-size:25px}.score-digit{min-width:18px;padding:0 2px}.board .ux-score small{font-size:10px}}
+
+.board .bd-sub{width:100%}
+@media(min-width:361px) and (max-width:820px){.board .bd-lab{font-size:10px!important}}
+
+/* Single-line result labels and a grade that fits its pennant. */
+.board.result .bd-lab{white-space:nowrap!important;text-align:center;justify-content:center}
+.result-grade{display:grid;justify-items:start;gap:4px;align-self:center}
+.result-grade>small{width:64px;text-align:center;font:600 11px/1.2 "Barlow",sans-serif;color:var(--ux-muted)}
+.result-grade .pennant{width:74px!important;height:58px!important;padding-left:9px}
+.result-grade .pennant span{font-size:25px!important;letter-spacing:-.05em;line-height:1;white-space:nowrap}
+@media(max-width:820px){.res-top{grid-template-columns:74px minmax(0,1fr)!important;gap:12px!important}.res-top .bigrec{font-size:clamp(34px,10vw,48px)!important;line-height:1.1;white-space:nowrap}.res-top .label{font-size:12px!important;letter-spacing:.04em}.result-grade .pennant{height:55px!important}.result-grade .pennant span{font-size:24px!important}}
+
+.board .score-digit{min-width:0;flex:0 1 29px;padding-inline:2px}
+
+/* Give the how-to steps and primary action their own breathing room. */
+#how .quickstart{display:grid;gap:26px;padding:8px 0 24px}
+#how .quickstart .intro-line{margin:0!important;line-height:1.5}
+#how .quick-steps{margin:0!important;padding:0!important;gap:24px!important}
+#how .quick-steps li{margin:0!important;gap:7px;line-height:1.45}
+#how .quick-steps span{line-height:1.55}
+#how #quickPlay{margin:0!important;min-height:48px}
+.board .score-empty{font-size:20px;letter-spacing:-1px;overflow:hidden}
+
+/* Quieter scoreboard: retain stadium character without stacked decoration. */
+.board{border:1px solid #c6b68c!important;border-radius:9px!important;background:linear-gradient(135deg,#124c38,#0b3c2c)!important;box-shadow:inset 0 0 0 3px #092a20,0 3px 0 #061e17,0 6px 12px #0004!important}
+.board .bd-cell{border-left:1px solid #b7c5ad30!important;box-shadow:none!important}
+.board .bd-lab{border:0;background:none;clip-path:none;padding-inline:2px;color:#e8e1cd;text-shadow:none;letter-spacing:.03em!important}
+.board .score-digit{background:linear-gradient(#1c2420 0,#111a15 49%,#0e1612 50%,#17201a 100%);border-color:#08110c;box-shadow:inset 0 1px 0 #ffffff12,0 2px 2px #0004;text-shadow:none}
+.board .draft-progress{height:5px;border:0;border-radius:3px;background:#06271c;box-shadow:none;margin-top:5px}
+.board .draft-progress i{background:#c7bd91;border-radius:3px}
+.board .bd-sub{color:#b4c4b4}
+
+/* Keep the two-row Keeps panel aligned with the other scoreboard values. */
+.board .bd-cell:has(.keep-counts){grid-template-rows:26px 46px minmax(16px,auto)!important}
+.board .bd-cell:has(.keep-counts) .bd-sub{grid-row:2;align-self:center;min-height:0;display:block}
+.board .keep-counts{max-width:100%;margin-inline:auto;line-height:1.1;gap:3px}
+@media(max-width:820px){.board .bd-cell:has(.keep-counts){grid-template-rows:25px 40px minmax(16px,auto)!important}}
+
+/* Both modes share the trading card and available-position picker. */
+#draft .spin-card{all:unset;display:block;cursor:pointer;width:fit-content;max-width:100%;margin:18px auto 24px;border-radius:16px;-webkit-tap-highlight-color:transparent}
+#draft .spin-card .tcard{width:min(270px,72vw);max-width:100%;box-sizing:border-box}
+#draft .spin-card:focus-visible{outline:3px solid var(--gold);outline-offset:5px}
+.best-available{text-align:center;font:500 14px/1.4 "Barlow",sans-serif;color:var(--cream);margin:12px 0 0}
+.best-available b{color:var(--gold)}

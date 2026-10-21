@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="theme-color" content="#0b1b33">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pokémon Ballclub</title>
+<meta name="description" content="Spin, draft Gen 1-4 Pokémon into a baseball lineup, chase a 162-0 season, and post your team to the leaderboard.">
+<meta property="og:title" content="Pokémon Ballclub">
+<meta property="og:description" content="Draft Pokémon into a baseball lineup. Can you go 162-0?">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:image" content="https://pokemon-ballclub.vercel.app/apple-touch-icon.png">
+<meta property="og:image:width" content="180">
+<meta property="og:image:height" content="180">
+<meta property="og:url" content="https://pokemon-ballclub.vercel.app/">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Graduate&family=Oswald:wght@500;600;700&family=Yellowtail&family=Barlow:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="extra.css">
+<link rel="stylesheet" href="extra2.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="logo.css">
+<link rel="stylesheet" href="reveal.css">
+<link rel="stylesheet" href="brand.css">
+<link rel="stylesheet" href="pack.css">
+<link rel="stylesheet" href="ux.css">
+<link rel="stylesheet" href="pack-v2.css">
+<link rel="stylesheet" href="polish.css">
+<style id="ballclub-ui-polish">
+/* October 2026: restrained usability finish. Preserve existing ballpark styling. */
+@media(max-width:600px){
+  #modeSeg button{min-height:52px!important;}
+  #sizeSeg button{min-height:42px!important;}
+  #lbBtn{min-height:42px!important;}
+  .field-deciding #field .tag.empty .flow-fit{font-size:13px!important;font-weight:700;line-height:1.15;}
+}
+/* Keep pack choices and actions together, instead of splitting them with dead space. */
+.reveal:has(.rv-grid):not(:has(.master-confirm)) .rv-grid{
+  margin:auto 0 0!important;
+  flex:0 0 auto;
+  align-content:center;
+}
+.reveal:has(.rv-grid):not(:has(.master-confirm)) .rv-opts{
+  margin:16px 0 0!important;
+  flex:0 0 auto;
+}
+.reveal:has(.rv-grid):not(:has(.master-confirm)) .rv-hint{
+  margin:12px 0 auto!important;
+  text-align:center;
+}
+.reveal:has(.rv-grid) .rv-opt{
+  min-height:52px!important;
+  border-color:rgba(244,238,220,.28)!important;
+}
+.reveal:has(.rv-grid) .rv-mini:focus-visible{
+  outline:3px solid #ffcb05;
+  outline-offset:4px;
+}
+#itemTools{margin:4px 0 14px!important}
+#itemTools .candy-control{
+  background:#1b3559!important;
+  color:#f4eedc!important;
+  border:1px solid rgba(244,238,220,.3)!important;
+  box-shadow:none!important;
+  border-radius:8px!important;
+}
+#itemTools .candy-control:disabled{opacity:.65!important}
+.field-deciding .hand-panel{
+  border-color:rgba(255,203,5,.45)!important;
+  background:linear-gradient(125deg,#183456,#122643)!important;
+}
+.field-deciding .hand-dock .tok{width:44px;min-width:44px;}
+.field-deciding .hand-dock b{font-size:17px!important;line-height:1.25}
+.field-deciding .hand-dock small{font-size:11px!important;letter-spacing:.03em!important;line-height:1.35}
+#pen .penhead{margin-bottom:8px!important;padding-bottom:7px!important}
+#pen .staff{row-gap:8px}
+@media(prefers-reduced-motion:reduce){
+  .reveal .rv-mini{animation:none!important}
+}
+
+</style>
+<link rel="preload" href="pack-foil-v2.webp" as="image">
+<link rel="stylesheet" href="items.css?v=candy-finish-20261016">
+<link rel="stylesheet" href="phase3.css?v=20261016">
+<link rel="stylesheet" href="phase4.css?v=20261016">
+<link rel="stylesheet" href="postseason.css?v=20261020">
+<link rel="stylesheet" href="fantasy-season.css?v=20261020">
+<link rel="stylesheet" href="integrated-stats.css?v=20261020">
+<link rel="stylesheet" href="postseason-clean.css?v=20261020">
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <h1 class="mark logo"><picture><source srcset="logo-hd.avif" type="image/avif"><img src="logo.webp" alt="Pokémon Ballclub" width="720" height="508" fetchpriority="high"></picture></h1>
+  <button class="btn howbtn" id="howBtn">How to play</button>
+</header>
+
+<div class="board" id="board" aria-live="polite"></div>
+
+<div class="settings" id="settings">
+  <div class="seg" id="modeSeg" role="group" aria-label="Mode"><button data-v="practice">Spin</button><button data-v="pack">Packs <span class="beta">Beta</span></button></div>
+  <div class="seg" id="sizeSeg" role="group" aria-label="Roster size"><button data-v="16">16 picks</button><button data-v="11">11 · Easy</button></div>
+  <button class="btn lbbtn" id="lbBtn">Records</button>
+</div>
+
+<div class="grid">
+  <section>
+    <div class="field" id="field">
+      <svg class="park" viewBox="0 0 400 360" aria-hidden="true">
+        <defs><pattern id="mow" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="13" height="26" style="fill:var(--grass)"/><rect x="13" width="13" height="26" style="fill:var(--grass2)"/></pattern></defs>
+        <path d="M8 146 A232 232 0 0 1 392 146" style="fill:none;stroke:var(--wall);stroke-width:8"/>
+        <path d="M200 338 L18 156 A220 220 0 0 1 382 156 Z" style="fill:url(#mow);stroke:var(--clay);stroke-width:12;stroke-linejoin:round"/>
+        <text x="200" y="40" text-anchor="middle" class="dist">400</text><text x="20" y="128" class="dist">330</text><text x="380" y="128" text-anchor="end" class="dist">330</text>
+        <line x1="12" y1="150" x2="12" y2="126" style="stroke:var(--pole);stroke-width:2.5"/><line x1="388" y1="150" x2="388" y2="126" style="stroke:var(--pole);stroke-width:2.5"/>
+        <path d="M200 338 L82 220 A124 124 0 0 1 318 220 Z" style="fill:var(--clay)"/>
+        <polygon points="200,302 252,250 200,198 148,250" style="fill:var(--grass2)"/>
+        <line x1="200" y1="318" x2="18" y2="136" style="stroke:var(--chalk);stroke-width:2"/>
+        <line x1="200" y1="318" x2="382" y2="136" style="stroke:var(--chalk);stroke-width:2"/>
+        <circle cx="200" cy="252" r="12" style="fill:var(--clay);stroke:var(--chalk);stroke-opacity:.25"/>
+        <rect x="196" y="250" width="8" height="2.5" style="fill:var(--chalk)"/>
+        <g style="fill:none;stroke:var(--chalk);stroke-width:1.3;stroke-opacity:.8"><rect x="182" y="308" width="9" height="15"/><rect x="209" y="308" width="9" height="15"/><circle cx="140" cy="336" r="6" stroke-opacity=".45"/><circle cx="260" cy="336" r="6" stroke-opacity=".45"/></g>
+        <g style="fill:var(--chalk)">
+          <rect x="261" y="244" width="11" height="11" transform="rotate(45 266.5 249.5)"/>
+          <rect x="194.5" y="177" width="11" height="11" transform="rotate(45 200 182.5)"/>
+          <rect x="128" y="244" width="11" height="11" transform="rotate(45 133.5 249.5)"/>
+          <polygon points="194,314 206,314 206,320 200,325 194,320"/>
+        </g>
+      </svg>
+    </div>
+    <div class="pen" id="pen">
+      <div class="pengrp rot"><div class="penhead"><b>Rotation</b><small>SP1 pitches from the mound above</small></div><div class="staff" id="staff"></div></div>
+      <div class="pengrp bull"><div class="penhead"><b>Bullpen</b></div><div class="staff" id="bullpen"></div></div>
+    </div>
+  </section>
+  <aside class="panel draft" id="draft" aria-label="Draft"></aside>
+</div>
+
+<section id="season" hidden></section>
+
+<div class="sheet" id="how" hidden role="dialog" aria-modal="true" aria-labelledby="howTitle">
+  <div class="sheet-in">
+    <div class="sheet-top"><h2 id="howTitle">How to play</h2><button class="btn" id="howClose">Close</button></div>
+    <div class="sheet-body" id="howBody"></div>
+  </div>
+</div>
+
+<div class="sheet" id="lb" hidden role="dialog" aria-modal="true" aria-labelledby="lbTitle">
+  <div class="sheet-in">
+    <div class="sheet-top"><h2 id="lbTitle">Records</h2><button class="btn" id="lbClose">Close</button></div>
+    <div class="sheet-body" id="lbBody"></div>
+  </div>
+</div>
+
+<footer>Fan project, not affiliated with Nintendo, Game Freak, or The Pokémon Company. Base stats, sizes and body shapes from PokéAPI. Numbers are Pokédex numbers.</footer>
+</div>
+<script src="data.js"></script>
+<script src="core.js?v=rp-usage-20261016"></script>
+<script src="evolution-data.js"></script>
+<script src="development.js?v=family-20261020"></script>
+<script src="sprites.js"></script>
+
+<script src="ui.js"></script>
+<script src="reveal.js"></script>
+<script src="brand.js"></script>
+<script src="pack.js"></script>
+<script src="odds.js"></script>
+<script src="ux.js"></script>
+<script src="clubhouse.js"></script>
+<script src="polish.js?v=share-layout-20261016"></script>
+<script src="hand.js"></script>
+<script src="field-flow.js?v=release-status-20261016"></script>
+<script src="development-ui.js?v=family-20261020"></script>
+<script src="items.js?v=family-20261020"></script>
+<script src="phase3.js?v=20261016"></script>
+<script src="postseason.js?v=20261020"></script>
+<script src="fantasy-season.js?v=20261020"></script>
+<script src="integrated-stats.js?v=20261020"></script>
+<script src="postseason-clean.js?v=20261020"></script>
+</body>
+</html>

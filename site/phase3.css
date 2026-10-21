@@ -1,0 +1,60 @@
+/* Phase 3: results, tables, leaderboard and clubhouse refinements. */
+#season .res-top{align-items:flex-start;gap:12px 18px;}
+#season .bigrec{font-variant-numeric:tabular-nums;letter-spacing:.015em;line-height:1.07;}
+#season .res-top .label{font-size:12px!important;letter-spacing:.045em;}
+#season .result-context{flex:1 1 220px;min-width:0;padding-top:2px;}
+#season .result-run-rates{color:#d0dce8;font:500 13px/1.5 "Barlow",sans-serif;}
+#season .season-outcome{border-left:3px solid #e5bf67;background:#d7e4f00b;border-radius:0 7px 7px 0;padding:9px 12px!important;margin:10px 0!important;font:500 14px/1.45 "Barlow",sans-serif;}
+#season .season-outcome b{font-weight:700;color:#fff1c2;}
+#season .award{padding:14px 15px;border-left:3px solid #d9b558;border-radius:8px;}
+#season .award>.label{display:block;font:700 11px/1.4 "Barlow",sans-serif;letter-spacing:.055em;color:#c4d0de;}
+#season .award b{font:700 19px/1.3 "Barlow",sans-serif!important;margin:4px 0;}
+#season .award span:last-child{display:block;font:500 13px/1.5 "Barlow",sans-serif;color:#d0daea;}
+#season .season-details{margin-top:18px;border-top:1px solid #6d86a142;}
+#season .season-details>summary{padding:15px 0!important;cursor:pointer;}
+#season .season-details[open]>summary{margin-bottom:8px;color:#fff0bd;}
+#season .tbl{max-width:100%;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;border:1px solid #4c627e66;border-radius:8px;margin:8px 0 14px;scrollbar-width:thin;scrollbar-color:#6584a5 #11223e;}
+#season .tbl:focus-visible{outline:2px solid #efcd72;outline-offset:2px;}
+#season .tbl table{min-width:max-content;width:100%;font-size:13px;font-variant-numeric:tabular-nums;}
+#season .tbl th{position:sticky;top:0;font-size:11px!important;background:#152b4b;color:#e0e6ee;}
+#season .tbl td{font:500 13px/1.35 "Barlow",sans-serif;white-space:nowrap;}
+#season .tbl tbody tr:nth-child(even){background:#ffffff08;}
+#season .tbl tbody tr:hover{background:#ffffff0e;}
+#season .stats-batting th:nth-child(3),#season .stats-batting td:nth-child(3){position:sticky;left:0;z-index:1;background:#152943;box-shadow:2px 0 0 #455e77;}
+#season .stats-batting th:nth-child(3){z-index:2;background:#152b4b;}
+#season .stats-scroll-hint{display:none;color:#b6c8da;font:500 12px/1.3 "Barlow",sans-serif;margin:8px 0 5px;}
+#season #teamName{min-width:0;font:600 15px/1.4 "Barlow",sans-serif!important;}
+#season #teamName::placeholder{color:#b5c5d7;opacity:1;}
+#season #teamName[aria-invalid="true"]{border:2px solid #f0b47c!important;outline-offset:2px;}
+#season #submitMsg{font:500 12px/1.5 "Barlow",sans-serif;}
+#lb .records-tabs{margin-bottom:17px;}
+#lb .records-filters{margin-bottom:17px;}
+#lb .records-stand .lblist li{border-bottom:1px solid #38506a6b;}
+#lb .records-stand .lblist summary{min-height:60px;box-sizing:border-box;}
+#lb .records-stand .tm b{line-height:1.35!important;}
+#lb .records-stand .tm small{color:#adbed0!important;font-size:12px!important;}
+#lb .records-stand summary:focus-visible{outline:2px solid #f0d17e;outline-offset:-3px;}
+#lb .career-boards>div{border:1px solid #4d66816e;}
+#lb .career-intro .hint{font:500 13px/1.5 "Barlow",sans-serif;}
+#lb .career-history>details>summary{min-height:50px;padding:11px 5px;}
+#lb .career-history summary small{line-height:1.5;font-size:12px;}
+#lb .achievement-list p{border:1px solid #3a51676b;background:#0d213a;}
+#lb .achievement-list p.earned{border-color:#86ac7975;background:#16372555;}
+#lb .achievement-list p.earned b{color:#d7efc7;}
+@media(max-width:600px){
+ #season .res-top{gap:10px 14px;}
+ #season .bigrec{font-size:clamp(38px,10vw,58px);}
+ #season .result-context{flex:1 1 100%;margin-top:2px;}
+ #season .season-outcome{padding:9px 11px!important;}
+ #season .stats-scroll-hint{display:block;}
+ #season .tbl{margin-top:5px;}
+ #season .tbl th,#season .tbl td{padding:10px 9px!important;}
+ #season .awards{grid-template-columns:repeat(2,minmax(0,1fr));}
+ #season .award{min-width:0;padding:11px;}
+ #season .award b{font-size:16px!important;overflow-wrap:anywhere;}
+ #season .award span:last-child{font-size:12px;}
+ #lb .records-filters{gap:10px;}
+ #lb .records-stand .stand-head,#lb .records-stand .lblist summary{gap:5px!important;}
+}
+@media(max-width:350px){#season .awards{grid-template-columns:1fr;}}
+
