@@ -1,0 +1,65 @@
+#postseasonRatingsTab{font-size:13px!important}
+#postseasonRatingsPanel .fantasy-instruction{color:#c4d2e1;font:500 12px/1.45 "Barlow",sans-serif;margin:-2px 0 14px}
+#postseasonRatingsPanel .fantasy-group{margin-bottom:20px}
+#postseasonRatingsPanel .fantasy-group h4{color:#dfc17d;font:700 13px/1.4 "Barlow",sans-serif;margin:0 0 8px}
+#postseasonRatingsPanel .fantasy-list{display:grid;gap:7px}
+#postseasonRatingsPanel button.fantasy-player{appearance:none;display:grid;grid-template-columns:23px 43px minmax(0,1fr) 38px 9px;align-items:center;gap:8px;min-height:84px;width:100%;padding:9px 8px;text-align:left;color:#f4eedc;background:#172d49;border:1px solid #496584;border-radius:9px;cursor:pointer;box-sizing:border-box;box-shadow:none}
+#postseasonRatingsPanel button.fantasy-player:hover{background:#203955;border-color:#bba16d}
+#postseasonRatingsPanel button.fantasy-player:focus-visible{outline:2px solid #efd17f;outline-offset:2px}
+.fantasy-order{font:700 14px/1.1 "Oswald",sans-serif;color:#edd29a;text-align:center}
+.fantasy-sprite{display:flex;align-items:center;justify-content:center;width:43px;height:45px;background:#29405c;border-radius:8px;overflow:hidden}
+.fantasy-sprite img{display:block;width:100%;height:100%;object-fit:contain}
+.fantasy-main{min-width:0;display:grid;gap:7px}
+.fantasy-player-top{display:flex;flex-wrap:wrap;gap:3px 7px;align-items:baseline}
+.fantasy-player-top b{font:700 14px/1.2 "Barlow",sans-serif;color:#f8f4e8;overflow-wrap:anywhere}
+.fantasy-player-top small{font:600 11px/1.2 "Barlow",sans-serif;color:#bdcbdc}
+.fantasy-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+.fantasy-stats>span{display:flex;gap:3px;align-items:baseline;min-width:0;white-space:nowrap}
+.fantasy-stats small{font:600 9px/1 "Barlow",sans-serif;color:#aebdd1}
+.fantasy-stats b{font:700 11px/1 "Barlow",sans-serif;color:#f0f2f5;font-variant-numeric:tabular-nums}
+.fantasy-rating{display:grid;gap:2px;justify-items:center;min-width:0}
+.fantasy-rating>b{font:700 25px/1 "Oswald",sans-serif;color:#bed0e1}
+.fantasy-rating.elite>b{color:#a4e6bc}
+.fantasy-rating.great>b{color:#f1d27b}
+.fantasy-rating.good>b{color:#f1b991}
+.fantasy-rating small{font:600 9px/1 "Barlow",sans-serif;color:#bdc8d7}
+.fantasy-arrow{font:400 23px/1 "Barlow",sans-serif;color:#9caec4}
+#postseasonRatingsPanel .fantasy-player.postseason-target{border-color:#efd07e;background:#2b435a;box-shadow:inset 3px 0 0 #efd07e}
+html.fantasy-modal-open{overflow:hidden}
+.sheet.fantasy-modal{position:fixed!important;inset:0!important;display:flex!important;align-items:center;justify-content:center;z-index:110!important;background:#040b19e6;padding:12px;box-sizing:border-box}
+.fantasy-modal .fantasy-modal-in{width:min(525px,100%);max-height:min(90dvh,860px);display:flex;flex-direction:column;overflow:hidden;background:#132740;border-radius:12px;box-shadow:0 15px 55px #010711aa}
+.fantasy-modal .sheet-top{flex:none;padding:13px 16px}
+.fantasy-modal .sheet-top h2{font:700 19px/1.3 "Barlow",sans-serif}
+.fantasy-modal .fantasy-close{min-height:43px}
+.fantasy-modal-tabs{flex:none;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:10px 16px;background:#07172c;border-radius:8px}
+.fantasy-modal-tabs button{min-height:45px;border:0;border-radius:6px;color:#d5e2f0;background:transparent;font:700 13px/1 "Barlow",sans-serif}
+.fantasy-modal-tabs button[aria-selected="true"]{background:#f2ead6;color:#102844}
+.fantasy-modal-tabs button:focus-visible{outline:2px solid #f0ce77;outline-offset:2px}
+.fantasy-modal-body{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 16px 20px}
+.fantasy-modal-body [hidden]{display:none!important}
+.fantasy-modal-body #fantasyCardPanel .tcard{margin:0 auto;max-width:350px}
+.fantasy-sheet-intro{display:flex;align-items:center;gap:12px;padding:10px 7px 16px;border-bottom:1px solid #566d89}
+.fantasy-sheet-intro .fantasy-sprite{width:65px;height:65px;flex:0 0 65px}
+.fantasy-sheet-intro>div{flex:1;display:grid;min-width:0;gap:3px}
+.fantasy-sheet-intro>div small,.fantasy-sheet-intro>div span{color:#b9c7d9;font:500 12px/1.35 "Barlow",sans-serif}
+.fantasy-sheet-intro>div b{color:#f2eedb;font:700 20px/1.25 "Barlow",sans-serif;overflow-wrap:anywhere}
+.fantasy-sheet-intro .fantasy-rating>b{font-size:30px}
+#fantasyStatsPanel h4{font:700 16px/1.3 "Barlow",sans-serif;color:#e7c782;margin:18px 0 12px}
+.fantasy-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.fantasy-stat-grid>div{display:grid;gap:6px;text-align:center;padding:11px 4px;border-radius:8px;background:#1b3555}
+.fantasy-stat-grid small{font:600 11px/1.1 "Barlow",sans-serif;color:#b6c8da}
+.fantasy-stat-grid b{font:700 20px/1 "Oswald",sans-serif;color:#f5eedf;font-variant-numeric:tabular-nums}
+.fantasy-season-note{font:500 12px/1.5 "Barlow",sans-serif;color:#afc2d5;margin:14px 0 2px}
+@media(max-width:450px){
+#postseasonRatingsPanel button.fantasy-player{grid-template-columns:20px 39px minmax(0,1fr) 35px 7px;gap:6px;min-height:83px;padding:8px 6px}
+#postseasonRatingsPanel .fantasy-sprite{width:39px;height:41px}
+.fantasy-player-top b{font-size:13px}
+.fantasy-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 6px}
+.fantasy-modal-body{padding:8px 12px 16px}
+.fantasy-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:345px){
+#postseasonRatingsPanel button.fantasy-player{grid-template-columns:18px 32px minmax(0,1fr) 32px 6px;gap:5px}
+#postseasonRatingsPanel .fantasy-sprite{width:32px;height:37px}
+.fantasy-player-top b{font-size:12px}
+}

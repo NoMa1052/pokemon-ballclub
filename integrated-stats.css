@@ -1,0 +1,17 @@
+#postseasonRatingsPanel .fantasy-stats-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:0 0 17px;}
+#postseasonRatingsPanel .fantasy-controls-label{font:700 12px/1.4 "Barlow",sans-serif;color:#c5d4e2;}
+#postseasonRatingsPanel .fantasy-control-seg{display:flex;gap:3px;border-radius:8px;padding:3px;background:#07172b;}
+#postseasonRatingsPanel .fantasy-control-seg button{border:0;min-height:39px;min-width:83px;padding:8px 12px;border-radius:6px;background:transparent;color:#b5c9df;font:700 12px/1.2 "Barlow",sans-serif;cursor:pointer;}
+#postseasonRatingsPanel .fantasy-control-seg button[aria-pressed="true"]{background:#f2e8cc;color:#102940;}
+#postseasonRatingsPanel .fantasy-control-seg button:focus-visible{outline:2px solid #f4d483;outline-offset:2px;}
+#postseasonRatingsPanel .fantasy-integrated-card{min-width:0;overflow:hidden;border-radius:9px;border:1px solid #496584;background:#172d49;}
+#postseasonRatingsPanel .fantasy-integrated-card>button.fantasy-player{border:0!important;border-radius:0!important;}
+#postseasonRatingsPanel .fantasy-integrated-card:has(button:focus-visible){outline:2px solid #efd17f;outline-offset:2px;}
+#postseasonRatingsPanel .fantasy-integrated-detail[hidden]{display:none!important;}
+#postseasonRatingsPanel .fantasy-integrated-detail{padding:0 13px 13px;border-top:1px solid #3e5877;background:#122640;}
+#postseasonRatingsPanel .fantasy-integrated-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px 10px;padding-top:12px;}
+#postseasonRatingsPanel .fantasy-integrated-metric{display:grid;gap:5px;min-width:0;}
+#postseasonRatingsPanel .fantasy-integrated-metric span{color:#9db6cf;font:600 10px/1.2 "Barlow",sans-serif;}
+#postseasonRatingsPanel .fantasy-integrated-metric strong{color:#f2ede1;font:700 15px/1.2 "Barlow",sans-serif;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+@media(max-width:650px){#postseasonRatingsPanel .fantasy-integrated-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@media(max-width:380px){#postseasonRatingsPanel .fantasy-control-seg button{min-width:76px;}#postseasonRatingsPanel .fantasy-integrated-grid{gap:9px 7px;}#postseasonRatingsPanel .fantasy-integrated-detail{padding:0 10px 12px;}}

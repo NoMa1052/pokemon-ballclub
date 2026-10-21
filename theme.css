@@ -1,0 +1,265 @@
+/* Night game at the Poké park.
+   One theme: stadium sky, a hand-painted green scoreboard, Poké Ball red, light-tower gold. */
+:root:root:root{
+  --sky:#0b1b33; --sky2:#10254a; --board:#174a35; --board-dk:#0f3424; --tile:#0c1712;
+  --chalk:#f4eedc; --red:#e3350d; --gold:#ffcb05; --navy-ink:#0b1b33;
+  --paper:#0f2240; --card:#132a4d; --ink:#f4eedc; --muted:#a3b2c8; --line:#25406a;
+  --stitch:#e3350d; --stitch-ink:#ffffff;
+  --grass:#2c7341; --grass2:#348049; --clay:#b8693f; --chalk-line:#f4eedc; --stands:#081428;
+  --wall:#103322; --pole:#ffcb05;
+  --good:#5fd38d; --mid:#ffcb05; --bad:#ff7a66;
+  --hit:#ff6b57; --fld:#5fd38d; --pit:#7aa7ff;
+  --f-display:"Graduate","Rockwell","Georgia",serif;
+  --f-data:"Oswald","Arial Narrow",system-ui,sans-serif;
+  --f-script:"Yellowtail","Brush Script MT",cursive;
+  color-scheme:dark;
+}
+body{
+  background:
+    radial-gradient(60% 40% at 8% -6%, rgba(255,236,170,.22), transparent 70%),
+    radial-gradient(60% 40% at 92% -6%, rgba(255,236,170,.22), transparent 70%),
+    linear-gradient(180deg,var(--sky2) 0, var(--sky) 520px);
+  background-color:var(--sky);
+  color:var(--ink);
+}
+.wrap{padding-block:14px 48px}
+
+/* ---- wordmark ---- */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.mark{position:relative;display:grid;line-height:1;padding-bottom:10px}
+.mark-top{font-family:var(--f-display);font-weight:900;font-size:17px;letter-spacing:.06em;color:var(--gold);margin:0 0 -6px 4px}
+.mark-script{font-family:var(--f-script);font-size:clamp(54px,15vw,76px);color:var(--chalk);
+  transform:rotate(-5deg);transform-origin:left bottom;
+  text-shadow:2px 2px 0 var(--red),3px 3px 0 var(--red),4px 4px 0 var(--navy-ink),5px 5px 0 var(--navy-ink)}
+.mark-tail{position:absolute;left:30px;bottom:0;width:min(210px,58vw);height:auto;fill:var(--red);transform:rotate(-5deg);transform-origin:left}
+.howbtn{margin-top:6px;border:2px solid var(--chalk)!important;background:transparent!important;color:var(--chalk);border-radius:999px;font-family:var(--f-display);font-weight:800;font-size:15px;padding:6px 14px}
+.howbtn:hover{background:var(--chalk)!important;color:var(--sky)}
+
+/* ---- scoreboard ---- */
+.board{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:0;background:var(--board);border:4px solid var(--board-dk);border-radius:6px;
+  box-shadow:0 0 0 2px #2a6b4c inset,0 10px 22px rgba(0,0,0,.35);margin-bottom:12px;overflow:hidden}
+.bd-cell{display:grid;justify-items:center;align-content:center;gap:5px;padding:8px 4px 10px;border-left:2px solid var(--board-dk);min-width:0}
+.bd-cell:first-child{border-left:0}
+.bd-lab{font-family:var(--f-display);font-weight:800;font-size:13px;letter-spacing:.05em;color:var(--chalk);white-space:nowrap}
+.tiles{display:flex;gap:3px;align-items:center}
+.tiles b{display:grid;place-items:center;min-width:26px;height:34px;padding:0 3px;background:var(--tile);color:var(--chalk);border-radius:3px;
+  font-family:var(--f-display);font-weight:800;font-size:26px;line-height:1;box-shadow:inset 0 -2px 0 rgba(255,255,255,.06),inset 0 2px 3px rgba(0,0,0,.6)}
+.tiles.gr b{color:var(--gold);min-width:44px}
+.bd-cell .of{font-family:var(--f-display);font-weight:700;font-size:13px;color:var(--chalk);opacity:.75;margin-top:-2px}
+.bd-cell.wide{grid-auto-flow:row}
+.lamps{display:flex;gap:6px;height:34px;align-items:center}
+.lamps i{width:20px;height:20px;border-radius:50%;background:#0a1d14;box-shadow:inset 0 2px 3px rgba(0,0,0,.7)}
+.lamps i.on{background:radial-gradient(circle at 40% 35%,#fff6c4,var(--gold) 55%,#d49b00);box-shadow:0 0 10px rgba(255,203,5,.75)}
+@media (max-width:380px){.bd-lab{font-size:12px}.tiles b{min-width:22px;height:30px;font-size:22px}.lamps i{width:16px;height:16px}}
+
+/* ---- settings ---- */
+.settings{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.seg{border:2px solid rgba(244,238,220,.35);background:transparent;border-radius:999px}
+.seg button{font-family:var(--f-display);font-weight:800;font-size:15px;letter-spacing:.02em;padding:5px 13px;color:var(--chalk)}
+.seg button[aria-pressed="true"]{background:var(--chalk);color:var(--sky)}
+.settings .hint{margin:0;font-size:13px}
+
+/* ---- field ---- */
+.field{background:
+  radial-gradient(45% 38% at 0% 0%, rgba(255,240,190,.28), transparent 70%),
+  radial-gradient(45% 38% at 100% 0%, rgba(255,240,190,.28), transparent 70%),
+  radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.5px) 0 0/9px 9px,
+  var(--stands);
+  border-radius:10px;border:2px solid #1d355c}
+.dist{fill:var(--chalk);opacity:.7}
+.tok .pos{background:var(--chalk);color:var(--sky);font-family:var(--f-display);font-weight:900;font-size:12px;letter-spacing:.03em;border-radius:3px}
+.tag .nm{background:rgba(6,14,28,.85);font-family:"Barlow",sans-serif}
+.tok{border-color:var(--chalk)}
+/* empty spot: an empty Poké Ball */
+.tag.empty .tok{border:2px solid rgba(244,238,220,.55);border-style:solid;box-shadow:none;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(244,238,220,.7) 0 13%, #111 13% 21%, transparent 21%),
+    linear-gradient(180deg, rgba(227,53,13,.55) 0 45%, #111 45% 55%, rgba(244,238,220,.22) 55% 100%)}
+.tag.empty.open .tok{border-color:var(--gold);background:
+    radial-gradient(circle at 50% 50%, #fff 0 13%, #111 13% 21%, transparent 21%),
+    linear-gradient(180deg, var(--red) 0 45%, #111 45% 55%, var(--chalk) 55% 100%)}
+.tag.open .tok{outline-color:var(--gold)}
+.tag.empty .nm.pv{background:var(--gold);color:var(--sky);text-shadow:none;font-family:var(--f-display);font-weight:900;font-size:15px;padding:0 6px}
+.tok .pr{font-family:var(--f-display);font-weight:900;font-size:13px;background:var(--sky);color:var(--chalk);border-color:var(--chalk)}
+.tok .pr.hi{background:var(--gold);color:var(--sky);border-color:var(--gold)}
+.tok .pr.md{background:var(--sky);border-color:var(--good);color:var(--good)}
+.tok .pr.lo{background:var(--sky);border-color:var(--bad);color:var(--bad)}
+
+/* ---- bullpen / rotation ---- */
+.pengrp{border-radius:10px}
+.pengrp.bull{background:#9a5a35;background-image:repeating-linear-gradient(0deg,transparent 0 6px,rgba(0,0,0,.06) 6px 7px)}
+.penhead b{font-family:var(--f-display);font-weight:900;font-size:15px;letter-spacing:.04em;text-transform:none}
+.penhead small{font-family:"Barlow",sans-serif}
+.bull .tok .pos{background:var(--chalk);color:#5a2d16}
+
+/* ---- draft panel ---- */
+.panel{background:var(--card);border:2px solid var(--line);border-radius:12px}
+.label{font-family:var(--f-display);font-weight:800;font-size:14px;letter-spacing:.03em;text-transform:none;color:var(--muted)}
+.note{background:var(--paper);border-left:4px solid var(--gold);border-radius:4px}
+.hint{color:var(--muted)}
+
+/* the spin: tap the Poké Ball */
+.throw{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding:6px 2px}
+.pokeball{position:relative;width:104px;aspect-ratio:1;border-radius:50%;border:4px solid #111;padding:0;cursor:pointer;
+  background:linear-gradient(180deg,var(--red) 0 46%,#111 46% 54%,#f7f4ea 54%);
+  box-shadow:inset -8px -10px 0 rgba(0,0,0,.14),inset 8px 8px 0 rgba(255,255,255,.18),0 10px 24px rgba(0,0,0,.45)}
+.pokeball .pb-btn{position:absolute;left:50%;top:50%;width:34%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:#f7f4ea;border:5px solid #111;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4px #c9c3b4}
+.pokeball:hover .pb-btn,.pokeball:focus-visible .pb-btn{background:#fff6c4}
+.pokeball:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.throw-txt{display:grid;gap:4px;min-width:0}
+.throw-txt b{font-family:var(--f-display);font-weight:900;font-size:30px;line-height:1;color:var(--chalk)}
+.throw-txt span{font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){
+  .pokeball{transition:transform .15s}
+  .pokeball:hover{transform:rotate(-8deg)}
+  .pokeball.wobble{animation:wobble .33s ease-in-out 3}
+  .pokeball.pop .pb-btn{background:#fff;box-shadow:0 0 18px 6px rgba(255,255,255,.8)}
+  @keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-20deg)}75%{transform:rotate(20deg)}}
+}
+
+/* pool header: the type you drew */
+.poolhead{background:var(--tc,#888);border-radius:8px;padding:10px 14px;gap:12px;color:#fff;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.poolhead .tchip{background:rgba(0,0,0,.28)!important;font-family:var(--f-display);font-weight:900;font-size:22px;letter-spacing:.02em;text-transform:none;padding:2px 10px;border-radius:4px}
+.poolhead .reg{font-family:var(--f-display);font-weight:800;font-size:22px;display:flex;align-items:baseline;gap:8px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.poolhead .reg small{font-size:14px;opacity:.85}
+.poolhead.legend{background:linear-gradient(110deg,#6a2bd1,#d23b8a 60%,var(--gold));--tc:#6a2bd1}
+
+/* candidate list */
+.cands{border:2px solid var(--line);border-radius:10px;background:var(--paper)}
+.cand{border-bottom:1px solid var(--line)}
+.cand:hover:not(:disabled){background:#173058}
+.cand[aria-pressed="true"]{background:#1d3a6a;box-shadow:inset 4px 0 0 var(--gold)}
+.cand .nmrow b{font-family:var(--f-display);font-weight:800;font-size:21px;letter-spacing:.01em}
+.cand small{color:var(--muted)}
+.legtag{color:var(--gold)}
+.onteam{background:var(--chalk);color:var(--sky)}
+.badge{background:rgba(244,238,220,.1);color:var(--chalk)}
+.ovr{background:var(--tile);border-radius:4px;box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
+.ovr b{font-family:var(--f-display);font-weight:800;font-size:28px;color:var(--chalk)}
+.ovr i{font-family:var(--f-display);font-weight:800;font-size:12px;letter-spacing:.04em;text-transform:none;color:var(--chalk);opacity:.7}
+.ovr.md b{color:var(--good)}
+.ovr.hi{background:var(--tile)}
+.ovr.hi b{color:var(--gold)}
+.ovr.sel{outline:2px solid var(--chalk)}
+.sb i{font-family:var(--f-display);font-weight:800;font-size:14px;letter-spacing:.01em}
+.sb em{font-family:var(--f-display);font-weight:700;font-size:14px;color:var(--chalk)}
+.sb .bt{background:rgba(244,238,220,.1)}
+.chip{font-family:var(--f-display);font-weight:800;font-size:14px;background:transparent;border:2px solid rgba(244,238,220,.25);color:var(--chalk)}
+.chip[aria-pressed="true"]{background:var(--chalk);color:var(--sky);border-color:var(--chalk)}
+
+/* place bar */
+.placebar{background:#0d1f3b;border:2px dashed rgba(255,203,5,.5)}
+.slotchip{background:var(--card)!important;border:2px solid var(--line)!important;border-radius:6px!important}
+.slotchip:not(:disabled){border-color:rgba(255,203,5,.7)!important;box-shadow:none!important}
+.slotchip.sp{box-shadow:inset 4px 0 0 var(--grass)!important}
+.slotchip.bp{box-shadow:inset 4px 0 0 var(--clay)!important}
+.slotchip b{font-family:var(--f-display);font-weight:900;font-size:18px}
+.slotchip em{font-family:var(--f-display)!important;font-weight:900!important;font-size:22px!important}
+.slotchip em.hi{color:var(--gold)!important}
+.slotchip:not(:disabled):hover{background:#1d3a6a!important}
+
+/* buttons */
+.btn{background:transparent;border:2px solid rgba(244,238,220,.3);color:var(--chalk);font-family:var(--f-display);font-weight:800;font-size:15px;border-radius:6px}
+.btn:hover{border-color:var(--chalk)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff;font-size:22px;font-weight:900;border-radius:999px;box-shadow:0 4px 0 #8f1f06}
+.btn.primary:active{transform:translateY(3px);box-shadow:0 1px 0 #8f1f06}
+.btn.quiet{border:0;color:var(--muted)}
+.spinctl .label{font-size:14px}
+
+/* ---- season ---- */
+#season .panel{background:var(--card)}
+.res-top{gap:14px 20px}
+.pennant{--pc:var(--gold);width:118px;height:72px;flex:none;background:var(--pc);clip-path:polygon(0 0,100% 50%,0 100%);display:flex;align-items:center;padding-left:14px;position:relative}
+.pennant::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:rgba(0,0,0,.25)}
+.pennant span{font-family:var(--f-display);font-weight:900;font-size:36px;color:var(--sky);line-height:1}
+.bigrec{font-family:var(--f-display);font-weight:900;font-size:clamp(58px,16vw,92px);color:var(--chalk);letter-spacing:.01em}
+th{font-family:var(--f-display);font-weight:800;font-size:13px;letter-spacing:.03em;text-transform:none;color:var(--muted);border-bottom:2px solid var(--chalk)}
+table{font-family:"Barlow Condensed",sans-serif;font-size:15px}
+.award{background:var(--paper);border-left:4px solid var(--gold);border-radius:4px}
+.award b{font-family:var(--f-display);font-weight:800;font-size:20px}
+.award span{color:var(--muted)}
+tr.me td{background:rgba(227,53,13,.18)}
+
+/* ---- how-to sheet ---- */
+.sheet-in{background:var(--card);border:2px solid var(--line)}
+.sheet-top h2{font-family:var(--f-display);font-weight:900;font-size:28px}
+.sheet-body h3{font-family:var(--f-display);font-weight:900;font-size:18px;letter-spacing:.02em;text-transform:none;color:var(--gold)}
+.keygrid div{background:var(--paper)}
+.keygrid b{font-family:var(--f-display);font-weight:800;font-size:18px}
+
+footer{color:#6f7f98}
+.board{max-width:640px}
+.lamps.keeps{gap:10px;height:auto}
+.lamps.keeps>span{display:grid;justify-items:center;gap:2px}
+.lamps.keeps small{font-family:var(--f-display);font-weight:700;font-size:11px;color:var(--chalk);opacity:.75}
+
+/* ---- type: varsity block (Graduate) for names, numbers and headings; Oswald for small labels ---- */
+html{font-synthesis:none}
+.sb i,.sb em,.ovr i,.chip,.label,.spinctl .label,th,table,.slotchip small,.tok .pos,.tok .pr,.tag .nm.pv,.poolhead .reg small,
+.bd-lab,.bd-sub,.lamps.keeps small,.badge,.lbroster,.lblist small{font-family:var(--f-data)!important}
+.sb i{font-weight:600;font-size:13.5px;letter-spacing:.02em;text-transform:uppercase}
+.sb em{font-weight:600;font-size:14.5px}
+.ovr i{font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.ovr b{font-size:27px;letter-spacing:.02em}
+.chip{font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.label{font-weight:600;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.cand .nmrow b{font-size:20px;letter-spacing:.02em}
+.poolhead .tchip,.poolhead .reg{font-size:21px;letter-spacing:.02em}
+.btn,.seg button,.howbtn{letter-spacing:.03em}
+.btn.primary{font-size:20px}
+.mark-top{font-size:16px;letter-spacing:.1em}
+
+/* ---- scoreboard: every cell is label / main / sub on the same three rows ---- */
+.board{grid-template-columns:repeat(4,minmax(0,1fr))}
+.bd-cell{grid-template-rows:auto 38px 14px;align-content:start;align-items:center;gap:6px;padding:10px 4px 8px}
+.bd-lab{font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;line-height:1}
+.bd-main{display:flex;align-items:center;justify-content:center;height:38px}
+.bd-sub{font-weight:500;font-size:12px;line-height:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--chalk);opacity:.7;white-space:nowrap}
+.tiles b{font-size:24px;height:36px;min-width:27px}
+.bd-cell .lamps{height:auto;gap:20px}
+.bd-cell .lamps i{width:22px;height:22px}
+.keepsub{display:flex;gap:2px}
+.keepsub span{width:40px;text-align:center;font-size:11px;letter-spacing:.02em}
+@media (max-width:380px){.bd-lab{font-size:11.5px;letter-spacing:.06em}.bd-cell .lamps{gap:16px}.bd-cell .lamps i{width:20px;height:20px}.keepsub span{width:36px;font-size:10px}}
+
+/* ---- settings row ---- */
+.settings{justify-content:space-between}
+.lbbtn{border-radius:999px!important;border-color:var(--gold)!important;color:var(--gold);font-size:15px}
+.lbbtn:hover{background:var(--gold);color:var(--sky)}
+
+/* ---- submit ---- */
+.submit{background:var(--paper);border:2px solid var(--line);border-radius:10px;padding:12px;margin:4px 0 12px;display:grid;gap:8px}
+.submitrow{display:flex;gap:8px}
+.submitrow input{flex:1;min-width:0;background:var(--sky);border:2px solid var(--line);border-radius:8px;color:var(--chalk);font-family:var(--f-display);font-size:18px;padding:8px 10px}
+.submitrow input:focus{outline:none;border-color:var(--gold)}
+.btn.primary.sm{font-size:17px;padding:8px 18px}
+.submit .posted{margin:0;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.submit .posted b{color:var(--gold);font-family:var(--f-display);font-weight:400}
+
+/* ---- leaderboard ---- */
+.lbtabs{display:inline-flex;margin-bottom:10px}
+.lblist{list-style:none;margin:0 0 10px;padding:0!important;display:grid;gap:4px}
+.lblist li{background:var(--paper);border-radius:8px}
+.lblist li.me{box-shadow:inset 4px 0 0 var(--gold)}
+.lblist summary{list-style:none;display:grid;grid-template-columns:30px minmax(0,1fr) auto 38px;gap:10px;align-items:center;padding:9px 12px;cursor:pointer}
+.lblist summary::-webkit-details-marker{display:none}
+.lblist .rk{font-family:var(--f-display);font-size:18px;color:var(--muted);text-align:right}
+.lblist li:nth-child(-n+3) .rk{color:var(--gold)}
+.lblist .tm{font-family:var(--f-display);font-size:17px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:grid}
+.lblist .tm small{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.lblist .rec{font-family:var(--f-display);font-size:19px;font-variant-numeric:tabular-nums}
+.lblist .gd{font-family:var(--f-display);font-size:16px;color:var(--gold);text-align:center}
+.lbroster{display:flex;flex-wrap:wrap;gap:4px 10px;padding:0 12px 10px 52px;font-size:14px;color:var(--chalk)}
+.lbroster i{font-style:normal;font-weight:600;color:var(--muted);margin-right:4px;font-size:12px;letter-spacing:.05em}
+
+/* ---- fixes: results scoreboard, submit row, wordmark spacing ---- */
+.bd-cell{padding:10px 4px}
+.board.result{grid-template-columns:1.35fr 1fr .75fr 1.1fr}
+.board.result .bd-cell{grid-template-rows:auto 38px}
+.board.result .bd-sub{display:none}
+.tiles b{padding:0 2px}
+.submitrow .btn{width:auto;flex:none}
+.mark-top{margin:0 0 4px 4px}
+.submit>*{min-width:0}
+.submitrow input{width:0;flex:1 1 auto}

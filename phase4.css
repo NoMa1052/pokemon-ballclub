@@ -1,0 +1,90 @@
+/* Phase 4: one restrained finishing layer across the Ballclub interface.
+   Existing art, field, pack effects and game logic remain unchanged. */
+:root{--bc-focus:#efd17f;--bc-line:#55708d75;--bc-timing:150ms}
+
+/* Consistent focus, affordances and minimum tap targets. */
+button,.btn,summary,[role="button"]{touch-action:manipulation}
+:is(button,summary,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid var(--bc-focus)!important;outline-offset:3px!important;
+}
+button:disabled,.btn:disabled{cursor:not-allowed}
+#howBtn{min-width:44px;min-height:44px}
+#modeSeg button{min-height:56px;align-items:center}
+#modeSeg button small{font-size:12px!important;line-height:1.3!important}
+#sizeSeg button,#lbBtn{min-height:48px}
+#sizeSeg button small{font-size:12px!important;line-height:1.25!important}
+#draft .compact-cand{border-bottom-color:var(--bc-line)}
+#draft .compact-info>b{line-height:1.25!important}
+#draft .compact-info>small,#draft .compact-fit{line-height:1.4!important}
+#draft .ux-sorts .chip{min-height:44px!important}
+#fieldFlow .placement-actions .btn{min-height:44px!important}
+#fieldFlow .placement-task{letter-spacing:.045em}
+#fieldFlow .placement-title h3{line-height:1.25!important}
+#draft .field-jump{min-height:44px!important}
+
+/* Use consistent panel spacing without introducing more boxes. */
+#draft .throw.hero{border-radius:12px}
+#draft .spin-actions .btn{border-radius:9px!important}
+#draft .spin-actions .btn small{line-height:1.3!important}
+#itemTools{margin-bottom:10px}
+#itemTools .candy-control{min-height:44px}
+#pen .tag,#staff .tag,#bullpen .tag{touch-action:manipulation}
+
+/* Reveal and card choices: clearer labels with the same proportions. */
+.reveal .rv-mini .tc-growth{font-size:10px!important;line-height:1.3!important}
+.reveal .rv-mini .tc-tag{font-size:10px!important}
+.reveal .rv-opts .btn,.reveal .rv-actions .btn{min-height:44px!important}
+.reveal .rv-mini:focus-visible{outline:3px solid var(--bc-focus)!important;outline-offset:4px!important}
+.reveal .rv-count{line-height:1.35}
+.reveal .tapcue{line-height:1.5}
+
+/* Shared sheets and confirmation buttons. */
+.sheet .sheet-top .btn{min-height:44px!important}
+.sheet .sheet-top h2{line-height:1.2!important}
+.sheet .sheet-body{scrollbar-width:thin;scrollbar-color:#718ba8 #14233d}
+.candy-sheet .candy-option{min-height:88px}
+.candy-sheet .candy-option:focus-visible{outline-offset:-2px!important}
+#lb .records-tabs button{min-height:48px}
+#lb .records-filter-buttons button{min-height:48px}
+#lb .records-filters>div>span{font-size:13px!important;line-height:1.4!important}
+#lb .career-history>details>summary{min-height:48px}
+#lb .records-stand .lblist summary{min-height:60px}
+#season #teamName,#season #submitBtn{min-height:48px!important}
+#season .result-career{min-height:44px}
+
+/* Gentle, purposeful desktop interactions; no extra glows. */
+@media(hover:hover) and (pointer:fine){
+  .btn:not(:disabled),#lb .records-tabs button,#lb .records-filter-buttons button,
+  #draft .ux-sorts .chip,.candy-sheet .candy-option{
+    transition:background-color var(--bc-timing) ease,border-color var(--bc-timing) ease,color var(--bc-timing) ease;
+  }
+  #draft .compact-cand:not(:disabled):hover{background:#ffffff0a}
+  .candy-sheet .candy-option:not(:disabled):hover{background:#ffffff0a}
+  #lb .records-tabs button:not([aria-selected="true"]):hover,
+  #lb .records-filter-buttons button:not([aria-pressed="true"]):hover{background:#ffffff12}
+}
+/* Respect reduced-motion preferences without changing timing for other players. */
+@media(prefers-reduced-motion:reduce){
+  html:focus-within{scroll-behavior:auto!important}
+  .rv-grid .rv-mini,.rv-grid .rv-mini .tcard,.cands.reveal .cand{
+    animation:none!important;transition:none!important;
+  }
+  .btn,#lb .records-tabs button,#lb .records-filter-buttons button,
+  .candy-sheet .candy-option{transition:none!important}
+}
+@media(max-width:380px){
+  #modeSeg button{gap:7px!important;padding-inline:8px!important}
+  #modeSeg button small{font-size:11.5px!important}
+  #sizeSeg button{min-height:48px}
+  #lb .records-filters{gap:9px}
+}
+
+
+/* Long multi-region keeps need room on narrow phones. */
+@media(max-width:350px){
+  body:not(.is-packs) #draft .spin-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
+  body:not(.is-packs) #draft .spin-actions #rerollBtn{grid-column:1/-1;min-height:48px!important}
+  body:not(.is-packs) #draft .spin-actions #keepType,
+  body:not(.is-packs) #draft .spin-actions #keepGen{min-height:66px!important;padding:9px 8px!important}
+}
+

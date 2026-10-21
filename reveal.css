@@ -1,0 +1,100 @@
+/* ---- pack reveal: trading cards ---- */
+body.rv-open{overflow:hidden}
+.reveal{position:fixed;inset:0;z-index:60;background:radial-gradient(circle at 50% 42%,#1d3f6e 0,#0b1730 45%,#060b16 80%);display:flex;flex-direction:column;align-items:center;padding:max(14px,env(safe-area-inset-top)) 16px 18px;overflow-y:auto}
+.rv-top{width:100%;max-width:420px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.rv-count{font:700 15px var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.rv-btn{padding:6px 14px!important;font-size:14px!important}
+.rv-stage{flex:1;display:flex;align-items:center;justify-content:center;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;perspective:900px}
+.rv-hint{margin:12px 0 0;font:600 14px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* the card */
+.tcard{--frame:linear-gradient(135deg,#d9d4c6,#f4efe2 45%,#b9b3a4);position:relative;width:min(300px,80vw);border-radius:16px;padding:9px;background:var(--frame);box-shadow:0 18px 40px rgba(0,0,0,.55);color:#14233a;text-align:left}
+.tcard.silver{--frame:linear-gradient(135deg,#9aa6b8,#eef2f8 40%,#8793a6 60%,#dfe5ee)}
+.tcard.gold{--frame:linear-gradient(135deg,#b8860b,#ffe27a 40%,#c99a1c 60%,#fff1b0)}
+.tcard.shiny{--frame:linear-gradient(135deg,#ffd84a,#fff6c2 30%,#ff9ad5 55%,#8fe3ff 80%,#ffd84a)}
+.tcard.leg{--frame:linear-gradient(135deg,#6a2bd1,#d23b8a 45%,#ffcb05 75%,#6a2bd1)}
+.tc-in{position:relative;overflow:hidden;border-radius:10px;padding:10px 10px 12px;background:linear-gradient(160deg,color-mix(in srgb,var(--c1) 30%,#fff) 0%,#fbf8ef 55%,color-mix(in srgb,var(--c2) 22%,#fff) 100%)}
+.tc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.tc-name{font:400 21px/1.1 var(--f-display);color:#14233a;overflow-wrap:anywhere}
+.tc-best{display:grid;justify-items:center;line-height:1;flex:none}
+.tc-best b{font:700 30px/1 var(--f-data);color:#14233a}
+.tc-best small{font:700 11px var(--f-data);letter-spacing:.1em;color:#5a6478}
+.tc-best.hi b{color:#b8860b}
+.tc-art{position:relative;margin:8px 0;aspect-ratio:1.35;border-radius:8px;border:2px solid rgba(20,35,58,.25);background:radial-gradient(circle at 50% 60%,#fff 0,color-mix(in srgb,var(--c1) 45%,#fff) 70%);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.tc-art img{width:88%;height:88%;object-fit:contain;filter:drop-shadow(0 6px 6px rgba(0,0,0,.25))}
+.tc-art img.px{image-rendering:pixelated;width:70%;height:70%}
+.tc-tag{position:absolute;top:6px;left:6px;font:700 11px var(--f-data);letter-spacing:.12em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:#14233a;color:#ffd84a}
+.tc-meta{font:500 12px var(--f-body);color:#4b5568;margin-bottom:8px}
+.tc-boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.tc-boxes span{display:grid;justify-items:center;background:#14233a;border-radius:6px;padding:5px 2px}
+.tc-boxes b{font:700 22px/1 var(--f-data);color:#f4eedc}
+.tc-boxes b.hi{color:#ffd84a}.tc-boxes b.md{color:#5fd38d}.tc-boxes b.lo{color:#ff7a66}
+.tc-boxes i{font:700 10px var(--f-data);font-style:normal;letter-spacing:.1em;color:#a3b2c8;white-space:nowrap}
+.tc-bars{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px}
+.tc-bar{display:grid;grid-template-columns:52px 1fr 22px;align-items:center;gap:5px}
+.tc-bar i{font:700 10px var(--f-data);font-style:normal;letter-spacing:.06em;text-transform:uppercase;filter:brightness(.75)}
+.tc-bar span{height:6px;border-radius:3px;background:rgba(20,35,58,.15);overflow:hidden}
+.tc-bar span b{display:block;height:100%;border-radius:3px}
+.tc-bar em{font:700 12px var(--f-data);font-style:normal;text-align:right;color:#14233a}
+/* holo sheen on the good stuff */
+.tcard.gold .tc-in::after,.tcard.shiny .tc-in::after,.tcard.leg .tc-in::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.55) 48%,rgba(255,255,255,0) 60%);background-size:260% 100%;mix-blend-mode:soft-light}
+
+/* the spread: every card in the pack, tap one to pick it */
+.rv-grid{width:100%;max-width:420px;margin:auto 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rv-mini{padding:0;border:0;background:none;cursor:pointer;border-radius:12px}
+.rv-mini:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.tcard.mini{width:100%;padding:5px;border-radius:11px;box-shadow:0 8px 18px rgba(0,0,0,.5)}
+.tcard.mini .tc-in{padding:6px 6px 7px;border-radius:7px;display:grid;justify-items:center}
+.tcard.mini .tc-name{font-size:12px;text-align:center;min-height:2.2em;display:flex;align-items:center}
+.tcard.mini .tc-art{width:100%;margin:4px 0}
+.tcard.mini .tc-tag{font-size:9px;top:3px;left:3px;padding:1px 4px}
+.tcard.mini .tc-best b{font-size:24px}
+
+@media (prefers-reduced-motion:no-preference){
+  .rv-stage .tcard{animation:cardpop .5s cubic-bezier(.2,1.25,.4,1) both}
+  .rv-stage .tcard.out{animation:none;transition:transform .23s ease-in,opacity .23s;transform:translateX(-115%) rotate(-14deg);opacity:0}
+  @keyframes cardpop{from{transform:translateY(40px) scale(.7) rotateY(85deg);opacity:0}to{transform:none;opacity:1}}
+  .tcard.gold .tc-in::after,.tcard.shiny .tc-in::after,.tcard.leg .tc-in::after{animation:holo 2.6s linear infinite}
+  @keyframes holo{from{background-position:130% 0}to{background-position:-130% 0}}
+  .rv-grid .rv-mini{animation:cardpop .4s cubic-bezier(.2,1.25,.4,1) both}
+  .rv-grid .rv-mini:nth-child(2){animation-delay:.06s}.rv-grid .rv-mini:nth-child(3){animation-delay:.12s}
+  .rv-grid .rv-mini:nth-child(4){animation-delay:.18s}.rv-grid .rv-mini:nth-child(5){animation-delay:.24s}.rv-grid .rv-mini:nth-child(6){animation-delay:.3s}
+  .rv-mini:active .tcard{transform:scale(.95)}
+  .rv-hint{animation:cue 1.6s ease-in-out infinite}
+}
+
+/* ---- Packs pool: card row + diamond picker ---- */
+.packpool .sortrow{display:none!important}
+.cands.cardrow{display:flex!important;flex-direction:row!important;gap:14px;overflow-x:auto!important;overflow-y:visible!important;max-height:none!important;height:auto!important;scroll-snap-type:x mandatory;padding:18px calc(50% - min(135px,36vw)) 14px!important;margin:4px -12px 0;scrollbar-width:none;border:0!important;background:none!important}
+.cands.cardrow::-webkit-scrollbar{display:none}
+.cardrow .pcard{all:unset;position:relative;flex:none;scroll-snap-align:center;cursor:pointer;border-radius:16px;-webkit-tap-highlight-color:transparent}
+.cardrow .pcard .tcard{width:min(270px,72vw);transition:transform .18s,box-shadow .18s}
+.cardrow .pcard[aria-pressed="true"] .tcard{transform:translateY(-6px);box-shadow:0 0 0 3px var(--gold),0 18px 34px rgba(0,0,0,.6)}
+.cardrow .pcard:disabled{cursor:default}.cardrow .pcard:disabled .tcard{opacity:.4;filter:grayscale(.6)}
+.cardrow .pcard:focus-visible .tcard{box-shadow:0 0 0 3px var(--gold)}
+.pc-flag{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font:700 11px var(--f-data);letter-spacing:.12em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#14233a;color:#a3b2c8;border:1.5px solid #a3b2c8;white-space:nowrap;z-index:2}
+.pc-flag.sel{top:-12px;background:var(--gold);color:#14233a;border-color:var(--gold)}
+.dpick{margin-top:6px;padding:12px;border-radius:14px;background:rgba(11,23,48,.6);border:1.5px solid var(--line)}
+.dpick .label{text-align:center;margin-bottom:6px}
+.diamond{position:relative;width:min(320px,100%);aspect-ratio:1/.92;margin:26px auto 22px}
+.diamond svg{position:absolute;inset:0;width:100%;height:100%}
+.dchip{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;min-width:56px;padding:4px 6px 5px;border-radius:10px;border:2px solid rgba(244,238,220,.35);background:#14233a;color:var(--chalk);cursor:pointer;line-height:1;font-family:var(--f-data)}
+.dchip i{font-style:normal;font-weight:700;font-size:12px;letter-spacing:.08em;color:#a3b2c8}
+.dchip b{font-weight:700;font-size:24px;margin-top:2px}
+.dchip.hi b{color:#ffd84a}.dchip.md b{color:#5fd38d}.dchip.lo b{color:#ff7a66}
+.dchip.best{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,203,5,.25),0 0 18px rgba(255,203,5,.45)}
+.dchip em{position:absolute;top:-13px;font:700 9px var(--f-data);font-style:normal;letter-spacing:.12em;text-transform:uppercase;background:var(--gold);color:#14233a;padding:1px 5px;border-radius:999px}
+.dchip.done{cursor:default;opacity:.35;min-width:44px}.dchip.done b{font-size:16px;color:#a3b2c8}
+.dextra{display:flex;justify-content:center;gap:12px;margin-top:10px}
+.dextra .dchip{position:relative;transform:none;min-width:84px}
+@media (hover:hover){.dchip:not(.done):hover{border-color:var(--chalk)}}
+@media (prefers-reduced-motion:no-preference){.dchip.best{animation:bestpulse 1.6s ease-in-out infinite}@keyframes bestpulse{50%{box-shadow:0 0 0 5px rgba(255,203,5,.15),0 0 24px rgba(255,203,5,.6)}}}
+/* pack options in the spread and above the card row */
+.rv-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:420px;margin-top:14px}
+.rv-opt{display:grid;justify-items:center;gap:2px;padding:10px 6px!important;font:600 16px var(--f-data)!important;letter-spacing:.08em;text-transform:uppercase}
+.rv-opt small{font:600 11px var(--f-data);letter-spacing:.1em;opacity:.7}
+.rv-opt.armed{background:var(--gold)!important;color:#14233a!important;border-color:var(--gold)!important}
+.rv-opt:disabled{opacity:.4}
+.packpool .packctl{margin:8px 0 2px}
+.packpool .packctl .label{display:none}
+.packpool .packctl+.hint{margin:0 0 4px!important;text-align:center;font-size:13px}

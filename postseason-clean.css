@@ -1,0 +1,60 @@
+/* Final season cleanup: one hierarchy, one roster, three ways to view it. */
+#season .res-top.clean-result-top{display:flex;align-items:center;gap:13px;margin:3px 0 12px;flex-wrap:nowrap;}
+#season .clean-result-top .pennant{width:80px;height:58px;padding-left:12px;flex:none;}
+#season .clean-result-top .pennant span{font-size:31px;}
+#season .clean-result-top .label{font:700 11px/1.3 "Barlow",sans-serif!important;letter-spacing:.07em;color:#c0d0de;}
+#season .clean-result-top .bigrec{font-size:clamp(41px,8.5vw,66px);white-space:nowrap;line-height:1.05;}
+#season .clean-season-summary{margin:6px 0 20px;}
+#season .clean-outcome{display:flex;align-items:center;justify-content:space-between;gap:7px 16px;flex-wrap:wrap;background:#1c3351;border-left:3px solid #e2c078;border-radius:0 7px 7px 0;padding:10px 13px;margin:0 0 9px;}
+#season .clean-outcome b{font:700 15px/1.25 "Barlow",sans-serif;color:#f3e5c1;}
+#season .clean-outcome span{font:600 12px/1.3 "Barlow",sans-serif;color:#d0ddeb;}
+#season .clean-metrics{display:flex;gap:7px 17px;flex-wrap:wrap;align-items:center;color:#b8cadc;font:500 12px/1.3 "Barlow",sans-serif;}
+#season .clean-metrics span{white-space:nowrap;}
+#season .postseason-team.clean-postseason{margin:8px 0 23px;padding:14px 0 0;border:0;border-top:1px solid #5369837d;border-radius:0;background:transparent;box-shadow:none;}
+#season .clean-postseason .postseason-heading{margin:0 0 14px;gap:8px;align-items:center;}
+#season .clean-postseason .postseason-heading h3{margin:0;font:700 23px/1.2 "Barlow",sans-serif;color:#f7f0dd;}
+#season .clean-postseason .postseason-overall{display:flex;align-items:baseline;gap:6px;min-width:0;padding:0;border:0;}
+#season .clean-postseason .postseason-overall strong{font:700 27px/1 "Oswald",sans-serif;color:#f2d180;}
+#season .clean-postseason .postseason-overall span{font:700 11px/1.2 "Barlow",sans-serif;color:#e1c68a;letter-spacing:.07em;}
+#season .clean-postseason .postseason-tabs{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:12px;gap:3px;padding:3px;}
+#season .clean-postseason .postseason-tabs button{min-height:43px;padding:8px 4px;font:700 13px/1.2 "Barlow",sans-serif;}
+#season .clean-postseason .postseason-field-view{max-width:580px;}
+#season .clean-postseason .postseason-field-view #postseasonField{border-radius:10px;}
+#season .clean-postseason .clean-staff{max-width:580px;margin:9px auto 0;display:grid;gap:9px;}
+#season .clean-staff-group{display:grid;gap:6px;}
+#season .clean-staff-group h4{margin:0;font:700 11px/1.2 "Barlow",sans-serif;letter-spacing:.06em;color:#c8d5e6;text-transform:uppercase;}
+#season .clean-staff-scroll{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#52718c transparent;padding:1px 1px 7px;-webkit-overflow-scrolling:touch;}
+#season .clean-staff-chip{display:flex;align-items:center;gap:5px;flex:none;min-height:36px;padding:6px 9px;border:1px solid #47617d;border-radius:7px;background:#162c49;color:#f2ebdb;font:600 12px/1.3 "Barlow",sans-serif;cursor:pointer;}
+#season .clean-staff-chip span{font-size:10px;color:#e9cf96;}
+#season .clean-staff-chip b{font-weight:600;}
+#season .clean-staff-chip strong{font:700 14px/1 "Oswald",sans-serif;color:#a5e3b8;}
+#season .clean-staff-chip:focus-visible{outline:2px solid #f0d17c;outline-offset:2px;}
+#season .fantasy-stats-controls[hidden]{display:none!important;}
+#season #postseasonFieldPanel[hidden],#season #postseasonRatingsPanel[hidden]{display:none!important;}
+#season #postseasonRatingsPanel .fantasy-group:first-of-type{margin-top:4px;}
+@media(max-width:600px){
+ #season .clean-result-top .pennant{width:72px;height:53px;}
+ #season .clean-result-top .pennant span{font-size:29px;}
+ #season .clean-result-top .bigrec{font-size:clamp(39px,10vw,57px);}
+ #season .clean-outcome{padding:10px 11px;}
+ #season .clean-outcome b{font-size:14px;}
+ #season .clean-season-summary{margin-bottom:16px;}
+ #season .postseason-team.clean-postseason{margin-top:8px;padding-top:13px;}
+ #season .clean-postseason .postseason-heading h3{font-size:21px;}
+ #season .clean-postseason .postseason-overall strong{font-size:25px;}
+}
+@media(max-width:350px){
+ #season .clean-result-top .pennant{width:62px;height:47px;}
+ #season .clean-result-top .bigrec{font-size:37px;}
+ #season .clean-staff-chip{padding:5px 7px;}
+}
+
+/* Override the legacy mobile result grid, which otherwise drops the record below the pennant. */
+#season .res-top.clean-result-top{display:grid!important;grid-template-columns:74px minmax(0,1fr)!important;align-items:center!important;gap:12px!important;}
+#season .res-top.clean-result-top>div:last-child{grid-column:2!important;min-width:0;}
+#season .res-top.clean-result-top .result-grade{grid-column:1!important;}
+@media(max-width:600px){
+ #season .res-top.clean-result-top{grid-template-columns:70px minmax(0,1fr)!important;}
+ #season .clean-outcome{flex-direction:column;align-items:flex-start;gap:4px;}
+}
+@media(max-width:350px){#season .res-top.clean-result-top{grid-template-columns:64px minmax(0,1fr)!important;}}
