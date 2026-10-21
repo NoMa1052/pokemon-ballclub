@@ -430,7 +430,7 @@ let lbSize=null,lbMode=null;
 function rosterOvr(ids,slots){return rosterRating(Object.fromEntries(ids.map((id,i)=>[slots[i],BYID.get(id)]).filter(([,m])=>m)),slots)??0}
 const lbRank=(a,b)=>b.wins-a.wins||b.ovr-a.ovr||(b.rs-b.ra)-(a.rs-a.ra)||new Date(a.created_at)-new Date(b.created_at);
 function submitHTML(){
-  if(run.submitted)return `<div class="posted"><span>Posted as <b>${esc(run.submitted.team)}</b>${run.submitted.rank?`, #${run.submitted.rank} on the ${isPack()?"Packs ":""}${run.size}&#8209;pick board`:""}.</span><button class="btn" id="seeLb">View leaderboard</button></div>`;
+  if(run.submitted)return `<div class="posted"><span class="posted-rank" aria-hidden="true">${run.submitted.rank?`<small>#</small>${run.submitted.rank}`:"✓"}</span><span class="posted-info"><small>Posted</small><b>${esc(run.submitted.team)}</b><em>${isPack()?"Packs":"Spin"} · ${run.size===11?"Quick":"Standard"}</em></span><button type="button" class="posted-link" id="seeLb">Leaderboard</button></div>`;
   const last=store.get("pbc2-team")||"";
   return `<div class="label">Post to the leaderboard</div><div class="submitrow"><input id="teamName" maxlength="24" placeholder="Team name" value="${esc(last)}" autocomplete="off" enterkeyhint="send"><button class="btn primary sm" id="submitBtn">Submit</button></div><p class="hint" id="submitMsg" style="margin:4px 0 0"></p>`;
 }
