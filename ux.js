@@ -43,9 +43,10 @@
     const openRating = best == null ? null : posOvr(m, best);
     const openRole = best == null ? null : lbl(role(best));
     const sameFit = best != null && openRole === m.hspot && openRating === m.ovr;
-    const badge = best == null ? [m.hspot, m.ovr] : [openRole, openRating];
-    const fitLine = best != null && !sameFit ? `Best overall ${m.hspot} ${m.ovr}` : '';
-    return `<button class="cand compact-cand${m.shiny ? ' shiny' : ''}" data-id="${m.id}" aria-pressed="false" aria-label="${esc(m.name)}, ${badge[1]} at ${badge[0]}${best != null ? ' (best open spot)' : ''}" ${taken ? 'disabled' : ''}>${tok(m)}<span class="compact-info"><b>${esc(m.name)}${m.shiny ? '<small class="rare-label">Shiny</small>' : m.leg ? '<small class="rare-label">Legend</small>' : ''}</b><small>${m.types.map(cap).join(' / ')}${taken ? ' · On team' : ''}${fitLine ? ' · ' + fitLine : ''}</small></span><span class="cand-fit"><b>${badge[1]}</b><small>${badge[0]}${best != null ? ' open' : ''}</small></span></button>`;
+    // Badge shows the Pokémon's best rating; the line underneath shows its best open spot when that differs.
+    const badge = [m.hspot, m.ovr];
+    const fitLine = best != null && !sameFit ? `Best open ${openRole} ${openRating}` : '';
+    return `<button class="cand compact-cand${m.shiny ? ' shiny' : ''}" data-id="${m.id}" aria-pressed="false" aria-label="${esc(m.name)}, best ${badge[1]} at ${badge[0]}${fitLine ? ', ' + fitLine.toLowerCase() : ''}" ${taken ? 'disabled' : ''}>${tok(m)}<span class="compact-info"><b>${esc(m.name)}${m.shiny ? '<small class="rare-label">Shiny</small>' : m.leg ? '<small class="rare-label">Legend</small>' : ''}</b><small>${m.types.map(cap).join(' / ')}${taken ? ' · On team' : ''}${fitLine ? ' · ' + fitLine : ''}</small></span><span class="cand-fit"><b>${badge[1]}</b><small>${badge[0]}</small></span></button>`;
   };
   function playerStats(m) {
     return `<details class="player-stats"><summary>Player stats & scouting</summary><div class="ux-statgrid">${KEY.map(([name, key]) => `<span>${name}<b>${m.r[key]}</b></span>`).join('')}</div><p class="hint">${m.types.map(cap).join(' / ')} · ${m.body} · ${ftin(m.ht)} · ${lbs(m.wt)} lb</p><p class="hint">Best overall position: <b>${m.hspot} · ${m.ovr}</b></p><p class="hint">${[...new Set(Object.values(m.why).flat())].map(esc).join(' · ')}</p></details>`;
