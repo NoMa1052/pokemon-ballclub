@@ -187,3 +187,16 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 #season .season-actions .share .btn{min-height:44px!important;margin:0!important}
 #season .season-actions #shareMsg:empty{display:none}
 #season .season-summary{margin-top:22px}
+
+/* ---- Posted state: rank badge, team name, one link ---- */
+#season .season-actions .posted{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;margin:0!important;padding:0 0 12px!important;border:0!important;background:none!important;border-bottom:1px solid rgba(244,238,220,.12)!important}
+#season .posted-rank{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:52px;padding:0 8px;border-radius:10px;background:#ffcb05;color:#0b1b33;font:700 24px/1 var(--f-data)}
+#season .posted-rank small{font-size:15px;margin-right:1px;align-self:flex-start;margin-top:12px}
+#season .posted-info{display:flex;flex-direction:column;min-width:0;gap:1px}
+#season .posted-info small{font:600 11px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#b6c3d5}
+#season .posted-info b{font:600 20px/1.15 var(--f-data);color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#season .posted-info em{font:500 12px var(--f-body);font-style:normal;color:#b6c3d5}
+#season .posted-link{all:unset;cursor:pointer;font:600 13px var(--f-body);color:var(--cream);padding:8px 2px;white-space:nowrap}
+#season .posted-link::after{content:" ›";color:#e8c766}
+#season .posted-link:hover{color:#ffe08a}
+#season .posted-link:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
