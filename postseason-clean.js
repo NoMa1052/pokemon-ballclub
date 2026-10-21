@@ -3,17 +3,35 @@
  const $=id=>document.getElementById(id);
  const staffLabel=s=>s==='RP1'?'CL':s==='RP2'?'SU':s;
  const f3=n=>Number.isFinite(n)?n.toFixed(3).replace(/^0/,''):'.000';
- // Box score: one row per player, name column pinned, the rest scrolls sideways.
+ // Box score, fantasy style: pinned player column, key stats first, team leader in each column highlighted, tap a header to sort.
  function boxScore(){
   const me=run.result?.me;if(!me)return '';
   const sprite=m=>`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" loading="lazy">`;
-  const who=(s,m,lead)=>`<th scope="row"><button type="button" class="box-who" data-box-slot="${esc(s)}" aria-label="${esc(m.name)}, ${esc(SLOT_NAME[s]||lbl(s))}. View card and stats"><span class="box-lead">${lead}</span>${sprite(m)}<span><b>${esc(m.name)}</b><small>${FIELD_SLOTS.includes(s)?esc(lbl(s))+' · ':''}${posOvr(m,s)} OVR</small></span></button></th>`;
-  const bat=(me.order||[]).filter(h=>run.slots[h.pos]&&h.st).map((h,i)=>{const st=h.st,obp=(st.h+st.bb)/Math.max(1,st.pa),slg=(st.h+st.d+2*st.t+3*st.hr)/Math.max(1,st.ab);
-   return `<tr>${who(h.pos,run.slots[h.pos],i+1)}<td>${f3(st.h/Math.max(1,st.ab))}</td><td>${st.hr}</td><td>${st.rbi}</td><td>${f3(obp+slg)}</td><td>${f3(obp)}</td><td>${f3(slg)}</td><td>${st.h}</td><td>${st.d}</td><td>${st.t}</td><td>${st.r}</td><td>${st.bb}</td><td>${st.k}</td><td>${st.sb}</td></tr>`}).join('');
-  const arms=slotList().filter(s=>!FIELD_SLOTS.includes(s)&&run.slots[s]).map(s=>{const p=s==='RP1'?me.cl:s==='RP2'?me.pen:me.rot?.find(x=>x.role===s);if(!p?.st||p.role==='FILL')return '';const st=p.st;
-   return `<tr>${who(s,run.slots[s],staffLabel(s))}<td>${(st.outs?st.r*27/st.outs:0).toFixed(2)}</td><td>${ip(st.outs)}</td><td>${st.w}</td><td>${st.l}</td><td>${st.sv}</td><td>${st.k}</td><td>${st.bb}</td><td>${st.h}</td><td>${st.hr}</td><td>${st.g}</td><td>${st.gs}</td></tr>`}).join('');
-  const table=(cap,cols,rows)=>`<section class="box-group"><h4>${cap}</h4><div class="box-scroll" tabindex="0" role="region" aria-label="${cap}, scrolls sideways"><table class="box"><thead><tr><th scope="col">Player</th>${cols.map(c=>`<th scope="col">${c}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
-  return table('Batting',['AVG','HR','RBI','OPS','OBP','SLG','H','2B','3B','R','BB','K','SB'],bat)+table('Pitching',['ERA','IP','W','L','SV','K','BB','H','HR','G','GS'],arms)+'<p class="box-note">Swipe the table for more. Tap a player for their card.</p>';
+  const tone=v=>v>=85?'hi':v>=70?'md':v<55?'lo':'';
+  const who=(s,m,lead,order)=>{const v=posOvr(m,s);return `<th scope="row" data-v="${order}"><button type="button" class="box-who" data-box-slot="${esc(s)}" aria-label="${esc(m.name)}, ${esc(SLOT_NAME[s]||lbl(s))}, rating ${v}. View card"><span class="box-lead">${lead}</span>${sprite(m)}<span class="box-name"><b>${esc(m.name)}</b><small>${FIELD_SLOTS.includes(s)?`<i>${esc(lbl(s))}</i>`:''}<em class="${tone(v)}">${v}</em></small></span></button></th>`};
+  const cell=(v,shown)=>`<td data-v="${v}">${shown??v}</td>`;
+  const bat=(me.order||[]).filter(h=>run.slots[h.pos]&&h.st).map((h,i)=>{const st=h.st,ab=Math.max(1,st.ab),obp=(st.h+st.bb)/Math.max(1,st.pa),slg=(st.h+st.d+2*st.t+3*st.hr)/ab,avg=st.h/ab;
+   return `<tr>${who(h.pos,run.slots[h.pos],i+1,i)}${cell(avg,f3(avg))}${cell(st.hr)}${cell(st.rbi)}${cell(obp+slg,f3(obp+slg))}${cell(obp,f3(obp))}${cell(slg,f3(slg))}${cell(st.h)}${cell(st.d)}${cell(st.t)}${cell(st.r)}${cell(st.bb)}${cell(st.k)}${cell(st.sb)}</tr>`}).join('');
+  const arms=slotList().filter(s=>!FIELD_SLOTS.includes(s)&&run.slots[s]).map((s,i)=>{const p=s==='RP1'?me.cl:s==='RP2'?me.pen:me.rot?.find(x=>x.role===s);if(!p?.st||p.role==='FILL')return '';const st=p.st,era=st.outs?st.r*27/st.outs:0;
+   return `<tr>${who(s,run.slots[s],staffLabel(s),i)}${cell(era,era.toFixed(2))}${cell(st.outs,ip(st.outs))}${cell(st.w)}${cell(st.l)}${cell(st.sv)}${cell(st.k)}${cell(st.bb)}${cell(st.h)}${cell(st.hr)}${cell(st.g)}${cell(st.gs)}</tr>`}).join('');
+  // low = a lower number is better (ERA, L, BB/H/HR allowed, batter strikeouts)
+  const table=(cap,cols,rows)=>`<section class="box-group"><h4>${cap}</h4><div class="box-scroll" tabindex="0" role="region" aria-label="${cap} stats, scrolls sideways"><table class="box"><thead><tr><th scope="col"><button type="button" data-sort="0">Player</button></th>${cols.map(([c,low],i)=>`<th scope="col"><button type="button" data-sort="${i+1}"${low?' data-low="1"':''}>${c}</button></th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div></section>`;
+  return table('Batting',[['AVG'],['HR'],['RBI'],['OPS'],['OBP'],['SLG'],['H'],['2B'],['3B'],['R'],['BB'],['K',1],['SB']],bat)
+   +table('Pitching',[['ERA',1],['IP'],['W'],['L',1],['SV'],['K'],['BB',1],['H',1],['HR',1],['G'],['GS']],arms)
+   +'<p class="box-note">Gold marks the team leader. Tap a column to sort, or a player for their card.</p>';
+ }
+ function wireBox(panel){
+  panel.querySelectorAll('table.box').forEach(t=>{
+   const rows=[...t.tBodies[0].rows],n=t.tHead.rows[0].cells.length;
+   // team leader per stat column (ties all highlighted)
+   for(let c=1;c<n;c++){const low=t.tHead.rows[0].cells[c].querySelector('[data-low]'),vals=rows.map(r=>+r.cells[c].dataset.v);if(new Set(vals).size<2)continue;const best=low?Math.min(...vals):Math.max(...vals);rows.forEach((r,i)=>r.cells[c].classList.toggle('lead',vals[i]===best))}
+   t.tHead.querySelectorAll('[data-sort]').forEach(b=>b.onclick=()=>{
+    const c=+b.dataset.sort,low=b.hasAttribute('data-low'),dir=c===0||low?1:-1;
+    const sorted=[...t.tBodies[0].rows].sort((a,z)=>dir*((+a.cells[c].dataset.v)-(+z.cells[c].dataset.v))||(+a.cells[0].dataset.v)-(+z.cells[0].dataset.v));
+    t.tBodies[0].append(...sorted);
+    t.tHead.querySelectorAll('th').forEach((th,i)=>{if(i===c&&c)th.setAttribute('aria-sort',dir<0?'descending':'ascending');else th.removeAttribute('aria-sort')});
+   });
+  });
  }
  function decorate(){
   const season=$('season'),team=$('postseasonTeam'),res=run?.result;
@@ -70,35 +88,28 @@
   if(staff)staff.hidden=false;
   // Remove previously bound two-tab buttons; reuse their existing roster panel.
   nav.innerHTML='<button type="button" role="tab" id="postseasonFieldTab" aria-controls="postseasonFieldPanel">On Field</button>'+
-   '<button type="button" role="tab" id="postseasonRatingsTab" aria-controls="postseasonRatingsPanel">Lineup</button>'+
    '<button type="button" role="tab" id="postseasonStatsTab" aria-controls="postseasonStatsPanel">Stats</button>';
   team.querySelector('#postseasonStatsPanel')?.remove();
   const statsPanel=document.createElement('div');statsPanel.id='postseasonStatsPanel';statsPanel.setAttribute('role','tabpanel');statsPanel.setAttribute('aria-labelledby','postseasonStatsTab');statsPanel.className='box-panel';statsPanel.hidden=true;statsPanel.innerHTML=boxScore();
-  ratings.after(statsPanel);
+  ratings.after(statsPanel);wireBox(statsPanel);
   statsPanel.addEventListener('click',e=>{const b=e.target.closest('[data-box-slot]');if(!b)return;
    const card=[...ratings.querySelectorAll('button.fantasy-player')].find(x=>x.dataset.postseasonSlot===b.dataset.boxSlot);card?.click();});
   const tabs=[...nav.querySelectorAll('[role="tab"]')];
   ratings.querySelector('.fantasy-instruction')?.remove();
   const controls=ratings.querySelector('.fantasy-stats-controls');if(controls)controls.hidden=true;
+  // The Lineup cards stay in the DOM, hidden: they still open each player's card and season sheet.
   function choose(view,slot){
-   const fieldMode=view==='field';field.hidden=!fieldMode;ratings.hidden=view!=='lineup';statsPanel.hidden=view!=='stats';
-   if(view==='lineup')ratings.querySelector('[data-stats-mode="key"]')?.click();
+   const fieldMode=view==='field';field.hidden=!fieldMode;ratings.hidden=true;statsPanel.hidden=fieldMode;
    team.dataset.view=view;
-   tabs.forEach((tab,i)=>{const active=(view==='field'?i===0:view==='lineup'?i===1:i===2);
-    tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;});
-   ratings.setAttribute('aria-labelledby','postseasonRatingsTab');
-   ratings.querySelectorAll('.postseason-target').forEach(el=>el.classList.remove('postseason-target'));
-   if(slot){
-    const button=[...ratings.querySelectorAll('button.fantasy-player')].find(el=>el.dataset.postseasonSlot===slot);
-    if(button){button.classList.add('postseason-target');button.scrollIntoView({block:'nearest',behavior:'auto'});}
-   }
+   tabs.forEach((tab,i)=>{const active=fieldMode?i===0:i===1;tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;});
+   statsPanel.querySelectorAll('tr.box-target').forEach(r=>r.classList.remove('box-target'));
+   if(slot){const row=statsPanel.querySelector(`[data-box-slot="${slot}"]`)?.closest('tr');if(row){row.classList.add('box-target');row.scrollIntoView({block:'center',behavior:'auto'});}}
   }
-  tabs.forEach((tab,i)=>{tab.onclick=()=>choose(['field','lineup','stats'][i]);
+  tabs.forEach((tab,i)=>{tab.onclick=()=>choose(i?'stats':'field');
    tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
-     e.preventDefault();const dest=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3;
-     tabs[dest].click();tabs[dest].focus({preventScroll:true});});});
+     e.preventDefault();const dest=e.key==='Home'?0:e.key==='End'?1:1-i;tabs[dest].click();tabs[dest].focus({preventScroll:true});});});
   field.addEventListener('click',e=>{const btn=e.target.closest('button[data-slot]');
-    if(btn&&run.slots[btn.dataset.slot])choose('lineup',btn.dataset.slot);});
+    if(btn&&run.slots[btn.dataset.slot])choose('stats',btn.dataset.slot);});
   choose('field');
  }
  const old=finish;finish=function(scroll){const value=old(scroll);decorate();return value;};decorate();

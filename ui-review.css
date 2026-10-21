@@ -48,32 +48,45 @@ body:not(.is-packs) #cands{max-height:none!important;overflow:visible!important}
 #fieldFlow #handReleaseAsk{text-decoration:none!important;min-height:36px!important;padding:5px 12px!important;border-radius:8px!important;background:rgba(227,53,13,.12)!important;border:1px solid rgba(255,122,102,.55)!important;color:#ffb3a3!important;font:600 13px var(--f-body)!important}
 #fieldFlow #handReleaseAsk:hover{background:rgba(227,53,13,.22)!important}
 
-/* ---- Results: box score with the player column pinned ---- */
+/* ---- Results: fantasy-style box score. Player column pinned, numbers in condensed figures ---- */
 #postseasonStatsPanel{margin-top:12px}
-.box-group+.box-group{margin-top:18px}
+.box-group+.box-group{margin-top:20px}
 .box-group h4{margin:0 0 8px;font:600 13px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#e8c766}
-.box-scroll{overflow-x:auto;border:1px solid rgba(244,238,220,.16);border-radius:10px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.box-scroll{overflow-x:auto;border:1px solid rgba(244,238,220,.14);border-radius:12px;background:#0f2240;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none}
+.box-scroll::-webkit-scrollbar{display:none}
 .box-scroll:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-table.box{border-collapse:separate;border-spacing:0;width:100%;font:500 14px var(--f-body);font-variant-numeric:tabular-nums;color:var(--cream)}
-table.box th,table.box td{padding:8px 10px;text-align:right;white-space:nowrap;border-bottom:1px solid rgba(244,238,220,.1)}
-table.box thead th{font:600 11px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:#b6c3d5;background:#0f2240;position:sticky;top:0}
+table.box{border-collapse:separate;border-spacing:0;width:100%;color:var(--cream);font-variant-numeric:tabular-nums}
+table.box th,table.box td{white-space:nowrap;border-bottom:1px solid rgba(244,238,220,.08)}
+table.box td{padding:0 10px;height:56px;text-align:right;font:500 17px var(--f-data);min-width:44px}
+table.box td.lead{color:#ffcb05;font-weight:700}
 table.box tbody tr:last-child>*{border-bottom:0}
-table.box tbody tr:nth-child(even) td{background:rgba(255,255,255,.025)}
-table.box th:first-child{position:sticky;left:0;z-index:1;text-align:left;background:#132a4d;box-shadow:6px 0 8px -6px rgba(0,0,0,.6)}
-table.box thead th:first-child{z-index:2;background:#0f2240}
-table.box tbody th{padding:4px 8px}
-.box-who{all:unset;cursor:pointer;display:flex;align-items:center;gap:6px;min-height:40px;max-width:44vw}
-.box-who:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
-.box-who img{width:32px;height:32px;image-rendering:pixelated;flex:none}
-.box-who>span:last-child{display:flex;flex-direction:column;min-width:0}
-.box-who b{font:600 14px/1.2 var(--f-body);overflow:hidden;text-overflow:ellipsis}
-.box-who small{font:500 11px/1.2 var(--f-body);color:#b6c3d5}
-.box-lead{font:700 13px var(--f-data);color:#e8c766;min-width:1.6em;text-align:center}
-.box-group:first-child table.box td:nth-child(2),.box-group:first-child table.box td:nth-child(5){font-weight:700}
+table.box tbody tr:nth-child(even)>*{background-color:#122848}
+table.box tbody tr:nth-child(odd)>*{background-color:#0f2240}
+table.box tbody tr.box-target>*{background-color:#1f3a63}
+table.box thead th{background:#0b1b33;border-bottom:1px solid rgba(244,238,220,.18);padding:0}
+table.box thead th button{all:unset;cursor:pointer;display:block;box-sizing:border-box;width:100%;padding:10px 10px;text-align:right;font:600 11px var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:#b6c3d5}
+table.box thead th:first-child button{text-align:left;padding-left:12px}
+table.box thead th[aria-sort] button{color:var(--cream)}
+table.box thead th[aria-sort="descending"] button::after{content:" ▾"}
+table.box thead th[aria-sort="ascending"] button::after{content:" ▴"}
+table.box thead th button:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+table.box th:first-child{position:sticky;left:0;z-index:1;text-align:left;width:150px;min-width:150px;max-width:150px;box-shadow:8px 0 10px -8px rgba(0,0,0,.7)}
+table.box thead th:first-child{z-index:2}
+table.box tbody th{padding:0 6px 0 10px}
+.box-who{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:24px 34px minmax(0,1fr);align-items:center;gap:4px;width:100%;height:56px}
+.box-who:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;border-radius:4px}
+.box-who img{width:34px;height:34px;image-rendering:pixelated}
+.box-lead{font:600 14px var(--f-data);color:#e8c766;text-align:center}
+.box-name{display:flex;flex-direction:column;gap:2px;min-width:0}
+.box-name b{font:600 15px/1.1 var(--f-data);letter-spacing:.01em;color:var(--cream);overflow:hidden;text-overflow:ellipsis}
+.box-name small{display:flex;gap:6px;align-items:center;font:600 11px var(--f-data);letter-spacing:.06em}
+.box-name small i{font-style:normal;color:#b6c3d5}
+.box-name small em{font-style:normal;padding:0 5px;border-radius:4px;background:rgba(244,238,220,.12);color:var(--cream)}
+.box-name small em.hi{background:#ffcb05;color:#0b1b33}
+.box-name small em.md{background:#5fd38d;color:#0b1b33}
+.box-name small em.lo{background:#ff8a70;color:#0b1b33}
 .box-note{margin:10px 0 0;font-size:12px;color:#b6c3d5}
-@media(min-width:700px){.box-who{max-width:none}}
-.box-who b{color:var(--cream)}
-body:not(.is-packs) #draft .spin-actions+.sortrow{margin-top:4px!important}
+@media(min-width:700px){table.box th:first-child{width:190px;min-width:190px;max-width:190px}}
 
 /* ---- Undo: one slim line at the top of the draft panel, gone once the next pack or spin opens ---- */
 #draft .undo-chip{display:flex;align-items:center;gap:10px;margin:14px 0 4px;padding:4px 4px 4px 12px;min-height:40px;border-radius:10px;background:rgba(244,238,220,.06);border:1px solid rgba(244,238,220,.12);font:500 13px/1.2 var(--f-body);color:#c9d4e3}
@@ -156,3 +169,6 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 #draft .simulate-note{display:none!important}
 .dc.dc-capturing,.dc.dc-capturing *{animation:none!important;transition:none!important;opacity:1}
 .dc.dc-capturing .dc-row,.dc.dc-capturing .dc-star,.dc.dc-capturing .dc-card,.dc.dc-capturing .dc-title{transform:none!important}
+#postseasonTeam .postseason-tabs{display:grid!important;grid-template-columns:1fr 1fr!important}
+.box-who{grid-template-columns:24px 38px minmax(0,1fr)}
+.box-who img{width:42px;height:42px;margin:0 -2px}
