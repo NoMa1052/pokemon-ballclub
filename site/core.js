@@ -4,7 +4,7 @@ const FIELD_SLOTS=["C","1B","2B","3B","SS","LF","CF","RF","DH"];
 const STD=[...FIELD_SLOTS,"SP1","RP1"];
 const FULL=[...FIELD_SLOTS,"SP1","SP2","SP3","SP4","SP5","RP1","RP2"];
 const SLOT_NAME={C:"Catcher","1B":"First base","2B":"Second base","3B":"Third base",SS:"Shortstop",LF:"Left field",CF:"Center field",RF:"Right field",DH:"Designated hitter",SP1:"Starter 1",SP2:"Starter 2",SP3:"Starter 3",SP4:"Starter 4",SP5:"Starter 5",RP1:"Closer",RP2:"Setup man"};
-const POS_XY={C:[50,91],"1B":[74,61],"2B":[63,44],SS:[37,44],"3B":[26,61],LF:[19,32],CF:[50,22],RF:[81,32],SP1:[50,68],DH:[12,88]};
+const POS_XY={C:[50,91],"1B":[75,64],"2B":[63,44],SS:[37,44],"3B":[25,64],LF:[20,30],CF:[50,22],RF:[80,30],SP1:[50,68],DH:[12,88]};
 const WEIGHT={SP1:1.5,SP2:1.25,SP3:1.1,SP5:.95,C:1.1,SS:1.05,CF:1.05,DH:.95,RP2:.95};
 const DEF_IMP={C:1.2,"1B":.5,"2B":1,"3B":.9,SS:1.3,LF:.7,CF:1.2,RF:.8};
 
