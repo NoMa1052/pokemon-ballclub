@@ -75,14 +75,16 @@ table.box tbody th{padding:4px 8px}
 .box-who b{color:var(--cream)}
 body:not(.is-packs) #draft .spin-actions+.sortrow{margin-top:4px!important}
 
-/* ---- Undo: a chip at the top of the draft panel, gone once the next pack or spin opens ---- */
-#draft .undo-chip{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:6px 6px 6px 12px;border-radius:999px;background:rgba(244,238,220,.08);border:1px solid rgba(244,238,220,.18);font:500 13px var(--f-body);color:#d5dce8}
-#draft .undo-chip span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#draft .undo-chip button{all:unset;cursor:pointer;flex:none;padding:6px 12px;border-radius:999px;background:var(--cream);color:var(--navy);font:700 13px var(--f-body)}
-#draft .undo-chip button::before{content:"↶ "}
+/* ---- Undo: one slim line at the top of the draft panel, gone once the next pack or spin opens ---- */
+#draft .undo-chip{display:flex;align-items:center;gap:10px;margin:0 0 4px;padding:4px 4px 4px 12px;min-height:40px;border-radius:10px;background:rgba(244,238,220,.06);border:1px solid rgba(244,238,220,.12);font:500 13px/1.2 var(--f-body);color:#c9d4e3}
+#draft .undo-chip>span{flex:1;min-width:0;display:block!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#draft .undo-chip>span b{font-weight:600;color:var(--cream)}
+#draft .undo-chip>span small{display:inline!important;margin-left:6px;font:500 13px var(--f-body);color:#b6c3d5}
+#draft .undo-chip>span small strong{color:#5fd38d;font-weight:700}
+#draft .undo-chip button{all:unset;cursor:pointer;flex:none;display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px;border-radius:8px;border:1px solid rgba(244,238,220,.3);color:var(--cream);font:600 13px var(--f-body)}
+#draft .undo-chip button::before{content:"";width:14px;height:14px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3 2 7l4 4' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2.5 7H10a4 4 0 0 1 0 8H8' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3 2 7l4 4' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2.5 7H10a4 4 0 0 1 0 8H8' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat}
+#draft .undo-chip button:hover{border-color:var(--cream);background:rgba(244,238,220,.08)}
 #draft .undo-chip button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-#draft .undo-chip.growth-toast span{display:flex;gap:8px;align-items:baseline}
-#draft .undo-chip.growth-toast small{font-size:12px;color:#b6c3d5}
 
 /* ---- Roster complete: a short stamp that never blocks moves ---- */
 .roster-stamp{position:fixed;left:50%;top:42%;z-index:60;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 22px;border:3px solid var(--gold);border-radius:12px;background:rgba(11,27,51,.92);box-shadow:0 10px 40px rgba(0,0,0,.5);transform:translate(-50%,-50%) rotate(-4deg);animation:rosterStamp 2.2s cubic-bezier(.2,1.4,.4,1) forwards}
