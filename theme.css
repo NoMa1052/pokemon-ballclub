@@ -265,3 +265,5 @@ html{font-synthesis:none}
 .submitrow input{width:0;flex:1 1 auto}
 /* Status bar / overscroll area takes the page's top color so there's no dark band above the header. */
 html,body{background-color:var(--sky2)}
+/* One continuous background: no corner glows, so the top of the page matches the status bar exactly. */
+body{background:linear-gradient(180deg,var(--sky2) 0,var(--sky) 520px) var(--sky2) no-repeat!important}
