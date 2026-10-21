@@ -356,3 +356,18 @@ body.pack-min:not(.is-packs) #draft #poolHead{margin-top:10px}
 #season .season-head{gap:12px!important}
 #season .season-rec b{font-size:clamp(46px,13vw,62px)!important;margin:2px 0!important;line-height:1!important}
 #season .season-award .aw-who img{width:54px;height:54px;margin:-8px -4px -8px -6px}
+/* Results header v4: smaller overall; award cards centered on the player */
+#season .season-rec b{font-size:clamp(40px,11vw,52px)!important}
+#season .season-tiles>div{min-height:96px;padding:10px 6px;gap:4px}
+#season .season-pennant{width:62px;height:42px;padding-right:16px;font-size:21px}
+#season .season-tiles b{font-size:32px;line-height:42px}
+#season .season-tiles .season-word,#season .season-tiles .is-champ .season-word{font-size:18px;line-height:24px}
+#season .season-tiles em{font-size:11px}
+#season .season-award{align-items:center!important;text-align:center;gap:4px!important;padding:10px 10px 12px!important}
+#season .season-award .aw-who{flex-direction:column;gap:0;width:100%}
+#season .season-award .aw-who img{width:72px;height:72px;margin:-4px 0 -6px}
+#season .season-award .aw-who b{font-size:15px;line-height:1.35;max-width:100%;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#season .season-award .aw-stats{width:100%;grid-template-columns:1fr 1fr!important;padding-top:8px;margin-top:4px}
+#season .season-award .aw-stats span{align-items:center}
+#season .season-award .aw-stats b{font-size:17px}
+#season .season-award .aw-stats small{font-size:9px}
