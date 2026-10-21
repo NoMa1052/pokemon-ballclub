@@ -278,3 +278,20 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 .candy-sheet .candy-group+.candy-group{margin-top:18px}
 .candy-sheet .candy-group h3{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;padding-bottom:6px;border-bottom:1px solid rgba(244,238,220,.14);font:600 13px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#e8c766;background:none!important}
 .candy-sheet .candy-group h3 small{font:500 12px var(--f-body);letter-spacing:0;text-transform:none;color:#8fa3bd}
+
+/* ---- Packs draft panel: minimal header with progress ---- */
+.pack-min #draft #handToast,.pack-min #throwBox .throw-txt,.pack-min #throwBox .throw-sub{display:none!important}
+.pack-min #throwBox .tapcue{font-size:13px!important;opacity:.75}
+#draft .pk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:14px 0 8px}
+#draft .pk-head>b{display:flex;align-items:baseline;gap:6px;font:600 13px var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:#e8c766}
+#draft .pk-head>b span{font-size:24px;letter-spacing:0;color:var(--cream)}
+#draft .pk-head>b small{font-size:13px;letter-spacing:.04em;color:#8fa3bd}
+#draft .pk-undo{display:flex;align-items:baseline;gap:6px;min-width:0;font:500 13px var(--f-body);color:#8fa3bd}
+#draft .pk-undo em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#draft .pk-undo button{all:unset;cursor:pointer;font-weight:600;color:var(--cream);text-decoration:underline;text-underline-offset:3px;padding:6px 0}
+#draft .pk-undo button:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+#draft .pk-progress{display:flex;gap:3px;margin:0 0 4px}
+#draft .pk-progress i{flex:1;height:4px;border-radius:2px;background:rgba(244,238,220,.12)}
+#draft .pk-progress i.done{background:#e3350d}
+#draft .pk-progress i.now{background:#ffcb05}
+#draft .pk-start{display:block!important;margin:14px auto 0!important;font-size:13px!important;color:#8fa3bd!important}
