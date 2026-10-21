@@ -122,3 +122,12 @@ body:not(.is-packs) #draft .spin-actions+.sortrow{margin-top:4px!important}
 #season .team-bar i.hi::after{background:#5fd38d}
 #season .team-bar b{font:700 20px var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
 #season .panel:has(.season-head) .res-top{display:none!important}
+
+/* ---- Trim lines: a thin red rule over a faint cream one, in place of the zigzag stitching ---- */
+:root{--stitch-svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3Cpath d='M0 1H4' stroke='%23e3350d' stroke-width='1.2'/%3E%3Cpath d='M0 4H4' stroke='%23f4eedc' stroke-opacity='.35' stroke-width='1'/%3E%3C/svg%3E")}
+.stitchline{height:5px!important;background:var(--stitch-svg) center/4px 5px repeat-x!important}
+.stand .stitchline,.dc-card .stitchline{background:var(--navy) var(--stitch-svg) center/4px 5px repeat-x!important}
+.brand-stitch{opacity:.8!important}
+#draft.panel::before{height:5px!important;background:var(--stitch-svg) center/4px 5px repeat-x!important;opacity:1!important}
+.pen::after{height:5px!important;background:var(--navy) var(--stitch-svg) center/4px 5px repeat-x!important}
+.sheet-body h3{background:var(--stitch-svg) left bottom/4px 5px repeat-x!important}
