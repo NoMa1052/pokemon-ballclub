@@ -15,7 +15,7 @@ jobs:
           set -e
           BASE=https://pokemon-ballclub.vercel.app
           mkdir -p site
-          FILES="apple-touch-icon.png brand.css brand.js clubhouse.js core.js data.js development-ui.js development.js evolution-data.js extra.css extra2.css fantasy-season.css fantasy-season.js favicon.png field-flow.js hand.js index.html integrated-stats.css integrated-stats.js items.css items.js logo-hd.avif logo.css logo.webp odds.js pack-foil-v2.webp pack-v2.css pack.css pack.js phase3.css phase3.js phase4.css polish.css polish.js postseason-clean.css postseason-clean.js postseason.css postseason.js reveal.css reveal.js sanity.html sprites.js style.css theme.css ui.js ux.css ux.js"
+          FILES="apple-touch-icon.png brand.css brand.js clubhouse.js core.js data.js development-ui.js development.js evolution-data.js extra.css extra2.css fantasy-season.css fantasy-season.js favicon.png field-flow.js hand.js index.html integrated-stats.css integrated-stats.js items.css items.js logo-hd.avif logo.css logo.webp odds.js pack-foil-v2.webp pack-v2.css pack.css pack.js phase3.css phase3.js phase4.css polish.css polish.js postseason-clean.css postseason-clean.js postseason.css postseason.js reveal.css reveal.js sanity.html sprites.js style.css theme.css ui.js ux.css ux.js ui-review.css"
           for f in $FILES; do
             curl -fsSL "$BASE/$f" -o "site/$f"
           done
