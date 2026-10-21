@@ -38,18 +38,29 @@
     const earlier=Clubhouse.read().history.filter(h=>h.board===key&&h.id!==id).map(h=>h.wins);
     if(earlier.length){const top=Math.max(...earlier),diff=top-res.wins;best=diff<0?'New personal best':diff===0?'Ties your best':diff+' '+(diff===1?'win':'wins')+' off your best';}
   }catch(_){}
-  const summary=document.createElement('div');summary.className='clean-season-summary';
+  // One header: the record, then three equal tiles. The old pennant block stays in the DOM, hidden, for other layers.
+  panel.querySelector('.season-head')?.remove();top.hidden=true;
+  const tone=/^[AS]/.test(res.grade)?'#5fd38d':/^B/.test(res.grade)?'#8fd3ff':/^C/.test(res.grade)?'#ffcb05':'#ff8a70';
+  const playoff=post.champ?['Champions',ws?'Won '+ws[1]+'–'+ws[2]:'World Series']:post.made?['Made it',outcome]:['Missed','Needs about 88 wins'];
+  const head=document.createElement('div');head.className='season-head';
+  head.innerHTML=`<div class="season-rec" aria-label="${res.wins} wins and ${162-res.wins} losses"><small>Final · 162 games</small><b>${res.wins}–${162-res.wins}</b>${best?`<span>${esc(best)}</span>`:''}</div>
+   <div class="season-tiles"><div><small>Grade</small><span class="season-pennant" style="--tone:${tone}">${esc(res.grade)}</span><em>Season result</em></div>
+   <div><small>Team OVR</small><b>${Number(teamOvr())}</b><em>Roster rating</em></div>
+   <div><small>Playoffs</small><b class="season-word">${esc(playoff[0])}</b><em>${esc(playoff[1])}</em></div></div>
+   <p class="season-runs">${(res.runs.rs/162).toFixed(1)} runs scored per game · ${(res.runs.ra/162).toFixed(1)} allowed</p>`;
+  top.after(head);
+  const summary=document.createElement('div');summary.className='clean-season-summary';summary.hidden=true;
   summary.innerHTML='<div class="clean-outcome"><b>'+esc(outcome)+'</b>'+
    (extras.length?'<span>'+extras.map(esc).join(' · ')+'</span>':'')+'</div>'+
    '<div class="clean-metrics"><span>'+(res.runs.rs/162).toFixed(1)+' R/G</span><span>'+(res.runs.ra/162).toFixed(1)+' RA/G</span>'+
    (best?'<span>'+esc(best)+'</span>':'')+'</div>';
-  top.after(summary);
+  head.after(summary);
   team.classList.add('clean-postseason');
   team.querySelector('.postseason-eyebrow')?.remove();
   const title=team.querySelector('.postseason-heading h3');if(title)title.textContent='Final Team';
   team.querySelector('.postseason-heading p')?.remove();
   const overall=team.querySelector('.postseason-overall');
-  if(overall){overall.innerHTML='<strong>'+Number(teamOvr())+'</strong><span>OVR</span>';overall.setAttribute('aria-label','Team rating '+teamOvr()+' overall');}
+  if(overall)overall.remove();
   const field=$('postseasonFieldPanel'),ratings=$('postseasonRatingsPanel'),nav=team.querySelector('.postseason-tabs');
   if(!field||!ratings||!nav)return;
   // Keep the original full-size pitching staff board. This uses the
