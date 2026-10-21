@@ -32,7 +32,13 @@ function applyCandy(slot,nextId){
  const cancel=handCancel;handCancel=function(){const result=cancel();run.masterQueue=[];if(!run.second)run.doubleArmed=false;saveRun();return result};
  const base=render;render=function(){base();if(run.candies==null){run.candies=1;saveRun()}
   document.getElementById('itemTools')?.remove();
-  if(!run.locked&&!run.result){const tools=document.createElement('div');tools.id='itemTools';tools.innerHTML=`<button class="btn candy-control" ${!candyOptions().length?'disabled':''}><img src="${ITEM_ART['rare-candy']}" alt=""><span>Rare Candy<small>${run.candies?(!run.picks.length?'1 left · Draft first':run.hand?'1 left · Place first':'1 left'):'Used'}</small></span></button>`;document.getElementById('field').before(tools);tools.querySelector('button').onclick=()=>showCandy();}
+  // Rare Candy lives in the draft panel and only appears when it can be used right now.
+  const draft=document.getElementById('draft'),count=candyOptions().length;
+  if(!run.locked&&!run.result&&!run.hand&&count&&draft&&!draft.hidden){
+   const tools=document.createElement('div');tools.id='itemTools';tools.className='item-row';
+   tools.innerHTML=`<button class="candy-control" type="button"><img src="${ITEM_ART['rare-candy']}" alt=""><span><b>Rare Candy</b><small>Evolve or boost a teammate</small></span><em>1 left</em></button>`;
+   const anchor=draft.querySelector('#newRun');if(anchor)anchor.before(tools);else draft.append(tools);
+   tools.querySelector('button').onclick=()=>showCandy();}
   const master=document.getElementById('doubleBtn');if(master)master.onclick=()=>{if(!run.doubles||run.second)return;run.doubleArmed=true;saveRun();openReveal(run.spin,true)};
  };render();
 })();
