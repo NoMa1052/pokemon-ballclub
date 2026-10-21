@@ -29,7 +29,7 @@
    const vals=[...report.querySelectorAll('.team-bar b')].map(b=>+b.textContent),note=report.querySelector(':scope > p.hint');
    if(note&&vals.length&&Math.min(...vals)>=80)note.hidden=true;}
   $('resultClubhouse')?.remove();
-  const help=team.querySelector('.postseason-field-help');if(help)help.textContent='Tap a player to see their season stats.';
+  const help=team.querySelector('.postseason-field-help');if(help)help.textContent='Tap a player for their card and season stats.';
  }
  const prev=finish;finish=function(scroll){const v=prev(scroll);layout();return v};
  layout();
