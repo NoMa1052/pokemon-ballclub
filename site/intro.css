@@ -1,6 +1,6 @@
 /* Load-in overlay (see intro.js). */
 #intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;cursor:pointer}
-#intro .in-bg{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 42%,#12284a 0%,#0b1b33 55%,#060f1f 100%)}
+#intro .in-bg{position:absolute;inset:0;background:linear-gradient(180deg,var(--sky2,#10254a) 0,var(--sky,#0b1b33) 520px)} /* same as the page, so nothing shifts when it fades */
 #intro .in-badge{position:relative;width:min(340px,76vw);aspect-ratio:720/508;opacity:0;transform-origin:50% 50%;will-change:transform,opacity}
 #intro .in-badge img,#intro .in-badge svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 #intro .in-badge svg{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;overflow:hidden}
