@@ -35,9 +35,9 @@ function decoratePen(){
   // In an 11-pick run SP1 is the whole rotation and pitches from the mound, so the card shows only the pen.
 }
 function decorateDraftDone(){
-  const pb=$("playBtn");if(!pb||document.querySelector(".draftcard-btn"))return;
-  pb.insertAdjacentHTML("afterend",'<button class="btn draftcard-btn" id="dcBtn">See your draft card</button>');
-  $("dcBtn").onclick=openDC;
+  // "Play your season" opens the draft card first; the card's own button starts the season.
+  const pb=$("playBtn");if(!pb||pb._play)return;
+  pb._play=pb.onclick;pb.onclick=()=>openDC();
 }
 
 // ---- render hook ----
@@ -71,10 +71,30 @@ function signed(m,slot){
   const m=BYID.get(id),s=slotList().find(x=>run.slots[x]&&run.slots[x].id===id)||slot;signed(m,s);
   if(run.picks.length===run.size)setTimeout(openDC,reduce()?0:1100);
 }}
+// Save the draft card as a PNG: share sheet on phones (Save Image), a download elsewhere.
+async function saveDC(root){
+  const btn=root.querySelector("#dcSave"),shot=root.querySelector(".dc-shot");if(!btn||!shot||btn.disabled)return;
+  const label=t=>{btn.textContent=t};btn.disabled=true;label("Saving…");
+  try{
+    if(!window.html2canvas)await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s.onload=ok;s.onerror=no;document.head.append(s)});
+    root.classList.add("dc-capturing");
+    const canvas=await html2canvas(shot,{backgroundColor:"#0b1b33",scale:Math.min(3,Math.max(2,devicePixelRatio||2)),useCORS:true,logging:false,ignoreElements:e=>e.id==="dcSave",onclone:doc=>doc.querySelector(".dc")?.classList.add("dc-capturing")});
+    root.classList.remove("dc-capturing");
+    // Frame the card with a navy margin so nothing touches the image edge.
+    const pad=Math.round(canvas.width*.05),framed=document.createElement("canvas");framed.width=canvas.width+pad*2;framed.height=canvas.height+pad*2;
+    const fx=framed.getContext("2d");fx.fillStyle="#0b1b33";fx.fillRect(0,0,framed.width,framed.height);fx.drawImage(canvas,pad,pad);
+    const blob=await new Promise(r=>framed.toBlob(r,"image/png"));const name="ballclub-draft-card.png";
+    const file=new File([blob],name,{type:"image/png"});
+    if(navigator.canShare?.({files:[file]})&&matchMedia("(pointer:coarse)").matches){try{await navigator.share({files:[file],title:"My Ballclub draft"})}catch(e){if(e.name!=="AbortError")throw e}}
+    else{const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.append(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
+    label("Saved");
+  }catch(_){root.classList.remove("dc-capturing");label("Couldn't save")}
+  setTimeout(()=>{btn.disabled=false;label("Save image")},2200);
+}
 function openDC(){
   if(document.querySelector(".dc")||!run||run.locked||run.result||run.picks.length<run.size)return;
   const list=slotList(),field=list.filter(s=>FIELD_SLOTS.includes(s)),staff=list.filter(s=>!FIELD_SLOTS.includes(s));
-  const img=m=>`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" loading="lazy">`;
+  const img=m=>`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" crossorigin="anonymous">`;
   let i=0;const row=s=>{const m=run.slots[s];if(!m)return"";const v=posOvr(m,s);return `<div class="dc-row" style="--i:${i++}"><i>${short(s)}</i>${img(m)}<span>${esc(m.name)}</span><em class="${ovCls(v)}">${v}</em></div>`};
   const best=ss=>ss.filter(s=>run.slots[s]).reduce((a,s)=>!a||posOvr(run.slots[s],s)>posOvr(run.slots[a],a)?s:a,null);
   const bat=best(field),ace=best(staff.filter(s=>s.startsWith("SP"))),rare=list.find(s=>run.slots[s]&&(run.slots[s].leg||run.slots[s].shiny));
@@ -83,7 +103,8 @@ function openDC(){
   const g=teamOvr();
   const el=document.createElement("div");el.className="dc";el.setAttribute("role","dialog");el.setAttribute("aria-label","Draft complete");
   el.innerHTML=`<div class="dc-in">
-    <div class="dc-kick">${run.size} picks in${isPack()?" · Packs":""}</div>
+    <div class="dc-shot">
+    <div class="dc-kick"><span>${run.size} picks in${isPack()?" · Packs":""}</span><button type="button" class="dc-save" id="dcSave">Save image</button></div>
     <div class="dc-title">Draft complete</div>
     <div class="dc-card">
       <div class="dc-band"><b>Your Ballclub</b><span class="dc-grade"><small>Grade</small>${tilesHTML(g??"--")}</span></div>
@@ -91,12 +112,15 @@ function openDC(){
       <div class="dc-cols"><div class="dc-col"><h4>Lineup</h4>${field.map(row).join("")}</div><div class="dc-col"><h4>Pitching</h4>${staff.map(row).join("")}</div></div>
     </div>
     <div class="dc-stars">${stars.map(([t,s],k)=>{const m=run.slots[s];return `<div class="dc-star" style="--i:${k}"><small>${t}</small>${img(m)}<b>${esc(m.name)}</b><em>${posOvr(m,s)}</em></div>`}).join("")}</div>
+    <div class="dc-mark">pokemon-ballclub.vercel.app</div>
+    </div>
     <div class="dc-acts"><button class="btn primary" id="dcPlay">Lock in and play 162</button><button class="btn quiet" id="dcBack">Tweak the lineup first</button></div>
   </div>`;
   document.body.appendChild(el);document.body.classList.add("dc-open");
   const close=()=>{el.remove();document.body.classList.remove("dc-open")};
   $("dcBack").onclick=close;
-  $("dcPlay").onclick=()=>{close();const pb=$("playBtn");if(pb)pb.click()};
+  $("dcPlay").onclick=()=>{close();const pb=$("playBtn");if(pb?._play)pb._play();else if(pb)pb.click()};
+  $("dcSave").onclick=()=>saveDC(el);
   $("dcPlay").focus({preventScroll:true});
 }
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){const d=document.querySelector(".dc");if(d){d.remove();document.body.classList.remove("dc-open")}}});

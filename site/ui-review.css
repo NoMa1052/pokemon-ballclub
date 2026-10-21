@@ -142,3 +142,17 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .reg{grid-column:1;grid-row:2;
 body:not(.is-packs) #draft .poolhead:not(.legend) .reg small{font:inherit!important;color:rgba(255,255,255,.65)!important;opacity:1!important}
 body:not(.is-packs) #draft .poolhead:not(.legend) .reg small::before{content:"· "}
 body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-row:1/3;margin:0;align-items:center;padding:6px 10px;border-radius:8px;background:rgba(11,27,51,.28);color:#fff}
+
+/* ---- Draft card: Play opens it; a small text button saves it as an image ---- */
+.dc .dc-shot{display:grid;gap:12px;padding:4px 2px 8px;background:transparent}
+.dc .dc-kick{position:relative}
+.dc .dc-save{all:unset;cursor:pointer;position:absolute;right:0;top:50%;transform:translateY(-50%);font:600 12px var(--f-body);letter-spacing:0;text-transform:none;color:#b6c3d5;text-decoration:underline;text-underline-offset:3px;padding:6px 2px}
+.dc .dc-save:hover{color:var(--cream)}
+.dc .dc-save:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:3px}
+.dc .dc-save:disabled{cursor:default;text-decoration:none}
+.dc .dc-mark{display:none;text-align:center;font:500 11px var(--f-data);letter-spacing:.16em;text-transform:uppercase;color:rgba(244,238,220,.45)}
+.dc.dc-capturing .dc-mark{display:block}
+
+#draft .simulate-note{display:none!important}
+.dc.dc-capturing,.dc.dc-capturing *{animation:none!important;transition:none!important;opacity:1}
+.dc.dc-capturing .dc-row,.dc.dc-capturing .dc-star,.dc.dc-capturing .dc-card,.dc.dc-capturing .dc-title{transform:none!important}
