@@ -10,8 +10,17 @@
    const byName=n=>Object.values(run.slots).find(m=>m?.name===n);
    const items=[...awards.querySelectorAll('.award')].map(a=>({t:a.querySelector('.label')?.textContent||'',n:a.querySelector('b')?.textContent||'',d:a.querySelector('span:last-child')?.textContent||''}));
    const box=document.createElement('div');box.className='season-awards';
-   const stats=d=>d.replace(/ 0\.(\d{3}) OPS/,' .$1 OPS').replace(/, /g,' · ').split(' · ').slice(0,2).map(t=>{const m=t.trim().match(/^([\d.]+)\s*(.+)$/);return m?`<span><b>${esc(m[1])}</b><small>${esc(m[2])}</small></span>`:''}).join('');
-   box.innerHTML=items.map(x=>{const m=byName(x.n),label=/arm/i.test(x.t)?'Cy Young':/mvp/i.test(x.t)?'MVP':x.t;return `<div class="season-award"><small class="aw-label">${esc(label)}</small><div class="aw-who">${m?`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" loading="lazy">`:''}<b>${esc(x.n)}</b></div><div class="aw-stats">${stats(x.d)}</div></div>`}).join('');
+   // Show why each player won: MVP leads with OPS (how it's picked) plus the stats he led the team in;
+   // Cy Young shows ERA, record and strikeouts.
+   const me=run.result.me,f3=n=>n.toFixed(3).replace(/^0/,'');
+   const bat=h=>{const st=h.st,ab=Math.max(1,st.ab),obp=(st.h+st.bb)/Math.max(1,st.pa),slg=(st.h+st.d+2*st.t+3*st.hr)/ab;return {OPS:[obp+slg,f3(obp+slg)],AVG:[st.h/ab,f3(st.h/ab)],OBP:[obp,f3(obp)],HR:[st.hr,st.hr],RBI:[st.rbi,st.rbi],R:[st.r,st.r],SB:[st.sb,st.sb]}};
+   const cell=(v,l)=>`<span><b>${esc(String(v))}</b><small>${esc(l)}</small></span>`;
+   const mvpStats=name=>{const hs=(me.order||[]).filter(h=>h.st),h=hs.find(x=>x.m.name===name);if(!h)return '';const mine=bat(h),all=hs.map(bat);
+    const lead=['AVG','HR','RBI','R','SB'].map(k=>[k,all.filter(o=>o[k][0]>mine[k][0]).length]).sort((a,b)=>a[1]-b[1]).slice(0,2).map(x=>x[0]);
+    return cell(mine.OPS[1],'OPS')+lead.map(k=>cell(mine[k][1],k)).join('')};
+   const cyStats=name=>{const ps=[...(me.rot||[]),me.cl,me.pen].filter(p=>p?.st?.outs&&p.m.name===name),p=ps[0];if(!p)return '';const st=p.st;
+    return cell((st.r*27/st.outs).toFixed(2),'ERA')+cell(`${st.w}–${st.l}`,'W–L')+cell(st.k,'K')};
+   box.innerHTML=items.map(x=>{const m=byName(x.n),cy=/arm/i.test(x.t),label=cy?'Cy Young':/mvp/i.test(x.t)?'MVP':x.t;return `<div class="season-award"><small class="aw-label">${esc(label)}</small><div class="aw-who">${m?`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" loading="lazy">`:''}<b>${esc(x.n)}</b></div><div class="aw-stats">${cy?cyStats(x.n):mvpStats(x.n)}</div></div>`}).join('');
    awards.hidden=true;head.after(box);
   }
   // 2. One action card: post the team, then share or start over.
