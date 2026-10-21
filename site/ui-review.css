@@ -257,3 +257,21 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 .candy-sheet .cc-score span{color:#8fa3bd}
 .candy-sheet .cc-score i{font-style:normal;font-size:22px;color:#8fa3bd}
 .candy-sheet .cc-score em{font-style:normal;font-size:16px;padding:3px 9px;border-radius:999px;background:#5fd38d;color:#0b1b33}
+
+/* ---- Rare Candy: clean list ---- */
+.candy-sheet .candy-rows{display:flex;flex-direction:column}
+.candy-sheet .candy-row{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 6px;border-bottom:1px solid rgba(244,238,220,.08);border-radius:8px}
+.candy-sheet .candy-row:last-child{border-bottom:0}
+.candy-sheet .candy-row:hover{background:rgba(244,238,220,.05)}
+.candy-sheet .candy-row:focus-visible{outline:3px solid var(--gold);outline-offset:-2px}
+.candy-sheet .candy-row img{width:52px;height:52px;image-rendering:pixelated}
+.candy-sheet .cr-name{display:flex;flex-direction:column;gap:4px;min-width:0}
+.candy-sheet .cr-name b{font:600 16px/1.2 var(--f-body);color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.candy-sheet .cr-name b i{font-style:normal;color:#e8c766}
+.candy-sheet .cr-name small{display:flex;align-items:center;gap:8px;font:600 12px var(--f-data);letter-spacing:.04em;color:#b6c3d5}
+.candy-sheet .cr-name em{font-style:normal;padding:1px 6px;border-radius:4px;font:600 10px var(--f-data);letter-spacing:.08em;text-transform:uppercase}
+.candy-sheet .cr-name em.evo{background:rgba(176,124,255,.3);color:#e0d0ff}
+.candy-sheet .cr-name em.boost{background:rgba(95,211,141,.2);color:#9fe8bd}
+.candy-sheet .cr-gain{display:flex;flex-direction:column;align-items:flex-end}
+.candy-sheet .cr-gain b{font:700 26px/1 var(--f-data);color:#5fd38d}
+.candy-sheet .cr-gain small{font:500 12px var(--f-data);color:#b6c3d5;margin-top:2px;font-variant-numeric:tabular-nums}
