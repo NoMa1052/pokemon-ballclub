@@ -19,7 +19,7 @@
  }
  function confirmExchange(s){
   const m=BYID.get(run.hand.held),other=run.slots[s],held=m.id,occupant=other.id,old=posOvr(other,s),rating=posOvr(m,s);
-  dialog(`Swap at ${lbl(s)}?`,`<div class="move-person">${tok(m)}<div><b>${esc(m.name)}</b><span>Goes to ${SLOT_NAME[s].toLowerCase()}</span></div></div><p class="move-rating">${lbl(s)} rating <b>${old} → ${rating}</b> <strong class="${rating>=old?'gain':'loss'}">(${delta(rating-old)})</strong></p><div class="move-person displaced">${tok(other)}<div><b>${esc(other.name)}</b><span>Returns to your hand to place next</span></div></div><div class="move-confirm-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="confirmExchange">Swap Pokémon</button></div>`,(el,close)=>{
+  dialog(`Swap at ${lbl(s)}?`,`<div class="move-person">${tok(m)}<div><b>${esc(m.name)}</b><span>Goes to ${SLOT_NAME[s].toLowerCase()}</span></div></div><p class="move-rating">${lbl(s)} rating <b>${old} → ${rating}</b> <strong class="${rating>=old?'gain':'loss'}">(${delta(rating-old)})</strong></p><div class="move-person displaced">${tok(other)}<div><b>${esc(other.name)}</b><span>Returns to your hand${(()=>{const o=slotList().filter(x=>!run.slots[x]&&x!==s).sort((a,b)=>posOvr(other,b)-posOvr(other,a))[0];return o?` · best open: ${lbl(o)} ${posOvr(other,o)}`:''})()}</span></div></div><div class="move-confirm-actions"><button class="btn" data-close>Cancel</button><button class="btn primary" id="confirmExchange">Swap Pokémon</button></div>`,(el,close)=>{
    el.querySelector('#confirmExchange').onclick=()=>{close();if(run.hand?.held!==held||run.slots[s]?.id!==occupant)return;handPlace(s);render()};
   });
  }
