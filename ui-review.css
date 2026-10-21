@@ -299,3 +299,16 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 .pack-min #draft .pool-pick{display:none!important}
 .pack-min body:not(.is-packs) #draft #poolHead{margin-top:6px}
 body.pack-min:not(.is-packs) #draft #poolHead{margin-top:10px}
+
+/* ---- Roster complete: one obvious next step ---- */
+.roster-done #draft #handToast,.roster-done #draft > .note,.roster-done #draft .simulate-note{display:none!important}
+#draft .pk-progress.all-done i{background:#5fd38d}
+#draft .rd-next{margin:16px 0 4px;padding:18px 16px 14px;border-radius:14px;text-align:center;background:linear-gradient(160deg,rgba(95,211,141,.12),rgba(11,27,51,.55));border:1px solid rgba(95,211,141,.35)}
+#draft .rd-next h3{margin:0;font:400 24px/1.1 var(--f-display);color:var(--cream)}
+#draft .rd-next>p:first-of-type{margin:6px 0 14px;font:500 14px/1.4 var(--f-body);color:#c9d4e3}
+#draft .rd-next #playBtn{display:flex!important;align-items:center;justify-content:center;gap:10px;width:100%;min-height:58px!important;margin:0!important;font:700 19px var(--f-body)!important;animation:rdPulse 2.4s ease-in-out infinite}
+#draft .rd-next #playBtn i{font-style:normal;font-size:22px;transition:transform .2s}
+#draft .rd-next #playBtn:hover i{transform:translateX(3px)}
+#draft .rd-next .rd-tip{margin:12px 0 0;font:500 12px/1.4 var(--f-body);color:#8fa3bd}
+@keyframes rdPulse{0%,100%{box-shadow:0 4px 0 #a8250a,0 0 0 0 rgba(227,53,13,.45)}50%{box-shadow:0 4px 0 #a8250a,0 0 0 8px rgba(227,53,13,0)}}
+@media(prefers-reduced-motion:reduce){#draft .rd-next #playBtn{animation:none}}
