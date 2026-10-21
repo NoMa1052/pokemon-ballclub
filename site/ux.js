@@ -43,11 +43,9 @@
     const openRating = best == null ? null : posOvr(m, best);
     const openRole = best == null ? null : lbl(role(best));
     const sameFit = best != null && openRole === m.hspot && openRating === m.ovr;
-    const fitLine = best == null
-      ? `Best overall: <b>${m.hspot} ${m.ovr}</b>`
-      : sameFit ? `Best available: <b>${openRole} ${openRating}</b>`
-      : `Available: <b>${openRole} ${openRating}</b> · Best overall: <b>${m.hspot} ${m.ovr}</b>`;
-    return `<button class="cand compact-cand${m.shiny ? ' shiny' : ''}" data-id="${m.id}" aria-pressed="false" ${taken ? 'disabled' : ''}>${tok(m)}<span class="compact-info"><b>${esc(m.name)}${m.shiny ? '<small class="rare-label">Shiny</small>' : m.leg ? '<small class="rare-label">Legend</small>' : ''}</b><small>${m.types.map(cap).join(' / ')}${taken ? ' · On team' : ''}</small><span class="compact-fit">${fitLine}</span></span></button>`;
+    const badge = best == null ? [m.hspot, m.ovr] : [openRole, openRating];
+    const fitLine = best != null && !sameFit ? `Best overall ${m.hspot} ${m.ovr}` : '';
+    return `<button class="cand compact-cand${m.shiny ? ' shiny' : ''}" data-id="${m.id}" aria-pressed="false" aria-label="${esc(m.name)}, ${badge[1]} at ${badge[0]}${best != null ? ' (best open spot)' : ''}" ${taken ? 'disabled' : ''}>${tok(m)}<span class="compact-info"><b>${esc(m.name)}${m.shiny ? '<small class="rare-label">Shiny</small>' : m.leg ? '<small class="rare-label">Legend</small>' : ''}</b><small>${m.types.map(cap).join(' / ')}${taken ? ' · On team' : ''}${fitLine ? ' · ' + fitLine : ''}</small></span><span class="cand-fit"><b>${badge[1]}</b><small>${badge[0]}${best != null ? ' open' : ''}</small></span></button>`;
   };
   function playerStats(m) {
     return `<details class="player-stats"><summary>Player stats & scouting</summary><div class="ux-statgrid">${KEY.map(([name, key]) => `<span>${name}<b>${m.r[key]}</b></span>`).join('')}</div><p class="hint">${m.types.map(cap).join(' / ')} · ${m.body} · ${ftin(m.ht)} · ${lbs(m.wt)} lb</p><p class="hint">Best overall position: <b>${m.hspot} · ${m.ovr}</b></p><p class="hint">${[...new Set(Object.values(m.why).flat())].map(esc).join(' · ')}</p></details>`;
@@ -171,7 +169,7 @@
     const submit=$('submitBtn');if(submit)submit.textContent='Post team';
     const name=$('teamName');if(name)name.setAttribute('aria-label','Team name');
     const again=$('again');if(again)again.textContent='Play again';
-    const share=season.querySelector('.share'),submitBox=$('submitBox');if(share&&submitBox)submitBox.before(share);
+    const share=season.querySelector('.share'),submitBox=$('submitBox');if(share&&submitBox)submitBox.after(share);
     season.querySelectorAll('.tbl').forEach(t=>{t.setAttribute('tabindex','0');t.setAttribute('aria-label','Season stats. Scroll horizontally for more columns.');});
   }
   const baseFinish=finish;
@@ -195,19 +193,20 @@
     const draft=$('draft'),throwBox=$('throwBox');
     if(throwBox&&!throwBox.querySelector('.spin-reels')){const reels=document.createElement('div');reels.className='spin-reels';reels.innerHTML='<div class="spin-reel"><small>TYPE</small><b id="typeReel">?</b></div><div class="spin-reel"><small>REGION</small><b id="regionReel">?</b></div>';throwBox.querySelector('.tapcue').before(reels);}
     const head=$('poolHead'),controls=draft.querySelector('.spinctl'),list=$('cands');
-    if(head&&controls){head.after(controls);controls.classList.add('spin-actions');controls.setAttribute('role','group');controls.setAttribute('aria-label','Redraw this Pokémon selection');}
-    if(head){const jump=document.createElement('button');jump.className='btn quiet field-jump';jump.textContent='View field';jump.setAttribute('aria-label','Jump to the baseball field');jump.onclick=()=>$('field').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});head.after(jump);}
-    if(!list||run.selected)return;
-    list.classList.add('spin-scroll');
+    if(head&&controls){head.after(controls);controls.classList.add('spin-actions');controls.setAttribute('role','group');controls.setAttribute('aria-label','Redraw this Pokémon selection');
+      controls.querySelector('.label')?.remove();const rb=$('rerollBtn');if(rb)controls.append(rb);}
+    const ph=head?.querySelector('.poolhead');
+    if(ph&&!ph.querySelector('.pool-pick'))ph.insertAdjacentHTML('beforeend',`<span class="pool-pick">Pick ${Math.min(run.picks.length+1,run.size)}<small>of ${run.size}</small></span>`);
+    const hint=$('place')?.querySelector('.hint');if(hint&&!run.selected)hint.textContent='Tap a Pokémon, then choose its spot on the field.';
   }
   function decorateControls() {
     const lab=$('spinLabel');if(lab&&!spinning){lab.textContent=isPack()?'Open Pack':'Spin your next pick';lab.nextElementSibling.textContent=`Pick ${Math.min(run.picks.length+1,run.size)} of ${run.size}`;}
     const cue=$('draft').querySelector('.tapcue');if(cue&&isPack())cue.textContent='Swipe to rip · tap to open';
-    const rb=$('rerollBtn');if(rb){rb.innerHTML=`${isPack()?'Re-rip':'Respin all'} <small>${run.rerolls} remaining</small>`;rb.title=isPack()?'Replace these five cards':'Get a new type and region';}
+    const rb=$('rerollBtn');if(rb){rb.innerHTML=isPack()?`Re-rip <small>${run.rerolls} remaining</small>`:`Respin both <small>${run.rerolls} left</small>`;rb.title=isPack()?'Replace these five cards':'Get a new type and region';}
     const db=$('doubleBtn');if(db)db.innerHTML=`${run.doubleArmed?'Master Ball ready':'Master Ball'} <small>${run.doubles} left</small>`;
     for(const [id,kind,key] of [['keepType','type','type'],['keepGen','region','gen']]){
       const b=$(id);if(!b)continue;const sp=run.spin&&!run.unrevealed?run.spin:run.lastSpin;if(!sp)continue;
-      const value=kind==='type'?cap(sp.type):REGIONS[sp.gen];const changing=kind==='type'?'region':'type';b.innerHTML=`Keep ${esc(value)}<small>Change ${changing} · ${run.keeps[key]} remaining</small>`;b.title=`Keep the current ${kind} and draw a new ${changing}`;
+      const value=kind==='type'?cap(sp.type):REGIONS[sp.gen];const changing=kind==='type'?'region':'type';b.innerHTML=`Keep ${esc(value)}<small>New ${changing} · ${run.keeps[key]} left</small>`;b.title=`Keep the current ${kind} and draw a new ${changing}`;
     }
     $('draft').querySelectorAll('.spinctl + .hint').forEach(h=>h.hidden=true);
     document.querySelectorAll('.dc-grade small').forEach(l=>l.textContent='Roster rating');

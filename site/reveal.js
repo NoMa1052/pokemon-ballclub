@@ -37,7 +37,7 @@ function openReveal(sp,chooseAll=false){
   let i=0,busy=false,selected=[];
   const pick=id=>{closeReveal();run.selected=id;render();const pl=document.getElementById("place");if(pl)pl.scrollIntoView({behavior:"smooth",block:"center"})};
   const spread=()=>{
-    el.innerHTML=`<div class="rv-top"><span class="rv-count">${run.doubleArmed?`Choose 2 cards · ${selected.length}/2`:"Your pack"}</span><button class="btn rv-btn" id="rvList">Close</button></div>
+    el.innerHTML=`<div class="rv-top"><span class="rv-count">${run.doubleArmed?`Choose 2 cards · ${selected.length}/2`:"Your pack"}</span><button class="btn rv-btn" id="rvList">Back to field</button></div>
       <div class="rv-grid">${ms.map(m=>`<button class="rv-mini${selected.includes(m.id)?' master-selected':''}" data-id="${m.id}" aria-pressed="${selected.includes(m.id)}" aria-label="${run.doubleArmed?'Select':'Pick'} ${esc(m.name)}">${tcardHTML(m,true)}${selected.includes(m.id)?`<span class="master-order">${selected.indexOf(m.id)+1}</span>`:""}</button>`).join("")}</div>
       <div class="rv-opts">
         <button class="btn rv-opt" id="rvRerip" ${run.rerolls&&!run.second?"":"disabled"}>Re-rip<small>${run.rerolls} left</small></button>
@@ -55,7 +55,7 @@ function openReveal(sp,chooseAll=false){
     if(revealEl!==el)return;
     if(i>=ms.length){spread();return}
     const last=i===ms.length-1;
-    el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose" aria-label="Close pack reveal">Close</button><span class="rv-count">${i+1} / ${ms.length}</span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
+    el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose">Back to field</button><span class="rv-count">${i+1} / ${ms.length}</span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
       <button class="rv-stage" id="rvStage" aria-label="Next card">${tcardHTML(ms[i])}</button>
       <p class="rv-hint">${last?"Swipe or tap to see your pack":"Swipe left or tap to continue"}</p>`;
     el.querySelector("#rvClose").onclick=closeReveal;
