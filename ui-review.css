@@ -76,7 +76,7 @@ table.box tbody th{padding:4px 8px}
 body:not(.is-packs) #draft .spin-actions+.sortrow{margin-top:4px!important}
 
 /* ---- Undo: one slim line at the top of the draft panel, gone once the next pack or spin opens ---- */
-#draft .undo-chip{display:flex;align-items:center;gap:10px;margin:0 0 4px;padding:4px 4px 4px 12px;min-height:40px;border-radius:10px;background:rgba(244,238,220,.06);border:1px solid rgba(244,238,220,.12);font:500 13px/1.2 var(--f-body);color:#c9d4e3}
+#draft .undo-chip{display:flex;align-items:center;gap:10px;margin:14px 0 4px;padding:4px 4px 4px 12px;min-height:40px;border-radius:10px;background:rgba(244,238,220,.06);border:1px solid rgba(244,238,220,.12);font:500 13px/1.2 var(--f-body);color:#c9d4e3}
 #draft .undo-chip>span{flex:1;min-width:0;display:block!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #draft .undo-chip>span b{font-weight:600;color:var(--cream)}
 #draft .undo-chip>span small{display:inline!important;margin-left:6px;font:500 13px var(--f-body);color:#b6c3d5}
