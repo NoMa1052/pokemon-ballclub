@@ -534,6 +534,9 @@ function assign(cands,slots){
 // ---------- record ----------
 // Team runs scored and allowed over 162 games, starting from a league-average 729 each way.
 const LG_RUNS=729,EMPTY_HITTER=30;
+// Above 280 runs allowed nothing changes. Below it, each extra run saved is worth a little less, approaching 215.
+const RA_KNEE=280,RA_FLOOR=215;
+function softFloorRA(ra){return ra>=RA_KNEE?ra:RA_FLOOR+(RA_KNEE-RA_FLOOR)*Math.exp(-(RA_KNEE-ra)/(RA_KNEE-RA_FLOOR))}
 function teamRuns(slots,list){
   let rs=LG_RUNS,ra=LG_RUNS;
   for(const s of list){const m=slots[s];
@@ -543,7 +546,8 @@ function teamRuns(slots,list){
     else ra-=slotRuns(m,s);}
   // Small morale edge: 1% more scoring and 1% fewer runs allowed.
   if(legendaryPresence(slots)){rs*=1.01;ra*=.99}
-  return{rs:Math.max(300,rs),ra:Math.max(250,ra)};
+  // Run prevention tapers off near the bottom instead of stopping dead at a hard floor, so great pitching always counts a little.
+  return{rs:Math.max(300,rs),ra:softFloorRA(ra)};
 }
 // Team strength is the log of runs scored over runs allowed, the same ratio behind baseball's Pythagorean
 // win expectation. Five starters can shut down far more runs than one, so 16-pick rosters are scaled
@@ -551,7 +555,7 @@ function teamRuns(slots,list){
 const SIZE_SCALE={11:.70,16:1.29};
 // Only elite rosters get bent: above a typical good draft, strength is stretched (16 picks) or squeezed (11 picks)
 // so a perfect 162-0 takes roughly a top 1-in-1,000 draft at either size. Ordinary teams are unaffected.
-const TOP_BEND={11:[1.024,-.3],16:[1.03,.72]};
+const TOP_BEND={11:[1.024,-.3],16:[1.06,.2]};
 function rating(slots,list){const {rs,ra}=teamRuns(slots,list),n=list.length>=16?16:11,x=Math.log(rs/ra)/SIZE_SCALE[n],[t,k]=TOP_BEND[n];return x+k*Math.max(0,x-t)}
 // Strength to wins: average rosters land near .500, and a perfect season takes a near-perfect draft.
 // Steeper than real baseball on purpose, so 162-0 is possible.
