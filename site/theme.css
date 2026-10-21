@@ -263,3 +263,5 @@ html{font-synthesis:none}
 .mark-top{margin:0 0 4px 4px}
 .submit>*{min-width:0}
 .submitrow input{width:0;flex:1 1 auto}
+/* Status bar / overscroll area takes the page's top color so there's no dark band above the header. */
+html,body{background-color:var(--sky2)}
