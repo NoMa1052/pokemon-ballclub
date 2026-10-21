@@ -65,7 +65,7 @@
    <div class="season-tiles"><div><small>Grade</small><span class="season-pennant" style="--tone:${tone}">${esc(res.grade)}</span><em>Season result</em></div>
    <div><small>Team OVR</small><b>${Number(teamOvr())}</b><em>Roster rating</em></div>
    <div><small>Playoffs</small><b class="season-word">${esc(playoff[0])}</b><em>${esc(playoff[1])}</em></div></div>
-   <p class="season-runs">${(res.runs.rs/162).toFixed(1)} runs scored per game · ${(res.runs.ra/162).toFixed(1)} allowed</p>`;
+   <p class="season-runs">${(res.runs.rs/162).toFixed(1)} runs scored per game${(()=>{const me=res.me,ps=me?[...(me.rot||[]),me.cl,me.pen].filter(p=>p?.st?.outs&&p.role!=='FILL'):[],o=ps.reduce((a,p)=>a+p.st.outs,0);return o?` · ${(ps.reduce((a,p)=>a+p.st.r,0)*27/o).toFixed(2)} staff ERA`:''})()}</p>`;
   top.after(head);
   const summary=document.createElement('div');summary.className='clean-season-summary';summary.hidden=true;
   summary.innerHTML='<div class="clean-outcome"><b>'+esc(outcome)+'</b>'+
