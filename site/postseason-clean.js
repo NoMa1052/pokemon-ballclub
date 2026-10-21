@@ -108,8 +108,10 @@
   tabs.forEach((tab,i)=>{tab.onclick=()=>choose(i?'stats':'field');
    tab.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
      e.preventDefault();const dest=e.key==='Home'?0:e.key==='End'?1:1-i;tabs[dest].click();tabs[dest].focus({preventScroll:true});});});
-  field.addEventListener('click',e=>{const btn=e.target.closest('button[data-slot]');
-    if(btn&&run.slots[btn.dataset.slot])choose('stats',btn.dataset.slot);});
+  // Tapping a player on the field opens their card and season stats, same as in the Stats table.
+  field.addEventListener('click',e=>{const btn=e.target.closest('button[data-slot]');if(!btn||!run.slots[btn.dataset.slot])return;
+    e.stopPropagation();e.preventDefault();
+    [...ratings.querySelectorAll('button.fantasy-player')].find(x=>x.dataset.postseasonSlot===btn.dataset.slot)?.click();},true);
   choose('field');
  }
  const old=finish;finish=function(scroll){const value=old(scroll);decorate();return value;};decorate();
