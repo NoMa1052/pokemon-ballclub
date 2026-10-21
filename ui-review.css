@@ -172,3 +172,18 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 #postseasonTeam .postseason-tabs{display:grid!important;grid-template-columns:1fr 1fr!important}
 .box-who{grid-template-columns:24px 38px minmax(0,1fr)}
 .box-who img{width:42px;height:42px;margin:0 -2px}
+
+/* ---- Results order: highlights and one action card under the verdict ---- */
+#season .season-awards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+#season .season-award{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px 8px 6px;border-radius:10px;background:rgba(11,27,51,.6);border:1px solid rgba(244,238,220,.14)}
+#season .season-award img{width:48px;height:48px;flex:none;image-rendering:pixelated}
+#season .season-award span{display:flex;flex-direction:column;min-width:0}
+#season .season-award small{font:600 11px var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#e8c766}
+#season .season-award b{font:600 17px/1.15 var(--f-data);color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#season .season-award em{font:500 12px/1.3 var(--f-body);font-style:normal;color:#b6c3d5}
+#season .season-actions{display:flex;flex-direction:column;gap:10px;margin:22px 0 6px;padding:14px;border-radius:12px;background:rgba(11,27,51,.6);border:1px solid rgba(244,238,220,.14)}
+#season .season-actions .submit{margin:0!important;padding:0!important;border:0!important;background:none!important}
+#season .season-actions .share{margin:0!important;display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
+#season .season-actions .share .btn{min-height:44px!important;margin:0!important}
+#season .season-actions #shareMsg:empty{display:none}
+#season .season-summary{margin-top:22px}
