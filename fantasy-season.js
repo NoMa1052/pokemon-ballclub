@@ -46,7 +46,7 @@ if(bat){
 const ipf=s.outs/3,whip=ipf?((s.h+s.bb)/ipf).toFixed(2):'0.00',k9=ipf?(s.k*9/ipf).toFixed(1):'0.0';
 return head+`<div class="ss-slash ss-pitch"><div><b>${d.era.toFixed(2)}</b><small>ERA</small></div><div><b>${whip}</b><small>WHIP</small></div><div><b>${d.innings}</b><small>IP</small></div></div>
  <div class="ss-bigs">${big('Record',`${s.w}–${s.l}`,null)}${big('Strikeouts',s.k,teamRank(slot,x=>x.k))}${big('Saves',s.sv,s.sv?teamRank(slot,x=>x.sv):null)}${big('K per 9',k9,null)}</div>
- <div class="ss-lists">${rows('Workload',[['Games',s.g],['Starts',s.gs],['Batters faced',s.bf??(s.outs+s.h+s.bb)],['Pitches per inning',ipf?((s.outs+s.h+s.bb)*3.8/ipf).toFixed(1):'0.0']].slice(0,2))}${rows('Allowed',[['Hits',s.h],['Runs',s.r],['Home runs',s.hr],['Walks',s.bb]])}</div>`;
+ <div class="ss-lists">${rows('Workload',[['Games',s.g],['Starts',s.gs]])}${rows('Allowed',[['Hits',s.h],['Runs',s.r],['Home runs',s.hr],['Walks',s.bb]])}</div>`;
 };
 let active=null;
 function inspect(slot,trigger){
