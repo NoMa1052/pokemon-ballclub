@@ -295,3 +295,4 @@ body:not(.is-packs) #draft .poolhead:not(.legend) .pool-pick{grid-column:2;grid-
 #draft .pk-progress i.done{background:#e3350d}
 #draft .pk-progress i.now{background:#ffcb05}
 #draft .pk-start{display:block!important;margin:14px auto 0!important;font-size:13px!important;color:#8fa3bd!important}
+.reveal .rv-stage:focus{outline:none}

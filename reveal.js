@@ -56,7 +56,7 @@ function openReveal(sp,chooseAll=false){
     if(i>=ms.length){spread();return}
     const last=i===ms.length-1;
     el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose">Back to field</button><span class="rv-count">${i+1} / ${ms.length}</span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
-      <button class="rv-stage" id="rvStage" aria-label="Next card">${tcardHTML(ms[i])}</button>
+      <button class="rv-stage" id="rvStage" aria-label="Next card" data-autofocus>${tcardHTML(ms[i])}</button>
       <p class="rv-hint">${last?"Swipe or tap to see your pack":"Swipe left or tap to continue"}</p>`;
     el.querySelector("#rvClose").onclick=closeReveal;
     el.querySelector("#rvSkip").onclick=e=>{e.stopPropagation();i=ms.length;show()};
