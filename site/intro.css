@@ -1,11 +1,7 @@
-/* Load-in: the stadium lights flicker on, flood the logo, then the logo settles into the header. */
+/* Load-in overlay (see intro.js). */
 #intro{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;cursor:pointer}
-#intro .in-bg{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 38%,#12284a 0%,#0b1b33 55%,#060f1f 100%)}
-#intro .in-stage{position:relative;width:min(340px,76vw);aspect-ratio:720/508}
-#intro .in-logo{position:absolute;inset:0;width:100%;height:100%;filter:brightness(.12) saturate(.2);will-change:filter,transform}
-#intro .in-lamp{position:absolute;top:17%;width:22%;aspect-ratio:1;translate:-50% -50%;border-radius:50%;opacity:0;pointer-events:none;mix-blend-mode:screen;
- background:radial-gradient(circle,#fffbe8 0%,#fff1b0 18%,rgba(255,224,130,.45) 40%,rgba(255,214,100,0) 70%)}
-#intro .in-lamp.l{left:20%}#intro .in-lamp.r{left:80%}
- background:linear-gradient(180deg,rgba(255,240,190,.38),rgba(255,240,190,0) 75%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%)}
-#intro .in-flash{position:fixed;inset:0;background:radial-gradient(60% 45% at 50% 40%,rgba(255,248,220,.5),rgba(255,248,220,0) 70%);opacity:0;pointer-events:none}
-html.intro-on .mark.logo img{opacity:0}
+#intro .in-bg{position:absolute;inset:0;background:radial-gradient(120% 80% at 50% 42%,#12284a 0%,#0b1b33 55%,#060f1f 100%)}
+#intro .in-badge{position:relative;width:min(340px,76vw);aspect-ratio:720/508;opacity:0;transform-origin:50% 50%;will-change:transform,opacity}
+#intro .in-badge img,#intro .in-badge svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+#intro .in-badge svg{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;overflow:hidden}
+html.intro-on .mark.logo img{visibility:hidden}
