@@ -312,3 +312,19 @@ body.pack-min:not(.is-packs) #draft #poolHead{margin-top:10px}
 #draft .rd-next .rd-tip{margin:12px 0 0;font:500 12px/1.4 var(--f-body);color:#8fa3bd}
 @keyframes rdPulse{0%,100%{box-shadow:0 4px 0 #a8250a,0 0 0 0 rgba(227,53,13,.45)}50%{box-shadow:0 4px 0 #a8250a,0 0 0 8px rgba(227,53,13,0)}}
 @media(prefers-reduced-motion:reduce){#draft .rd-next #playBtn{animation:none}}
+
+/* ---- Results header polish ---- */
+#season .season-tiles>div{justify-content:center;gap:8px;padding:14px 6px}
+#season .season-tiles .season-word{font-size:24px;line-height:32px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+#season .season-tiles .season-word i{font-style:normal;font-size:18px}
+#season .season-tiles .is-champ{background:linear-gradient(160deg,rgba(255,203,5,.22),rgba(11,27,51,.6));border-color:rgba(255,203,5,.55)}
+#season .season-tiles .is-champ small{color:#ffe08a}
+#season .season-tiles .is-champ b{color:#ffcb05}
+#season .season-tiles .is-champ em{color:#f4e3a6}
+#season .season-awards{gap:10px}
+#season .season-award{gap:10px;padding:10px 12px 10px 8px;align-items:center}
+#season .season-award img{width:56px;height:56px;margin:-4px 0}
+#season .season-award em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#season .season-tiles .season-word{font-size:22px}
+#season .season-tiles .is-champ .season-word{font-size:20px;letter-spacing:.01em}
+#season .season-award em{white-space:normal;overflow:visible;font-size:12px;line-height:1.35}

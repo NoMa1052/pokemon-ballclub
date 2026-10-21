@@ -10,7 +10,7 @@
    const byName=n=>Object.values(run.slots).find(m=>m?.name===n);
    const items=[...awards.querySelectorAll('.award')].map(a=>({t:a.querySelector('.label')?.textContent||'',n:a.querySelector('b')?.textContent||'',d:a.querySelector('span:last-child')?.textContent||''}));
    const box=document.createElement('div');box.className='season-awards';
-   box.innerHTML=items.map(x=>{const m=byName(x.n);return `<div class="season-award">${m?`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" loading="lazy">`:''}<span><small>${esc(x.t)}</small><b>${esc(x.n)}</b><em>${esc(x.d.replace(/^0\./,'.').replace(/ 0\.(\d{3}) OPS/,' .$1 OPS'))}</em></span></div>`}).join('');
+   box.innerHTML=items.map(x=>{const m=byName(x.n);return `<div class="season-award">${m?`<img src="${SPRITE_URL(m.num,m.shiny)}" alt="" loading="lazy">`:''}<span><small>${esc(/arm/i.test(x.t)?'Cy Young':/mvp/i.test(x.t)?'MVP':x.t)}</small><b>${esc(x.n)}</b><em>${x.d.replace(/ 0\.(\d{3}) OPS/,' .$1 OPS').replace(/, /g,' · ').split(' · ').slice(0,2).map(esc).join('<br>')}</em></span></div>`}).join('');
    awards.hidden=true;head.after(box);
   }
   // 2. One action card: post the team, then share or start over.

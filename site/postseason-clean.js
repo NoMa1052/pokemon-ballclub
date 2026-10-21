@@ -59,12 +59,12 @@
   // One header: the record, then three equal tiles. The old pennant block stays in the DOM, hidden, for other layers.
   panel.querySelector('.season-head')?.remove();top.hidden=true;
   const tone=/^[AS]/.test(res.grade)?'#5fd38d':/^B/.test(res.grade)?'#8fd3ff':/^C/.test(res.grade)?'#ffcb05':'#ff8a70';
-  const playoff=post.champ?['Champions',ws?'Won '+ws[1]+'–'+ws[2]:'World Series']:post.made?['Made it',outcome]:['Missed','Needs about 88 wins'];
+  const playoff=post.champ?['Champions',ws?'World Series '+ws[1]+'–'+ws[2]:'World Series']:post.made?['Lost',outcome.replace(/^Lost the /,'')]:['Missed','Needs 88 wins'];
   const head=document.createElement('div');head.className='season-head';
   head.innerHTML=`<div class="season-rec" aria-label="${res.wins} wins and ${162-res.wins} losses"><small>Final · 162 games</small><b>${res.wins}–${162-res.wins}</b>${best?`<span>${esc(best)}</span>`:''}</div>
-   <div class="season-tiles"><div><small>Grade</small><span class="season-pennant" style="--tone:${tone}">${esc(res.grade)}</span><em>Season result</em></div>
-   <div><small>Team OVR</small><b>${Number(teamOvr())}</b><em>Roster rating</em></div>
-   <div><small>Playoffs</small><b class="season-word">${esc(playoff[0])}</b><em>${esc(playoff[1])}</em></div></div>
+   <div class="season-tiles"><div><small>Grade</small><span class="season-pennant" style="--tone:${tone}">${esc(res.grade)}</span></div>
+   <div><small>Team OVR</small><b>${Number(teamOvr())}</b></div>
+   <div class="${post.champ?'is-champ':''}"><small>Playoffs</small><b class="season-word">${esc(playoff[0])}</b><em>${esc(playoff[1])}</em></div></div>
    <p class="season-runs">${(res.runs.rs/162).toFixed(1)} runs scored per game${(()=>{const me=res.me,ps=me?[...(me.rot||[]),me.cl,me.pen].filter(p=>p?.st?.outs&&p.role!=='FILL'):[],o=ps.reduce((a,p)=>a+p.st.outs,0);return o?` · ${(ps.reduce((a,p)=>a+p.st.r,0)*27/o).toFixed(2)} staff ERA`:''})()}</p>`;
   top.after(head);
   const summary=document.createElement('div');summary.className='clean-season-summary';summary.hidden=true;
