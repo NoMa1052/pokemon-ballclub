@@ -81,7 +81,7 @@ async function render(s){
  try{
   if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;document.head.append(t)});
   try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
-  const shot=el=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
+  const shot=el=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));const win=doc.defaultView;doc.querySelectorAll('body *').forEach(e=>{const b=win.getComputedStyle(e).backgroundImage;if(b&&b.includes('data:image/svg')){const rest=b.split(/,(?![^(]*\))/).filter(x=>!x.includes('data:image/svg')).join(',');e.style.backgroundImage=rest||'none'}});doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
   // Safari reuses the sprites it already loaded, which aren't cleared for export ("The operation is insecure").
   // Swap each outside image for a fresh, export-safe local copy while we capture, then put it back.
   const swaps=[];
@@ -116,7 +116,7 @@ async function render(s){
   txt('pokemon-ballclub.vercel.app',W/2,fy+104,'600 28px "Barlow",Arial,sans-serif','#ffcb05');
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
   return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
- }catch(e){window.PBCShareError='v4 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
+ }catch(e){window.PBCShareError='v5 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
 }
 function canShare(file){try{return !!navigator.share&&!!navigator.canShare&&navigator.canShare({files:[file]})}catch(_){return false}}
 function setStatus(s){const el=document.getElementById('pb-share-status');if(el)el.textContent=s}
