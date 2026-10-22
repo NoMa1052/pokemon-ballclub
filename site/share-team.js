@@ -82,7 +82,18 @@ async function render(s){
   if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;document.head.append(t)});
   try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
   const shot=el=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
-  const [fc,pc]=[await shot(field),await shot(pen)];
+  // Safari reuses the sprites it already loaded, which aren't cleared for export ("The operation is insecure").
+  // Swap each outside image for a fresh, export-safe local copy while we capture, then put it back.
+  const swaps=[];
+  await Promise.all([...field.querySelectorAll('img'),...pen.querySelectorAll('img')].map(async i=>{
+   const u=i.currentSrc||i.src;if(!/^https?:/.test(u)||u.startsWith(location.origin))return;
+   try{const r=await fetch(u+(u.includes('?')?'&':'?')+'share=1',{mode:'cors',cache:'no-store'});if(!r.ok)return;
+    const local=URL.createObjectURL(await r.blob());swaps.push([i,i.getAttribute('src'),i.getAttribute('srcset'),local]);
+    i.removeAttribute('srcset');await new Promise(res=>{i.onload=i.onerror=res;i.src=local})}catch(_){}
+  }));
+  let fc,pc;
+  try{fc=await shot(field);pc=await shot(pen)}
+  finally{swaps.forEach(([i,src,set,local])=>{i.onload=i.onerror=null;if(set)i.setAttribute('srcset',set);i.setAttribute('src',src);URL.revokeObjectURL(local)})}
   const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
   const W=1080,M=36,IW=W-2*M,fh=Math.round(fc.height*IW/fc.width),ph=Math.round(pc.height*IW/pc.width);
   const HEAD=318,GAP=22,FOOT=128,H=HEAD+fh+GAP+ph+FOOT;
