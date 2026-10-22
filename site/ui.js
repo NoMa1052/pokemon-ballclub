@@ -491,5 +491,5 @@ document.getElementById("howBtn").onclick=openHow;
 document.getElementById("howClose").onclick=closeHow;
 document.getElementById("how").addEventListener("click",e=>{if(e.target.id==="how")closeHow()});
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeHow();closeLb()}});
-setMode(store.get("pbc2-mode"));
+setMode(store.get("pbc2-mode")||"pack"); // first visit: Packs, Standard (size defaults to 16)
 
