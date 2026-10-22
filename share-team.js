@@ -96,24 +96,26 @@ async function render(s){
   try{fc=clean(await shot(field),'field');pc=clean(await shot(pen),'staff')}
   finally{swaps.forEach(([i,src,set,local])=>{i.onload=i.onerror=null;if(set)i.setAttribute('srcset',set);i.setAttribute('src',src);URL.revokeObjectURL(local)})}
   const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
-  const W=1080,M=36,IW=W-2*M,fh=Math.round(fc.height*IW/fc.width),ph=Math.round(pc.height*IW/pc.width);
-  const HEAD=318,GAP=22,FOOT=128,H=HEAD+fh+GAP+ph+FOOT;
+  // Fixed 3:4 frame (1080x1440) so iMessage and other chats show the whole image without cropping.
+  const W=1080,H=1440,M=36,HEAD=262,FOOT=96,GAP=16,CROP=0;
+  const fhr=fc.height*(1-CROP)/fc.width,pr=pc.height/pc.width,IW=Math.min(W-2*M,Math.floor((H-HEAD-FOOT-GAP-8)/(fhr+pr)));
+  const fh=Math.round(IW*fhr),ph=Math.round(IW*pr),x0=Math.round((W-IW)/2);
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const c=canvas.getContext('2d');
   const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#10254a');g.addColorStop(1,'#0b1b33');c.fillStyle=g;c.fillRect(0,0,W,H);
   const txt=(t,x,y,f,fill)=>{c.font=f;c.textAlign='center';c.textBaseline='middle';c.fillStyle=fill;c.fillText(t,x,y)};
-  if(logo){const lh=104,lw=logo.width*lh/logo.height;c.drawImage(logo,(W-lw)/2,26,lw,lh)}
-  txt(s.record||'Draft complete',W/2,190,'400 '+(s.record?96:60)+'px "Graduate",Georgia,serif',s.champ?'#ffcb05':'#f4eedc');
+  if(logo){const lh=78,lw=logo.width*lh/logo.height;c.drawImage(logo,(W-lw)/2,20,lw,lh)}
+  txt(s.record||'Draft complete',W/2,150,'400 '+(s.record?82:54)+'px "Graduate",Georgia,serif',s.champ?'#ffcb05':'#f4eedc');
   const outcome=(s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON')+'  ·  '+s.ovr+' OVR';
   if('letterSpacing' in c)c.letterSpacing='2px';
-  txt(outcome,W/2,256,'600 30px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':'#f4eedc');
+  txt(outcome,W/2,206,'600 28px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':'#f4eedc');
   if('letterSpacing' in c)c.letterSpacing='0px';
-  txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),W/2,294,'500 24px "Barlow",Arial,sans-serif','#9fb0c6');
-  c.drawImage(fc,M,HEAD,IW,fh);c.drawImage(pc,M,HEAD+fh+GAP,IW,ph);
-  const fy=H-FOOT;c.fillStyle='#d63a26';for(let x=M;x<W-M;x+=26)c.fillRect(x,fy+18,16,4);
+  txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),W/2,240,'500 22px "Barlow",Arial,sans-serif','#9fb0c6');
+  c.drawImage(fc,0,fc.height*CROP,fc.width,fc.height*(1-CROP),x0,HEAD,IW,fh);c.drawImage(pc,x0,HEAD+fh+GAP,IW,ph);
+  const fy=H-FOOT;c.fillStyle='#d63a26';for(let x=M;x<W-M;x+=26)c.fillRect(x,fy+6,16,4);
   if('letterSpacing' in c)c.letterSpacing='3px';
-  txt(s.record?'THINK YOU CAN BEAT IT?':'THINK YOU CAN BUILD A BETTER TEAM?',W/2,fy+62,'600 38px "Oswald","Arial Narrow",sans-serif','#f4eedc');
+  txt(s.record?'THINK YOU CAN BEAT IT?':'THINK YOU CAN BUILD A BETTER TEAM?',W/2,fy+42,'600 32px "Oswald","Arial Narrow",sans-serif','#f4eedc');
   if('letterSpacing' in c)c.letterSpacing='0px';
-  txt('pokemon-ballclub.vercel.app',W/2,fy+104,'600 28px "Barlow",Arial,sans-serif','#ffcb05');
+  txt('pokemon-ballclub.vercel.app',W/2,fy+76,'600 24px "Barlow",Arial,sans-serif','#ffcb05');
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
   return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
  }catch(e){window.PBCShareError='v5 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
@@ -139,7 +141,7 @@ async function open(){
    if(!native){
     const a=document.createElement('a');a.href=out.url;a.download=out.name;document.body.append(a);a.click();a.remove();
     try{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text(snap)).then(()=>setStatus('Image download requested and message copied. Attach the PNG in your chat.')).catch(()=>setStatus('Image download requested. Use Copy Text to copy the message.'));else setStatus('Image download requested. Use Copy Text for your message.')}catch(e){setStatus('Image download requested. Use Copy Text for your message.')}return}
-   try{navigator.share({files:[file]}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
+   try{navigator.share({files:[file],url:GAME_URL}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
   };
   save.onclick=()=>{
    if(native&&/iPhone|iPad|iPod/i.test(navigator.userAgent)){
