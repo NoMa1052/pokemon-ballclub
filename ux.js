@@ -243,6 +243,6 @@
   });
 
   render();if(run.result)decorateResults();
-  if(!store.get('pbc2-quickstart-v2')){store.set('pbc2-quickstart-v2','1');openHow();}
+  // First visit no longer opens How to play automatically; first-visit.js shows a one-line link instead.
   syncDialogs();
 })();
