@@ -19,7 +19,7 @@ const INTRO={
  let seen=false;try{seen=sessionStorage.getItem('pbc-intro')==='1'}catch(e){}
  if(seen||matchMedia('(prefers-reduced-motion: reduce)').matches||!window.requestAnimationFrame)return;
  try{sessionStorage.setItem('pbc-intro','1')}catch(e){}
- const root=document.documentElement;root.classList.add('intro-on');
+ const root=document.documentElement;root.classList.add('intro-on','intro-hide');
  const NS='http://www.w3.org/2000/svg',mk=(n,a,p)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);p&&p.append(e);return e};
  const o=document.createElement('div');o.id='intro';o.setAttribute('aria-hidden','true');
  o.innerHTML='<div class="in-bg"></div><div class="in-badge"><img alt=""><svg viewBox="0 0 360 254"></svg></div>';
@@ -38,7 +38,7 @@ const INTRO={
  const lit=(p,t)=>{const d=t-p.on;if(d<0)return 0;let v=Math.min(1,d/INTRO.warm);if(p.blink&&d>90&&d<170)v=.25+.75*Math.abs(d-130)/40;return v};
  const set=(el,k,v)=>el.setAttribute(k,v);
  let raf=0,t0=0,flight=null,done=false,header=null;
- const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);root.classList.remove('intro-on');o.remove()};
+ const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);root.classList.remove('intro-on','intro-hide');o.remove()};
  o.addEventListener('click',finish);
  function frame(ms){
   if(done)return;const t=ms-t0,a=INTRO.fadeIn,b=INTRO.bulbs,c=INTRO.allOn,d=INTRO.handoff,e1=a,e2=a+b,e3=e2+c,e4=e3+d;
@@ -49,7 +49,7 @@ const INTRO={
    bulbs.forEach(B=>{set(B.c,'opacity',(1-q).toFixed(3));set(B.h,'r',(6.5+3.5*surge).toFixed(2));set(B.h,'opacity',((.8+.2*surge)*(1-q)).toFixed(3))});
    floods.forEach(f=>{set(f,'r',(20+240*q).toFixed(1));set(f,'opacity',(surge*(1-q)).toFixed(3))});
    bright=INTRO.dark+.06+(1-INTRO.dark-.06)*q}
-  else{bright=1;bulbs.forEach(B=>{set(B.c,'opacity',0);set(B.h,'opacity',0)});floods.forEach(f=>set(f,'opacity',0));
+  else{if(root.classList.contains('intro-hide'))root.classList.remove('intro-hide');bright=1;bulbs.forEach(B=>{set(B.c,'opacity',0);set(B.h,'opacity',0)});floods.forEach(f=>set(f,'opacity',0));
    const p=eH(Math.min(1,(t-e3)/d));bg.style.opacity=1-p;
    if(!flight){const h=header.getBoundingClientRect(),s=badge.getBoundingClientRect();flight=h.width?{dx:(h.left+h.width/2)-(s.left+s.width/2),dy:(h.top+h.height/2)-(s.top+s.height/2),k:h.width/s.width}:{dx:0,dy:0,k:1}}
    badge.style.transform=`translate(${flight.dx*p}px,${flight.dy*p}px) scale(${1+(flight.k-1)*p})`;

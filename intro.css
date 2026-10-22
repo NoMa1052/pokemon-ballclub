@@ -8,3 +8,6 @@ html.intro-on .mark.logo img{visibility:hidden}
 /* In-app browsers (X, Instagram) draw their toolbars over the page; extend the backdrop past the
    viewport edges so the game never shows through behind them. */
 #intro{overflow:visible}
+/* Hide the game until the hand-off starts. In-app browsers can paint page content under their
+   toolbars outside the fixed overlay, so the only reliable cover is not drawing the page yet. */
+html.intro-hide body>*:not(#intro){visibility:hidden}
