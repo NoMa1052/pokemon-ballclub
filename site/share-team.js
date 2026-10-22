@@ -14,8 +14,8 @@ function text(s){return s.record?'Built a '+s.ovr+' OVR Pokémon Ballclub. Went 
 function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillStyle=fill;let size=sz;ctx.font='700 '+size+'px "Barlow",Arial,sans-serif';while(max&&ctx.measureText(String(str)).width>max&&size>16){ctx.font='700 '+(--size)+'px "Barlow",Arial,sans-serif'}ctx.fillText(String(str),px,py)}
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
 function image(url){return new Promise(resolve=>{const img=new Image();let done=false;const end=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?img:null)};const timer=setTimeout(()=>end(false),6000);img.crossOrigin='anonymous';img.onload=()=>end(true);img.onerror=()=>end(false);img.src=url})}
-async function render(s){
- // Field-view poster: the record and the challenge on top, the team on the diamond, staff underneath.
+async function renderCanvas(s){
+ // Fallback field-view poster drawn by hand: the record and the challenge on top, the team on the diamond, staff underneath.
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
  const logoSrc=document.querySelector('.mark.logo img')?.currentSrc||'logo.webp';
  const sprite=p=>'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+(p.shiny?'shiny/':'')+p.num+'.png';
@@ -72,6 +72,29 @@ async function render(s){
  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
  return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
 }
+
+// Main poster: captures the game's own field and pitching staff, so the image matches the app exactly.
+async function render(s){
+ const field=document.getElementById('postseasonField')||document.getElementById('field'),pen=document.getElementById('postseasonPen')||document.getElementById('pen');
+ if(!field||!pen)return renderCanvas(s);
+ try{
+  if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;document.head.append(t)});
+  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
+  const logo=document.querySelector('.mark.logo img')?.currentSrc||'logo.webp';
+  const box=document.createElement('div');box.id='sp-poster';
+  const outcome=s.champ?'World Series Champions':s.record?'Final record':'Ready for the season';
+  box.innerHTML=`<div class="sp-head"><img class="sp-logo" src="${logo}" alt=""><b class="sp-rec${s.champ?' gold':''}">${s.record||'Draft complete'}</b><div class="sp-sub"><span class="${s.champ?'gold':''}">${outcome}</span><i>·</i><span>${s.ovr} OVR</span></div><div class="sp-team">${esc(s.team)} · ${s.mode} · ${s.size===11?'Quick':'Standard'}</div></div><div class="sp-field"></div><div class="sp-pen"></div><div class="sp-foot"><span>${s.record?'Think you can beat it?':'Think you can build a better team?'}</span><b>pokemon-ballclub.vercel.app</b></div>`;
+  const f=field.cloneNode(true),pn=pen.cloneNode(true);f.removeAttribute('id');pn.removeAttribute('id');
+  f.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));pn.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
+  box.querySelector('.sp-field').append(f);box.querySelector('.sp-pen').append(pn);
+  document.body.append(box);
+  await Promise.all([...box.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,4000)})));
+  const canvas=await html2canvas(box,{backgroundColor:'#0b1b33',scale:2,useCORS:true,logging:false,width:box.offsetWidth,height:box.offsetHeight,windowWidth:box.offsetWidth});
+  box.remove();
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
+  return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
+ }catch(e){document.getElementById('sp-poster')?.remove();return renderCanvas(s)}
+}
 function canShare(file){try{return !!navigator.share&&!!navigator.canShare&&navigator.canShare({files:[file]})}catch(_){return false}}
 function setStatus(s){const el=document.getElementById('pb-share-status');if(el)el.textContent=s}
 function close(){if(!modal)return;modal.remove();modal=null;document.body.classList.remove('pb-share-open');if(objectUrl){globalThis.URL.revokeObjectURL(objectUrl);objectUrl=null}if(focusBefore?.isConnected)focusBefore.focus({preventScroll:true})}
@@ -93,7 +116,7 @@ async function open(){
    if(!native){
     const a=document.createElement('a');a.href=out.url;a.download=out.name;document.body.append(a);a.click();a.remove();
     try{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text(snap)).then(()=>setStatus('Image download requested and message copied. Attach the PNG in your chat.')).catch(()=>setStatus('Image download requested. Use Copy Text to copy the message.'));else setStatus('Image download requested. Use Copy Text for your message.')}catch(e){setStatus('Image download requested. Use Copy Text for your message.')}return}
-   try{navigator.share({files:[file],title:'My Pokémon Ballclub'}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
+   try{navigator.share({files:[file]}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
   };
   save.onclick=()=>{
    if(native&&/iPhone|iPad|iPod/i.test(navigator.userAgent)){
