@@ -81,7 +81,7 @@ async function render(s){
  try{
   if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;document.head.append(t)});
   try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
-  const shot=el=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));const win=doc.defaultView;doc.querySelectorAll('body *').forEach(e=>{const b=win.getComputedStyle(e).backgroundImage;if(b&&b.includes('data:image/svg')){const rest=b.split(/,(?![^(]*\))/).filter(x=>!x.includes('data:image/svg')).join(',');e.style.backgroundImage=rest||'none'}});doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
+  const shot=(el,keep)=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{if(keep!=null){const root=doc.getElementById(el.id),ts=[...root.querySelectorAll('.tag')];ts.forEach((t,i)=>{if(i!==keep)t.style.visibility='hidden'});root.querySelectorAll('*').forEach(e=>{if(!e.closest('.tag')){e.style.borderColor='transparent';e.style.boxShadow='none'}})}const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));const win=doc.defaultView;doc.querySelectorAll('body *').forEach(e=>{const b=win.getComputedStyle(e).backgroundImage;if(b&&b.includes('data:image/svg')){const rest=b.split(/,(?![^(]*\))/).filter(x=>!x.includes('data:image/svg')).join(',');e.style.backgroundImage=rest||'none'}});doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
   // Safari reuses the sprites it already loaded, which aren't cleared for export ("The operation is insecure").
   // Swap each outside image for a fresh, export-safe local copy while we capture, then put it back.
   const swaps=[];
@@ -91,34 +91,42 @@ async function render(s){
     const local=URL.createObjectURL(await r.blob());swaps.push([i,i.getAttribute('src'),i.getAttribute('srcset'),local]);
     i.removeAttribute('srcset');await new Promise(res=>{i.onload=i.onerror=res;i.src=local})}catch(_){}
   }));
-  window.PBCShareSwaps=swaps.length;let fc,pc;
+  window.PBCShareSwaps=swaps.length;let fc;
   const clean=(cv,name)=>{try{cv.getContext('2d').getImageData(0,0,1,1);return cv}catch(e){throw Error(name+' tainted')}};
-  try{fc=clean(await shot(field),'field');pc=clean(await shot(pen),'staff')}
+  // Each pitcher is captured on its own so neighbors don't bleed in, then laid out in one row.
+  const tags=[...pen.querySelectorAll('.tag')],tc=[];let pc;
+  try{fc=clean(await shot(field),'field');pc=clean(await shot(pen),'staff');
+   const pr=pen.getBoundingClientRect(),k=pc.width/pr.width;
+   for(let i=0;i<tags.length;i++){const one=clean(await shot(pen,i),'staff'),r=tags[i].getBoundingClientRect(),px=11,py=8;
+    const x=(r.left-pr.left-px)*k,y=(r.top-pr.top-py)*k,w=(r.width+2*px)*k,h=(r.height+2*py)*k,cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(one,x,y,w,h,0,0,w,h);tc.push(cv)}}
   finally{swaps.forEach(([i,src,set,local])=>{i.onload=i.onerror=null;if(set)i.setAttribute('srcset',set);i.setAttribute('src',src);URL.revokeObjectURL(local)})}
   const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
-  // Fixed 3:4 frame (1080x1440) so iMessage and other chats show the whole image without cropping.
-  const W=1080,H=1440,M=36,HEAD=262,FOOT=96,GAP=16,CROP=0;
-  const fhr=fc.height*(1-CROP)/fc.width,pr=pc.height/pc.width,IW=Math.min(W-2*M,Math.floor((H-HEAD-FOOT-GAP-8)/(fhr+pr)));
-  const fh=Math.round(IW*fhr),ph=Math.round(IW*pr),x0=Math.round((W-IW)/2);
+  // Layout A, fixed 3:4 (1080x1440) so chats show the whole image: logo beside the record, field, one-row staff, challenge.
+  const W=1080,H=1440,HEAD=236,FOOT=96,SH=250,gold='#ffcb05',cream='#f4eedc',muted='#9fb0c6';
   const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const c=canvas.getContext('2d');
   const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#10254a');g.addColorStop(1,'#0b1b33');c.fillStyle=g;c.fillRect(0,0,W,H);
-  const txt=(t,x,y,f,fill)=>{c.font=f;c.textAlign='center';c.textBaseline='middle';c.fillStyle=fill;c.fillText(t,x,y)};
-  if(logo){const lh=78,lw=logo.width*lh/logo.height;c.drawImage(logo,(W-lw)/2,20,lw,lh)}
-  txt(s.record||'Draft complete',W/2,150,'400 '+(s.record?82:54)+'px "Graduate",Georgia,serif',s.champ?'#ffcb05':'#f4eedc');
-  const outcome=(s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON')+'  ·  '+s.ovr+' OVR';
-  if('letterSpacing' in c)c.letterSpacing='2px';
-  txt(outcome,W/2,206,'600 28px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':'#f4eedc');
-  if('letterSpacing' in c)c.letterSpacing='0px';
-  txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),W/2,240,'500 22px "Barlow",Arial,sans-serif','#9fb0c6');
-  c.drawImage(fc,0,fc.height*CROP,fc.width,fc.height*(1-CROP),x0,HEAD,IW,fh);c.drawImage(pc,x0,HEAD+fh+GAP,IW,ph);
-  const fy=H-FOOT;c.fillStyle='#d63a26';for(let x=M;x<W-M;x+=26)c.fillRect(x,fy+6,16,4);
-  if('letterSpacing' in c)c.letterSpacing='3px';
-  txt(s.record?'THINK YOU CAN BEAT IT?':'THINK YOU CAN BUILD A BETTER TEAM?',W/2,fy+42,'600 32px "Oswald","Arial Narrow",sans-serif','#f4eedc');
-  if('letterSpacing' in c)c.letterSpacing='0px';
-  txt('pokemon-ballclub.vercel.app',W/2,fy+76,'600 24px "Barlow",Arial,sans-serif','#ffcb05');
+  const T=(t,x,y,f,fill,al='center',ls=0,max)=>{c.font=f;c.textAlign=al;c.textBaseline='middle';c.fillStyle=fill;if('letterSpacing' in c)c.letterSpacing=ls+'px';let str=String(t);if(max)while(c.measureText(str).width>max&&str.length>4)str=str.slice(0,-2)+'…';c.fillText(str,x,y);if('letterSpacing' in c)c.letterSpacing='0px'};
+  let lw=0;if(logo){const lh=190;lw=logo.width*lh/logo.height;c.drawImage(logo,48,24,lw,lh)}
+  const rx=48+lw+36,rw=W-48-rx,cx=rx+rw/2;
+  T(s.record||'Draft complete',cx,90,'400 '+(s.record?104:56)+'px "Graduate",Georgia,serif',s.champ?gold:cream,'center',0,rw);
+  T(s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON',cx,160,'600 27px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':cream,'center',2,rw);
+  T(s.ovr+' OVR  ·  '+s.team+'  ·  '+s.mode,cx,198,'500 22px "Barlow",Arial,sans-serif',muted,'center',0,rw);
+  const fh=H-FOOT-HEAD-SH-34,fw=fh*fc.width/fc.height;c.drawImage(fc,(W-fw)/2,HEAD,fw,fh);
+  // Staff strip: a one-row version of the app's pitching card.
+  const sx=40,sy=HEAD+fh+22,sw=W-80,n=tc.length,rot=tags.filter(t=>/^SP/.test(t.dataset.slot||'')).length;
+  const paper=(()=>{try{const d=pc.getContext('2d').getImageData(Math.round(pc.width*.5),Math.round(pc.height*.97),1,1).data;return `rgb(${d[0]},${d[1]},${d[2]})`}catch(_){return '#f3ecdc'}})();
+  c.fillStyle=paper;c.beginPath();c.roundRect?c.roundRect(sx,sy,sw,SH,20):c.rect(sx,sy,sw,SH);c.fill();
+  const mid=rot&&rot<n?34:0,cell=(sw-40-mid)/Math.max(1,n),top=sy+58,th=SH-70;
+  const lab=(t,x,w,count)=>{T(t,x+12,sy+30,'700 22px "Barlow",Arial,sans-serif','#14233d','left',4);T(count,x+w-12,sy+30,'700 24px "Oswald",sans-serif','#d63a26','right',2);c.fillStyle='#d63a26';c.fillRect(x+8,sy+46,w-16,4)};
+  if(rot){const total=rot+(s.players.some(p=>p.slot==='SP1')?1:0);lab('ROTATION',sx+20,cell*rot,total+'/'+total)}
+  if(n-rot){lab('BULLPEN',sx+20+cell*rot+mid,cell*(n-rot),(n-rot)+'/'+(n-rot));if(mid){c.fillStyle='rgba(20,35,61,.25)';c.fillRect(sx+20+cell*rot+mid/2-1,sy+14,3,SH-28)}}
+  tc.forEach((im,i)=>{const x=sx+20+cell*i+(i>=rot?mid:0),sc=Math.min((cell-4)/im.width,th/im.height),iw=im.width*sc,ih=im.height*sc;c.drawImage(im,x+(cell-iw)/2,top+(th-ih)/2,iw,ih)});
+  const fy=H-FOOT;c.fillStyle='#d63a26';for(let x=36;x<W-36;x+=26)c.fillRect(x,fy+6,16,4);
+  T(s.record?'THINK YOU CAN BEAT IT?':'THINK YOU CAN BUILD A BETTER TEAM?',W/2,fy+42,'600 32px "Oswald","Arial Narrow",sans-serif',cream,'center',3);
+  T('pokemon-ballclub.vercel.app',W/2,fy+76,'600 24px "Barlow",Arial,sans-serif',gold);
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
   return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
- }catch(e){window.PBCShareError='v5 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
+ }catch(e){window.PBCShareError='v6 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
 }
 function canShare(file){try{return !!navigator.share&&!!navigator.canShare&&navigator.canShare({files:[file]})}catch(_){return false}}
 function setStatus(s){const el=document.getElementById('pb-share-status');if(el)el.textContent=s}
