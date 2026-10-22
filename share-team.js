@@ -75,19 +75,19 @@ async function renderCanvas(s){
 
 // Main poster: photographs the real field and pitching staff exactly as they sit in the app,
 // then frames them with the record on top and the challenge underneath.
-async function render(s){
+async function renderFull(s){
  const field=document.getElementById('postseasonField')||document.getElementById('field'),pen=document.getElementById('postseasonPen')||document.getElementById('pen');
  if(!field||!pen)return renderCanvas(s);
  try{
-  if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;document.head.append(t)});
+  if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;setTimeout(()=>no(Error('html2canvas load timeout')),8000);document.head.append(t)});
   try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
-  const shot=(el,keep)=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{if(keep!=null){const root=doc.getElementById(el.id),ts=[...root.querySelectorAll('.tag')];ts.forEach((t,i)=>{if(i!==keep)t.style.visibility='hidden'});ts[keep]?.querySelectorAll('.nm').forEach(n=>n.style.visibility='hidden');root.querySelectorAll('*').forEach(e=>{if(!e.closest('.tag')){e.style.borderColor='transparent';e.style.boxShadow='none'}})}const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));const win=doc.defaultView;doc.querySelectorAll('body *').forEach(e=>{const b=win.getComputedStyle(e).backgroundImage;if(b&&b.includes('data:image/svg')){const rest=b.split(/,(?![^(]*\))/).filter(x=>!x.includes('data:image/svg')).join(',');e.style.backgroundImage=rest||'none'}});doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
+  const shot=(el,keep)=>html2canvas(el,{backgroundColor:null,scale:keep!=null?2:3,useCORS:true,imageTimeout:4000,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{if(keep!=null){const root=doc.getElementById(el.id),ts=[...root.querySelectorAll('.tag')];ts.forEach((t,i)=>{if(i!==keep)t.style.visibility='hidden'});ts[keep]?.querySelectorAll('.nm').forEach(n=>n.style.visibility='hidden');root.querySelectorAll('*').forEach(e=>{if(!e.closest('.tag')){e.style.borderColor='transparent';e.style.boxShadow='none'}})}const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));const win=doc.defaultView;doc.querySelectorAll('body *').forEach(e=>{const b=win.getComputedStyle(e).backgroundImage;if(b&&b.includes('data:image/svg')){const rest=b.split(/,(?![^(]*\))/).filter(x=>!x.includes('data:image/svg')).join(',');e.style.backgroundImage=rest||'none'}});doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
   // Safari reuses the sprites it already loaded, which aren't cleared for export ("The operation is insecure").
   // Swap each outside image for a fresh, export-safe local copy while we capture, then put it back.
   const swaps=[];
   await Promise.all([...field.querySelectorAll('img'),...pen.querySelectorAll('img')].map(async i=>{
    const u=i.currentSrc||i.src;if(!/^https?:/.test(u)||u.startsWith(location.origin))return;
-   try{const r=await fetch(u+(u.includes('?')?'&':'?')+'share=1',{mode:'cors',cache:'no-store'});if(!r.ok)return;
+   try{const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),5000);const r=await fetch(u+(u.includes('?')?'&':'?')+'share=1',{mode:'cors',cache:'no-store',signal:ac.signal});clearTimeout(tm);if(!r.ok)return;
     const local=URL.createObjectURL(await r.blob());swaps.push([i,i.getAttribute('src'),i.getAttribute('srcset'),local]);
     i.removeAttribute('srcset');await new Promise(res=>{i.onload=i.onerror=res;i.src=local})}catch(_){}
   }));
@@ -96,8 +96,8 @@ async function render(s){
   // Each pitcher is captured on its own so neighbors don't bleed in, then laid out in one row.
   const tags=[...pen.querySelectorAll('.tag')],tc=[];let pc;
   try{fc=clean(await shot(field),'field');pc=clean(await shot(pen),'staff');
-   const pr=pen.getBoundingClientRect(),k=pc.width/pr.width;
-   for(let i=0;i<tags.length;i++){const one=clean(await shot(pen,i),'staff'),r=tags[i].getBoundingClientRect(),px=11,py=8;
+   const pr=pen.getBoundingClientRect();
+   for(let i=0;i<tags.length;i++){const one=clean(await shot(pen,i),'staff'),r=tags[i].getBoundingClientRect(),px=11,py=8,k=one.width/pr.width;
     const x=(r.left-pr.left-px)*k,y=(r.top-pr.top-py)*k,w=(r.width+2*px)*k,h=(r.height+2*py)*k,cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(one,x,y,w,h,0,0,w,h);tc.push(cv)}}
   finally{swaps.forEach(([i,src,set,local])=>{i.onload=i.onerror=null;if(set)i.setAttribute('srcset',set);i.setAttribute('src',src);URL.revokeObjectURL(local)})}
   const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
@@ -130,7 +130,17 @@ async function render(s){
   T('pokemon-ballclub.vercel.app',W/2,fy+76,'600 24px "Barlow",Arial,sans-serif',gold);
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
   return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
- }catch(e){window.PBCShareError='v6 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
+ }catch(e){window.PBCShareError='v7 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
+}
+// Never hang: if the full capture takes too long (slow network, app was in the background), use the simple image.
+// The last image is reused when the same team is shared again.
+let lastKey=null,lastOut=null;
+async function render(s){
+ const key=JSON.stringify([s.players,s.record,s.ovr,s.team,s.mode,s.size]);
+ if(key===lastKey&&lastOut)return {...lastOut,url:globalThis.URL.createObjectURL(lastOut.blob)};
+ const out=await Promise.race([renderFull(s),new Promise(r=>setTimeout(r,15000,null))])||await (async()=>{window.PBCShareError='v7 timed out';const o=await renderCanvas(s);o.fallback=true;return o})();
+ if(!out.fallback){lastKey=key;lastOut=out}
+ return out;
 }
 function canShare(file){try{return !!navigator.share&&!!navigator.canShare&&navigator.canShare({files:[file]})}catch(_){return false}}
 function setStatus(s){const el=document.getElementById('pb-share-status');if(el)el.textContent=s}
