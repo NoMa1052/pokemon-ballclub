@@ -91,8 +91,9 @@ async function render(s){
     const local=URL.createObjectURL(await r.blob());swaps.push([i,i.getAttribute('src'),i.getAttribute('srcset'),local]);
     i.removeAttribute('srcset');await new Promise(res=>{i.onload=i.onerror=res;i.src=local})}catch(_){}
   }));
-  let fc,pc;
-  try{fc=await shot(field);pc=await shot(pen)}
+  window.PBCShareSwaps=swaps.length;let fc,pc;
+  const clean=(cv,name)=>{try{cv.getContext('2d').getImageData(0,0,1,1);return cv}catch(e){throw Error(name+' tainted')}};
+  try{fc=clean(await shot(field),'field');pc=clean(await shot(pen),'staff')}
   finally{swaps.forEach(([i,src,set,local])=>{i.onload=i.onerror=null;if(set)i.setAttribute('srcset',set);i.setAttribute('src',src);URL.revokeObjectURL(local)})}
   const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
   const W=1080,M=36,IW=W-2*M,fh=Math.round(fc.height*IW/fc.width),ph=Math.round(pc.height*IW/pc.width);
@@ -115,7 +116,7 @@ async function render(s){
   txt('pokemon-ballclub.vercel.app',W/2,fy+104,'600 28px "Barlow",Arial,sans-serif','#ffcb05');
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
   return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
- }catch(e){window.PBCShareError=String(e&&e.message||e);const out=await renderCanvas(s);out.fallback=true;return out}
+ }catch(e){window.PBCShareError='v4 '+String(e&&e.message||e)+' · swapped '+(window.PBCShareSwaps||0);const out=await renderCanvas(s);out.fallback=true;return out}
 }
 function canShare(file){try{return !!navigator.share&&!!navigator.canShare&&navigator.canShare({files:[file]})}catch(_){return false}}
 function setStatus(s){const el=document.getElementById('pb-share-status');if(el)el.textContent=s}
