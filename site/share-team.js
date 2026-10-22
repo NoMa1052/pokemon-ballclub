@@ -10,7 +10,7 @@ function snapshot(){
  const res=run.result,win=Number(res?.wins);
  return {players,ovr:teamOvr(),mode:isPack()?'Packs':'Spin',size:run.size,team:run.submitted?.team||'My Ballclub',record:res&&Number.isFinite(win)?String(win)+'–'+String(162-win):null,wins:win,champ:!!res?.post?.champ};
 }
-function text(s){return s.record?'Built a '+s.ovr+' OVR Pokémon Ballclub. Went '+s.record+(s.champ?' and won the World Series.':'.')+'\nThink you can beat it?\n'+GAME_URL:'Built a '+s.ovr+' OVR Pokémon Ballclub in '+s.mode+' mode.\nThink you can build a better team?\n'+GAME_URL;}
+function text(s){const line=s.record?s.record+' · '+(s.champ?'World Series Champions 🏆':'Final record'):'Draft complete';return '⚾ Pokémon Ballclub\n'+line+'\n'+s.ovr+' OVR · '+s.mode+' · '+(s.size===11?'Quick':'Standard')+'\n\nThink you can build a better team?\n'+GAME_URL.replace(/^https:\/\//,'').replace(/\/$/,'');}
 function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillStyle=fill;let size=sz;ctx.font='700 '+size+'px "Barlow",Arial,sans-serif';while(max&&ctx.measureText(String(str)).width>max&&size>16){ctx.font='700 '+(--size)+'px "Barlow",Arial,sans-serif'}ctx.fillText(String(str),px,py)}
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
 function image(url){return new Promise(resolve=>{const img=new Image();let done=false;const end=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?img:null)};const timer=setTimeout(()=>end(false),6000);img.crossOrigin='anonymous';img.onload=()=>end(true);img.onerror=()=>end(false);img.src=url})}
