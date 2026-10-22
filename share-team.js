@@ -15,36 +15,60 @@ function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
 function image(url){return new Promise(resolve=>{const img=new Image();let done=false;const end=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?img:null)};const timer=setTimeout(()=>end(false),6000);img.crossOrigin='anonymous';img.onload=()=>end(true);img.onerror=()=>end(false);img.src=url})}
 async function render(s){
+ // Field-view poster: the record and the challenge on top, the team on the diamond, staff underneath.
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
- const sources=['logo.webp',...s.players.map(p=>'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+(p.shiny?'shiny/':'')+p.num+'.png')];
- const images=await Promise.all(sources.map(src=>image(src)));const logo=images[0];
+ const logoSrc=document.querySelector('.mark.logo img')?.currentSrc||'logo.webp';
+ const sprite=p=>'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/'+(p.shiny?'shiny/':'')+p.num+'.png';
+ const images=await Promise.all([image(logoSrc).then(i=>i||image('logo.webp')),...s.players.map(p=>image(sprite(p)))]);const logo=images[0],imgOf=p=>images[s.players.indexOf(p)+1];
  const canvas=document.createElement('canvas');canvas.width=CW;canvas.height=CH;const c=canvas.getContext('2d');if(!c)throw Error('Canvas is unavailable.');
- rect(c,0,0,CW,CH,navy);rect(c,0,0,CW,12,'#284f70');rect(c,0,12,CW,8,red);
- if(logo){const h=169,w=logo.width*h/logo.height;c.drawImage(logo,(CW-w)/2,23,w,h)}else paint(c,'POKÉMON BALLCLUB',540,112,46,cream,'center');
- paint(c,s.team,68,218,40,cream,'left',610);
- paint(c,s.mode.toUpperCase()+' · '+(s.size===11?'QUICK':'STANDARD')+' · '+s.size+' PICKS',70,260,21,'#cbd9e9');
- if(s.record){paint(c,s.record,1012,218,60,gold,'right',350);paint(c,s.champ?'WORLD SERIES CHAMPIONS':'SEASON RECORD',1012,261,18,cream,'right',380)}
- else paint(c,'DRAFT COMPLETE',1012,237,31,gold,'right',370);
- rect(c,50,306,980,936,cream,12);rect(c,50,306,980,94,ink,12);rect(c,50,359,980,42,ink);
- paint(c,'YOUR BALLCLUB',85,352,42,cream);paint(c,s.ovr+' OVR',990,352,44,gold,'right');
- rect(c,50,399,980,7,red);paint(c,'STARTING LINEUP',90,441,27,red);paint(c,'PITCHING STAFF',651,441,27,red);
- rect(c,90,461,520,3,'#bdab87');rect(c,648,461,351,3,'#bdab87');
- const field=s.players.filter(p=>FIELD_SLOTS.includes(p.slot)),staff=s.players.filter(p=>!FIELD_SLOTS.includes(p.slot));
- function row(p,i,x,y,w){
-  const rh=79,cy=y+i*rh;if(i%2===0)rect(c,x,cy,w,rh-1,'#e8dbc3');
-  rect(c,x+9,cy+8,68,64,'#d5c4a3',8);
-  const k=s.players.indexOf(p),img=images[k+1];if(img){c.imageSmoothingEnabled=false;c.drawImage(img,x+9,cy+7,67,65);c.imageSmoothingEnabled=true}
-  else paint(c,p.name[0],x+41,cy+42,28,ink,'center');
-  const role=p.slot==='RP1'?'CL':p.slot==='RP2'?'SU':p.slot;
-  paint(c,role,x+89,cy+40,23,'#886a35','left',58);paint(c,p.name,x+148,cy+40,26,ink,'left',w-250);
-  rect(c,x+w-83,cy+17,72,49,navy,8);paint(c,p.rating,x+w-47,cy+42,28,cream,'center');
- }
- field.forEach((p,i)=>row(p,i,84,476,529));staff.forEach((p,i)=>row(p,i,642,476,360));
- if(!staff.length)paint(c,'No pitchers',657,512,23,ink);
- rect(c,50,1214,980,7,red);
- paint(c,s.champ?'WORLD SERIES CHAMPIONS':s.record?'SEASON COMPLETE':'READY FOR THE SEASON',68,1273,27,gold,'left',520);
- paint(c,'pokemon-ballclub.vercel.app',1004,1273,26,cream,'right',480);
- paint(c,'BUILD YOUR OWN BALLCLUB',540,1321,20,'#bdcedf','center');
+ const font=(w,sz,fam)=>w+' '+sz+'px '+fam,DISPLAY='"Graduate",Georgia,serif',DATA='"Oswald","Arial Narrow",Arial,sans-serif',BODY='"Barlow",Arial,sans-serif';
+ const txt=(str,x,y,f,fill,align='center',max)=>{c.font=f;c.textAlign=align;c.textBaseline='middle';c.fillStyle=fill;let t=String(str);if(max)while(c.measureText(t).width>max&&t.length>3)t=t.slice(0,-2)+'…';c.fillText(t,x,y);return c.measureText(t).width};
+ // Background matches the game
+ const bg=c.createLinearGradient(0,0,0,CH);bg.addColorStop(0,'#10254a');bg.addColorStop(1,'#0b1b33');c.fillStyle=bg;c.fillRect(0,0,CW,CH);
+ // Header: logo, record, outcome, team line
+ if(logo){const h=118,w=logo.width*h/logo.height;c.drawImage(logo,(CW-w)/2,34,w,h)}
+ const gold='#ffcb05';
+ if(s.record){txt(s.record,CW/2,222,font(400,104,DISPLAY),s.champ?gold:cream)}
+ else txt('Draft complete',CW/2,222,font(400,64,DISPLAY),cream);
+ const outcome=s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON';
+ txt(outcome+'  ·  '+s.ovr+' OVR',CW/2,292,font(600,30,DATA),s.champ?'#ffe08a':cream);
+ txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),CW/2,334,font(500,24,BODY),'#9fb0c6','center',900);
+ // Field
+ const F={x:40,y:372,w:1000,h:700},hx=F.x+F.w/2,hy=F.y+F.h*.95,R=F.h*.9,d=F.h*.2;
+ c.save();c.beginPath();c.roundRect?c.roundRect(F.x,F.y,F.w,F.h,22):c.rect(F.x,F.y,F.w,F.h);c.clip();
+ c.fillStyle='#0a1830';c.fillRect(F.x,F.y,F.w,F.h);
+ const fan=(r)=>{c.beginPath();c.moveTo(hx,hy);c.arc(hx,hy,r,-Math.PI*.75,-Math.PI*.25);c.closePath()};
+ fan(R+18);c.fillStyle='#b8693f';c.fill(); // warning track
+ fan(R);c.fillStyle='#2c7341';c.fill();
+ c.save();fan(R);c.clip();c.fillStyle='rgba(255,255,255,.05)';for(let i=-12;i<12;i+=2){c.beginPath();c.moveTo(hx+i*60,F.y);c.lineTo(hx+i*60+60,F.y);c.lineTo(hx+i*60+60-700,F.y+700);c.lineTo(hx+i*60-700,F.y+700);c.fill()}
+ c.beginPath();c.arc(hx,hy-d*1.15,d*1.55,0,Math.PI*2);c.fillStyle='#b98159';c.fill();c.restore();
+ c.beginPath();c.moveTo(hx,hy);c.lineTo(hx+d,hy-d);c.lineTo(hx,hy-2*d);c.lineTo(hx-d,hy-d);c.closePath();c.fillStyle='#2e7d4f';c.fill();
+ c.strokeStyle='rgba(244,238,220,.85)';c.lineWidth=4;c.beginPath();c.moveTo(hx,hy);c.lineTo(hx-R*Math.SQRT1_2,hy-R*Math.SQRT1_2);c.moveTo(hx,hy);c.lineTo(hx+R*Math.SQRT1_2,hy-R*Math.SQRT1_2);c.stroke();
+ [[hx+d,hy-d],[hx,hy-2*d],[hx-d,hy-d]].forEach(([x,y])=>{c.save();c.translate(x,y);c.rotate(Math.PI/4);c.fillStyle=cream;c.fillRect(-9,-9,18,18);c.restore()});
+ c.restore();
+ // Player token: sprite in a ring, rating badge, name plate
+ const token=(p,x,y,r,label)=>{
+  c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fillStyle='#f4eedc';c.fill();c.lineWidth=5;c.strokeStyle='#0b1b33';c.stroke();
+  const im=imgOf(p);if(im){c.imageSmoothingEnabled=false;const z=r*2.3;c.drawImage(im,x-z/2,y-z/2-r*.08,z,z);c.imageSmoothingEnabled=true}
+  else txt(p.name[0],x,y,font(700,r,DATA),'#0b1b33');
+  const hi=p.rating>=95,bw=r*1.05,bh=r*.62;c.fillStyle=hi?gold:'#0b1b33';c.beginPath();c.roundRect?c.roundRect(x+r*.35,y+r*.42,bw,bh,bh/2):c.rect(x+r*.35,y+r*.42,bw,bh);c.fill();
+  txt(p.rating,x+r*.35+bw/2,y+r*.42+bh/2+1,font(700,r*.48,DATA),hi?'#0b1b33':cream);
+  if(label){c.font=font(600,r*.36,DATA);const lw=c.measureText(label).width+14;c.fillStyle='#0b1b33';c.beginPath();c.roundRect?c.roundRect(x-r*1.02,y-r*1.08,lw,r*.52,6):c.rect(x-r*1.02,y-r*1.08,lw,r*.52);c.fill();txt(label,x-r*1.02+lw/2,y-r*1.08+r*.26+1,font(600,r*.36,DATA),cream)}
+  c.font=font(600,r*.42,BODY);const nm=p.name.length>11?p.name.slice(0,10)+'…':p.name,nw=c.measureText(nm).width+20;
+  c.fillStyle='rgba(11,27,51,.92)';c.beginPath();c.roundRect?c.roundRect(x-nw/2,y+r+8,nw,r*.62,8):c.rect(x-nw/2,y+r+8,nw,r*.62);c.fill();
+  txt(nm,x,y+r+8+r*.31+1,font(600,r*.42,BODY),cream);
+ };
+ const onField=s.players.filter(p=>POS_XY[p.slot]||p.slot==='SP1');
+ onField.forEach(p=>{const xy=POS_XY[p.slot]||[50,68];token(p,F.x+F.w*xy[0]/100,F.y+F.h*xy[1]/100,46,p.slot==='SP1'?'SP':p.slot)});
+ // Staff row
+ const staff=s.players.filter(p=>!onField.includes(p));
+ if(staff.length){
+  const gap=Math.min(160,(CW-120)/staff.length),x0=CW/2-gap*(staff.length-1)/2;
+  staff.forEach((p,i)=>token(p,x0+i*gap,1150,36,p.slot==='RP1'?'CL':p.slot==='RP2'?'SU':p.slot))}
+ // Footer: the challenge and where to play
+ c.fillStyle='#d63a26';for(let x=0;x<CW;x+=40)c.fillRect(x,CH-112,28,5);
+ txt(s.record?'Think you can beat it?':'Think you can build a better team?',CW/2,CH-72,font(400,36,DISPLAY),cream);
+ txt('pokemon-ballclub.vercel.app',CW/2,CH-32,font(600,26,DATA),gold);
  const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
  return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
 }
@@ -69,7 +93,7 @@ async function open(){
    if(!native){
     const a=document.createElement('a');a.href=out.url;a.download=out.name;document.body.append(a);a.click();a.remove();
     try{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text(snap)).then(()=>setStatus('Image download requested and message copied. Attach the PNG in your chat.')).catch(()=>setStatus('Image download requested. Use Copy Text to copy the message.'));else setStatus('Image download requested. Use Copy Text for your message.')}catch(e){setStatus('Image download requested. Use Copy Text for your message.')}return}
-   try{navigator.share({files:[file],text:text(snap),title:'My Pokémon Ballclub'}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
+   try{navigator.share({files:[file],title:'My Pokémon Ballclub'}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
   };
   save.onclick=()=>{
    if(native&&/iPhone|iPad|iPod/i.test(navigator.userAgent)){
