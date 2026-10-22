@@ -73,27 +73,38 @@ async function renderCanvas(s){
  return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
 }
 
-// Main poster: captures the game's own field and pitching staff, so the image matches the app exactly.
+// Main poster: photographs the real field and pitching staff exactly as they sit in the app,
+// then frames them with the record on top and the challenge underneath.
 async function render(s){
  const field=document.getElementById('postseasonField')||document.getElementById('field'),pen=document.getElementById('postseasonPen')||document.getElementById('pen');
  if(!field||!pen)return renderCanvas(s);
  try{
   if(!window.html2canvas)await new Promise((ok,no)=>{const t=document.createElement('script');t.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';t.onload=ok;t.onerror=no;document.head.append(t)});
   try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
-  const logo=document.querySelector('.mark.logo img')?.currentSrc||'logo.webp';
-  const box=document.createElement('div');box.id='sp-poster';
-  const outcome=s.champ?'World Series Champions':s.record?'Final record':'Ready for the season';
-  box.innerHTML=`<div class="sp-head"><img class="sp-logo" src="${logo}" alt=""><b class="sp-rec${s.champ?' gold':''}">${s.record||'Draft complete'}</b><div class="sp-sub"><span class="${s.champ?'gold':''}">${outcome}</span><i>·</i><span>${s.ovr} OVR</span></div><div class="sp-team">${esc(s.team)} · ${s.mode} · ${s.size===11?'Quick':'Standard'}</div></div><div class="sp-field"></div><div class="sp-pen"></div><div class="sp-foot"><span>${s.record?'Think you can beat it?':'Think you can build a better team?'}</span><b>pokemon-ballclub.vercel.app</b></div>`;
-  const f=field.cloneNode(true),pn=pen.cloneNode(true);f.removeAttribute('id');pn.removeAttribute('id');
-  f.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));pn.querySelectorAll('[id]').forEach(e=>e.removeAttribute('id'));
-  box.querySelector('.sp-field').append(f);box.querySelector('.sp-pen').append(pn);
-  document.body.append(box);
-  await Promise.all([...box.querySelectorAll('img')].map(i=>i.complete?0:new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,4000)})));
-  const canvas=await html2canvas(box,{backgroundColor:'#0b1b33',scale:2,useCORS:true,logging:false,width:box.offsetWidth,height:box.offsetHeight,windowWidth:box.offsetWidth});
-  box.remove();
+  const shot=el=>html2canvas(el,{backgroundColor:null,scale:3,useCORS:true,logging:false,scrollX:-scrollX,scrollY:-scrollY,onclone:doc=>{const st=doc.createElement('style');st.textContent='*,*::before,*::after{animation:none!important;transition:none!important}.tag.just::before,.tag.just::after{display:none!important}';doc.head.append(st);doc.querySelectorAll('.tag.just').forEach(e=>e.classList.remove('just'));doc.querySelectorAll('.tag .nm').forEach(n=>{let t=n.textContent;while(n.scrollWidth>n.clientWidth+1&&t.length>3){t=t.slice(0,-1);n.textContent=t+'…'}})}});
+  const [fc,pc]=[await shot(field),await shot(pen)];
+  const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
+  const W=1080,M=36,IW=W-2*M,fh=Math.round(fc.height*IW/fc.width),ph=Math.round(pc.height*IW/pc.width);
+  const HEAD=318,GAP=22,FOOT=128,H=HEAD+fh+GAP+ph+FOOT;
+  const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;const c=canvas.getContext('2d');
+  const g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#10254a');g.addColorStop(1,'#0b1b33');c.fillStyle=g;c.fillRect(0,0,W,H);
+  const txt=(t,x,y,f,fill)=>{c.font=f;c.textAlign='center';c.textBaseline='middle';c.fillStyle=fill;c.fillText(t,x,y)};
+  if(logo){const lh=104,lw=logo.width*lh/logo.height;c.drawImage(logo,(W-lw)/2,26,lw,lh)}
+  txt(s.record||'Draft complete',W/2,190,'400 '+(s.record?96:60)+'px "Graduate",Georgia,serif',s.champ?'#ffcb05':'#f4eedc');
+  const outcome=(s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON')+'  ·  '+s.ovr+' OVR';
+  if('letterSpacing' in c)c.letterSpacing='2px';
+  txt(outcome,W/2,256,'600 30px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':'#f4eedc');
+  if('letterSpacing' in c)c.letterSpacing='0px';
+  txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),W/2,294,'500 24px "Barlow",Arial,sans-serif','#9fb0c6');
+  c.drawImage(fc,M,HEAD,IW,fh);c.drawImage(pc,M,HEAD+fh+GAP,IW,ph);
+  const fy=H-FOOT;c.fillStyle='#d63a26';for(let x=M;x<W-M;x+=26)c.fillRect(x,fy+18,16,4);
+  if('letterSpacing' in c)c.letterSpacing='3px';
+  txt(s.record?'THINK YOU CAN BEAT IT?':'THINK YOU CAN BUILD A BETTER TEAM?',W/2,fy+62,'600 38px "Oswald","Arial Narrow",sans-serif','#f4eedc');
+  if('letterSpacing' in c)c.letterSpacing='0px';
+  txt('pokemon-ballclub.vercel.app',W/2,fy+104,'600 28px "Barlow",Arial,sans-serif','#ffcb05');
   const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('Image export failed.')),'image/png'));
   return {blob,url:globalThis.URL.createObjectURL(blob),name:'pokemon-ballclub-'+(s.record?s.wins+'-wins':'roster')+'.png'};
- }catch(e){document.getElementById('sp-poster')?.remove();return renderCanvas(s)}
+ }catch(e){return renderCanvas(s)}
 }
 function canShare(file){try{return !!navigator.share&&!!navigator.canShare&&navigator.canShare({files:[file]})}catch(_){return false}}
 function setStatus(s){const el=document.getElementById('pb-share-status');if(el)el.textContent=s}
