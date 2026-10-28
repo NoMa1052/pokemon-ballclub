@@ -18,11 +18,27 @@
 
 /* Pack panel: Rare Candy right under the pick progress; the pack centered in the space left. */
 @media (min-width:1000px){
-  .wrap{max-width:1240px!important}
-  .grid{grid-template-columns:clamp(460px,calc((100vh - 400px)/.9),720px) minmax(380px,1fr)!important}
-  .is-packs #draft{display:flex!important;flex-direction:column;align-self:stretch}
+  .wrap{max-width:1320px!important}
+  .is-packs #draft{display:flex!important;flex-direction:column}
   .is-packs #draft>*{order:4}
   .is-packs #draft>.pk-head{order:0}.is-packs #draft>.pk-progress{order:1}.is-packs #draft>#itemTools{order:2;margin:12px 0 0!important}
-  .is-packs #draft>#throwBox{order:3;flex:1;display:flex!important;flex-direction:column;align-items:center;justify-content:center;margin:0!important}
+  .is-packs #draft>#throwBox{order:3;flex:1;display:flex!important;flex-direction:column;align-items:center;justify-content:center;margin:0!important;min-height:0}
   .is-packs #draft>#newRun{order:5}
 }
+/* Fit to the window (desktop-fit.js sets --avail and --fit). Both columns are exactly the visible height:
+   left = field + pitching staff, right = pack panel. */
+html.desk-fit .grid{--penH:178px;--fieldH:calc(var(--avail) - var(--penH) - 14px);grid-template-columns:min(calc(var(--fieldH) / .9),58%) minmax(0,1fr)!important;height:var(--avail);align-items:stretch!important;gap:14px 22px!important}
+html.desk-fit .grid>section:first-child{display:flex;flex-direction:column;gap:14px;min-height:0}
+html.desk-fit #field{height:var(--fieldH)!important;width:100%!important;aspect-ratio:auto!important;flex:none}
+html.desk-fit #pen{flex:1;min-height:0;margin:0!important}
+html.desk-fit #draft{height:var(--avail);max-height:var(--avail)!important;box-sizing:border-box;overflow:hidden;position:static!important;margin:0!important;align-self:stretch}
+html.desk-fit #draft .pack{width:auto!important;height:min(calc(var(--avail) - 300px),420px)!important;max-width:100%}
+html.desk-fit #draft .cardrow{zoom:var(--fit)}
+
+/* One-row header on desktop (desktop-fit.js moves the settings into it). */
+html.desk-fit header.top{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;max-width:none;margin:0 0 12px!important;padding:0!important}
+html.desk-fit header.top .mark.logo img{width:112px!important}
+html.desk-fit header.top #settings{margin:0!important}
+html.desk-fit .top+.stitchline,html.desk-fit .brand-stitch{display:none!important}
+html.desk-fit .new-hint{margin:0 0 10px;text-align:left}
+html.desk-fit header.top .howbtn{position:static!important;inset:auto!important;transform:none!important;margin:0!important}
