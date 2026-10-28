@@ -18,7 +18,13 @@
  }
  const prev=render;render=function(){const v=prev.apply(this,arguments);fit();
   // Everything fits on screen, so keep the header in view instead of auto-scrolling to the field.
-  if(root.classList.contains('desk-fit')&&document.body.classList.contains('field-deciding'))setTimeout(()=>scrollTo({top:0}),60);
+  if(root.classList.contains('desk-fit')&&document.body.classList.contains('field-deciding'))setTimeout(()=>{scrollTo({top:0});
+   // Keep the picked card fully in view in the card row.
+   const row=document.querySelector('#draft .cardrow'),c=row?.querySelector('.pcard[aria-pressed="true"]');
+   if(row&&c)row.scrollLeft=Math.max(0,c.offsetLeft-row.offsetLeft-(row.clientWidth-c.offsetWidth)/2)},80);
   return v};
+ // The landing bounce should play once. It used to replay on every re-render (for example tapping a card),
+ // which looked like the last-placed player shaking.
+ const prev2=render;let justTimer=0;render=function(){const v=prev2.apply(this,arguments);if(run?.just){clearTimeout(justTimer);const s=run.just;justTimer=setTimeout(()=>{if(run.just===s)run.just=null},900)}return v};
  addEventListener('resize',fit);document.fonts?.ready.then(fit);fit();
 })();
