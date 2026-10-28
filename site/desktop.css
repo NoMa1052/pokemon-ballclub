@@ -50,3 +50,13 @@ html.desk-fit .field-deciding .grid>#fieldFlow{grid-column:2!important;grid-row:
 html.desk-fit .field-deciding .grid>#draft{grid-column:2;grid-row:2;height:auto;max-height:none!important;min-height:0;align-self:stretch}
 html.desk-fit .field-deciding #draft>.pk-head,html.desk-fit .field-deciding #draft>.pk-progress,html.desk-fit .field-deciding #draft>#itemTools,html.desk-fit .field-deciding #draft>.packctl,html.desk-fit .field-deciding #draft>#newRun{display:none!important}
 html.desk-fit .field-deciding #draft .cardrow{zoom:calc(var(--fit) * .78)}
+/* Placing on desktop: the strip is one compact row so the cards keep their size. */
+html.desk-fit .field-deciding .grid>#fieldFlow{display:flex!important;align-items:center;gap:14px;padding:10px 14px!important;min-height:0}
+html.desk-fit .field-deciding #fieldFlow .placement-title{flex:1;min-width:0;display:flex;align-items:center;gap:12px;margin:0!important}
+html.desk-fit .field-deciding #fieldFlow .placement-title .tok{width:46px!important;height:46px!important;flex:none}
+html.desk-fit .field-deciding #fieldFlow .placement-title h3{font-size:20px!important;margin:0!important}
+html.desk-fit .field-deciding #fieldFlow .placement-title>small{display:none}
+html.desk-fit .field-deciding #fieldFlow .placement-task{display:none!important}
+html.desk-fit .field-deciding #fieldFlow .placement-actions{display:flex!important;gap:8px;margin:0!important;flex:none}
+html.desk-fit .field-deciding #fieldFlow .placement-actions .btn{min-height:38px!important;padding:6px 14px!important}
+html.desk-fit .field-deciding #draft .cardrow{zoom:var(--fit)!important}
