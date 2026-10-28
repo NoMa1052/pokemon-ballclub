@@ -164,6 +164,8 @@ document.addEventListener("click",e=>{
   e.stopImmediatePropagation();e.preventDefault();
   if(b.disabled||!run.rerolls||run.second)return;
   run.rerolls--;run.spin=null;run.selected=null;run.doubleArmed=false;run.justRipped=false;saveRun();
+  // A fast second click (or a mouse double-click) could land on whatever renders under the cursor; ignore clicks briefly.
+  window.__rerippedAt=performance.now();
   closeReveal();render();
   const t=document.getElementById("throwBox");if(t)t.scrollIntoView({behavior:reduce()?"auto":"smooth",block:"center"});
 },true);
@@ -201,3 +203,7 @@ rollPack.godOdds=1/750;packSpin=rollPack;
 }}
 decoratePack();
 }
+
+// Swallow clicks for a moment after a Re-rip so a double-click can't pick or place a card by accident.
+document.addEventListener("click",e=>{if(window.__rerippedAt&&performance.now()-window.__rerippedAt<450&&!e.target.closest('#rerollBtn,#rvRerip')){e.stopImmediatePropagation();e.preventDefault()}},true);
+document.addEventListener("dblclick",e=>{if(e.target.closest('#draft,#field,#pen,.reveal')){e.preventDefault()}},true);
