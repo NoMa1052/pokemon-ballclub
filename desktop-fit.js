@@ -1,7 +1,7 @@
 /* Desktop: size the game to the visible window so nothing is cut off and nothing is oddly small.
    Sets --avail (height left under the header) and --fit (scale for the card row) on <html>. */
 (() => {
- const root=document.documentElement;let home=null;
+ const root=document.documentElement;let home=null,bypass=false;
  function fit(){
   const g=document.querySelector('.grid');
   const top0=document.querySelector('header.top'),set=document.getElementById('settings');
@@ -30,7 +30,16 @@
  // (like swiping on a phone). Clicking the centered card picks it.
  document.addEventListener('click',e=>{
   if(!root.classList.contains('desk-fit'))return;
-  const c=e.target.closest?.('#draft .cardrow .pcard');if(!c)return;
+  const c=e.target.closest?.('#draft .cardrow .pcard');if(!c||bypass)return;
+  // While placing, clicking a different card switches the pick to it.
+  if(document.body.classList.contains('field-deciding')){
+   const id=+c.dataset.id;if(id===run.selected)return;
+   e.preventDefault();e.stopImmediatePropagation();
+   const cancel=document.getElementById('handCancel');if(!cancel)return;
+   cancel.click();
+   requestAnimationFrame(()=>{const n=document.querySelector(`#draft .cardrow .pcard[data-id="${id}"]`);if(!n)return;bypass=true;try{n.click()}finally{bypass=false}});
+   return;
+  }
   const row=c.closest('.cardrow'),rr=row.getBoundingClientRect(),cr=c.getBoundingClientRect();
   if(Math.abs((cr.left+cr.width/2)-(rr.left+rr.width/2))<cr.width*.3)return;
   e.preventDefault();e.stopImmediatePropagation();
