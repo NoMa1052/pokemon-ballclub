@@ -42,3 +42,11 @@ html.desk-fit header.top #settings{margin:0!important}
 html.desk-fit .top+.stitchline,html.desk-fit .brand-stitch{display:none!important}
 html.desk-fit .new-hint{margin:0 0 10px;text-align:left}
 html.desk-fit header.top .howbtn{position:static!important;inset:auto!important;transform:none!important;margin:0!important}
+/* Placing a card: the placement panel sits at the top of the right column and the pack (with the
+   chosen card highlighted) fills the rest, so nothing drops below the window. */
+html.desk-fit .field-deciding .grid{grid-template-rows:auto minmax(0,1fr)!important}
+html.desk-fit .field-deciding .grid>section:first-child{grid-column:1;grid-row:1/3}
+html.desk-fit .field-deciding .grid>#fieldFlow{grid-column:2!important;grid-row:1!important;align-self:start!important;position:static!important;margin:0!important}
+html.desk-fit .field-deciding .grid>#draft{grid-column:2;grid-row:2;height:auto;max-height:none!important;min-height:0;align-self:stretch}
+html.desk-fit .field-deciding #draft>.pk-head,html.desk-fit .field-deciding #draft>.pk-progress,html.desk-fit .field-deciding #draft>#itemTools,html.desk-fit .field-deciding #draft>.packctl,html.desk-fit .field-deciding #draft>#newRun{display:none!important}
+html.desk-fit .field-deciding #draft .cardrow{zoom:calc(var(--fit) * .78)}
