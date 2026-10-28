@@ -26,5 +26,16 @@
  // The landing bounce should play once. It used to replay on every re-render (for example tapping a card),
  // which looked like the last-placed player shaking.
  const prev2=render;let justTimer=0;render=function(){const v=prev2.apply(this,arguments);if(run?.just){clearTimeout(justTimer);const s=run.just;justTimer=setTimeout(()=>{if(run.just===s)run.just=null},900)}return v};
+ // Card row on desktop: clicking a card that isn't centered slides it to the center first
+ // (like swiping on a phone). Clicking the centered card picks it.
+ document.addEventListener('click',e=>{
+  if(!root.classList.contains('desk-fit'))return;
+  const c=e.target.closest?.('#draft .cardrow .pcard');if(!c)return;
+  const row=c.closest('.cardrow'),rr=row.getBoundingClientRect(),cr=c.getBoundingClientRect();
+  if(Math.abs((cr.left+cr.width/2)-(rr.left+rr.width/2))<cr.width*.3)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const z=parseFloat(getComputedStyle(row).zoom)||1;
+  row.scrollBy({left:((cr.left+cr.width/2)-(rr.left+rr.width/2))/z,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+ },true);
  addEventListener('resize',fit);document.fonts?.ready.then(fit);fit();
 })();
