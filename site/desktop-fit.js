@@ -16,6 +16,9 @@
   // The pack panel needs ~260px for its header, candy row and controls; the card row gets the rest.
   root.style.setProperty('--fit',Math.max(.62,Math.min(1,(avail-250)/470)).toFixed(3));
  }
- const prev=render;render=function(){const v=prev.apply(this,arguments);fit();return v};
+ const prev=render;render=function(){const v=prev.apply(this,arguments);fit();
+  // Everything fits on screen, so keep the header in view instead of auto-scrolling to the field.
+  if(root.classList.contains('desk-fit')&&document.body.classList.contains('field-deciding'))setTimeout(()=>scrollTo({top:0}),60);
+  return v};
  addEventListener('resize',fit);document.fonts?.ready.then(fit);fit();
 })();
