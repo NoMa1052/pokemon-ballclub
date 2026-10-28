@@ -1,0 +1,17 @@
+/* Laptop and desktop: fit the field, staff and pack on one screen without zooming out.
+   Header shrinks to one compact band, settings sit in one row, and the field column is sized
+   from the window height so the whole team stays in view. */
+@media (min-width:1000px){
+  .wrap{padding-block:10px 32px}
+  .top{min-height:0}
+  .mark.logo img{width:124px!important}
+  .top+.stitchline,.brand-stitch{margin:2px auto 8px!important}
+  .new-hint{margin:0 auto 8px}
+  #settings{display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(0,1.1fr) auto;gap:10px;align-items:stretch;max-width:1088px!important;width:100%;margin:0 auto 14px!important}
+  #settings>#modeSeg,#settings>#sizeSeg,#settings>#lbBtn{margin:0!important;width:auto!important;min-height:0}
+  #settings>#modeSeg{grid-column:1!important;grid-row:1!important}
+  #settings>#sizeSeg{grid-column:2!important;grid-row:1!important}
+  #settings>#lbBtn{grid-column:3!important;grid-row:1!important;padding-inline:18px!important}
+  .grid{grid-template-columns:clamp(440px,calc((100vh - 430px)/.9),640px) minmax(0,1fr)!important;justify-content:center;gap:22px!important}
+  #draft{max-height:calc(100vh - 24px)}
+}
