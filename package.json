@@ -1,0 +1,15 @@
+{
+  "name": "pokemon-ballclub",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "node build.mjs && npx serve dist"
+  },
+  "devDependencies": {
+    "@fontsource/barlow": "^5.0.0",
+    "@fontsource/graduate": "^5.0.0",
+    "@fontsource/oswald": "^5.0.0",
+    "esbuild": "^0.25.0"
+  }
+}
