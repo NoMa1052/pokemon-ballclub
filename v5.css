@@ -113,3 +113,14 @@ body.tray-on{padding-bottom:112px}
 .dex-grid .got{background:#f4eedc;border-color:#f4eedc;color:#10254a;font-weight:700}
 .dex-grid .got.sh{background:#ffcb05;border-color:#ffcb05}
 .dex-grid .got.lg{outline:2px solid #ffcb05;outline-offset:1px}
+/* League sheet fixes: no scrolling the page behind it, nothing floating over it, list first */
+html.lg-lock,html.lg-lock body{overflow:hidden!important}
+#lg .sheet-body,#rivalSheet .sheet-body{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#lg{overscroll-behavior:contain}
+body:has(.sheet:not([hidden])) .res-bar,body:has(.sheet:not([hidden])) .pick-tray,body:has(.ux-dialog) .res-bar{display:none}
+.sheet-body .lg-week.done{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#142c55;border:1px solid #d42c0a;color:#f4eedc}
+.lg-week.done div{flex:1;display:grid;gap:2px}.lg-week.done small{color:#a9b8d0}
+.lg-week.done .btn{margin:0;min-height:44px;background:none!important;color:#f4eedc!important;border:1px solid #5d7bb0!important}
+.lg-solo{margin:8px 0 0;padding:8px 12px;border-radius:8px;border:1px dashed #5d7bb0;font-size:14px;color:#f4eedc}
+.post-where{margin:8px 0 0;font-size:13px;line-height:1.4;color:#a9b8d0}
+#lg .sheet-in,#rivalSheet .sheet-in{max-height:88dvh}
