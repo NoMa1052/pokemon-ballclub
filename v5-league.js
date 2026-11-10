@@ -35,7 +35,7 @@
   return basePack(r,taken);
  };
 
- let scope='all',board='week',form=null,note='',token=0;
+ let scope='all',board='week',form=null,note='',token=0,view='league';
  const sheet=document.createElement('div');sheet.className='sheet';sheet.id='lg';sheet.hidden=true;sheet.setAttribute('role','dialog');sheet.setAttribute('aria-modal','true');sheet.setAttribute('aria-labelledby','lgTitle');
  sheet.innerHTML='<div class="sheet-in"><div class="sheet-top"><h2 id="lgTitle">League</h2><button class="btn" id="lgClose">Close</button></div><div class="sheet-body" id="lgBody"></div></div>';
  document.body.appendChild(sheet);
@@ -58,13 +58,17 @@
  function draw(){
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
   const chip=(v,l,on)=>`<button type="button" data-scope="${v}" aria-pressed="${on}">${esc(l)}</button>`;
-  body.innerHTML=weeklyCard()
+  const views=`<div class="seg lg-view" role="group" aria-label="View"><button type="button" data-view="league" aria-pressed="${view==='league'}">League</button><button type="button" data-view="dex" aria-pressed="${view==='dex'}">Collection</button></div>`;
+  const wireViews=()=>body.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;draw()});
+  if(view==='dex'&&typeof collectionHTML==='function'){token++;body.innerHTML=views+collectionHTML();wireViews();return}
+  body.innerHTML=views+weeklyCard()
    +`<div class="lg-chips" role="group" aria-label="Whose teams">${chip('all','Everyone',scope==='all')}${ls.map(x=>chip(x.code,x.name,scope===x.code)).join('')}${ls.length<3?'<button type="button" id="lgAdd">Join or create</button>':''}</div>`
    +(form?`<div class="lg-form"><label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div></div>`:'')
    +(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')
    +(cur?`<div class="lg-admin"><span>Code <b>${cur.code}</b></span><button type="button" class="btn" id="lgInvite">Invite</button><button type="button" class="btn quiet" id="lgLeave">Leave</button></div>`:'')
    +`<div class="seg lg-board" role="group" aria-label="Board"><button type="button" data-board="week" aria-pressed="${board==='week'}">This week</button><button type="button" data-board="all" aria-pressed="${board==='all'}">All time</button></div><div id="lgList"><p class="hint">Loading…</p></div>`;
   $('lgPlay').onclick=playWeekly;
+  wireViews();
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';draw()});
   body.querySelectorAll('[data-board]').forEach(b=>b.onclick=()=>{board=b.dataset.board;draw()});
   if($('lgAdd'))$('lgAdd').onclick=()=>{form=!form;note='';draw();$('lgCode')?.focus()};
