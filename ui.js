@@ -273,7 +273,8 @@ function howHTML(){
     <li><b>Legend spin:</b> a rare Spin result offering legendary Pokémon.</li>
     <li><b>Bonus legendary:</b> a pack can contain a rare sixth card.</li>
     <li><b>Legendary presence:</b> finish with a legendary on your roster for +1 team rating, capped at 99, plus a small hitting and pitching boost. Extra legendaries do not stack this team bonus.</li>
-    <li><b>Shiny Pokémon:</b> rare variants with boosted stats. Their updated ratings are already shown on the card.</li></ul>
+    <li><b>Shiny Pokémon:</b> rare variants with boosted stats. Their updated ratings are already shown on the card.</li>
+    <li><b>Shiny spark:</b> a shiny lifts every teammate that shares one of its types. Each linked teammate plays a few rating points better, shown as a gold +. Up to 5 teammates count, so one shiny is worth building around.</li></ul>
   </div></section>
   <section class="guide-topic"><h3>6. What each position needs</h3><div class="guide-content"><p>Use these traits as scouting clues. The displayed position rating is the final comparison.</p><div class="needs">${[...FIELD_SLOTS,"SP","RP"].map(s=>`<div><b>${s==="RP"?"CL / SU":s}</b><span>${NEEDS[s]}</span></div>`).join("")}</div><p class="guide-note">C = catcher; SS = shortstop; LF / CF / RF = left / center / right field; DH = designated hitter; SP = starter; CL / SU = closer / setup reliever. 1B, 2B and 3B are the bases.</p><p>Defense has the biggest effect at catcher, shortstop and center field, and less at first base and left field. DH only hits.</p></div></section>
   <section class="guide-topic"><h3>7. Deeper scouting: body and types</h3><div class="guide-content">

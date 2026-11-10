@@ -386,7 +386,18 @@ function buildLineup(hitters){
 
 // A roster bonus, never multiplied by the number of legends.
 function legendaryPresence(slots){return Object.values(slots).some(m=>m?.leg)?1:0}
-function rosterRating(slots,list){const filled=list.filter(s=>slots[s]);return filled.length?Math.min(99,ovr99(filled.reduce((r,s)=>r+slotRuns(slots[s],s),0)/filled.length)+legendaryPresence(slots)):null}
+// Shiny spark: a shiny lifts every teammate that shares one of its types.
+// A teammate counts once however many shinies it links to, and only SPARK_CAP teammates count,
+// so one shiny rewards building around it without a pile of shinies running away with the season.
+const SPARK_RUNS=5,SPARK_CAP=5;
+const sparkLink=(a,b)=>a.types.some(t=>b.types.includes(t));
+function sparkSlots(slots,list){
+  const shiny=list.filter(s=>slots[s]?.shiny);if(!shiny.length)return [];
+  return list.filter(s=>slots[s]&&shiny.some(x=>x!==s&&sparkLink(slots[x],slots[s])));
+}
+// Runs each linked teammate gains. Past the cap the same total is shared, so nobody's link is arbitrary.
+function sparkRuns(slots,list){const linked=sparkSlots(slots,list),each=linked.length?SPARK_RUNS*Math.min(linked.length,SPARK_CAP)/linked.length:0;return{linked,each}}
+function rosterRating(slots,list){const filled=list.filter(s=>slots[s]),sp=sparkRuns(slots,list);return filled.length?Math.min(99,ovr99((filled.reduce((r,s)=>r+slotRuns(slots[s],s),0)+sp.each*sp.linked.length)/filled.length)+legendaryPresence(slots)):null}
 
 // ---------- simulation ----------
 const Z=g=>(g-50)/14;
@@ -396,11 +407,13 @@ const SIMP={k:.16,kS:.45,kC:.26,bb:.07,bbE:.95,bbC:.5,hr:.032,hrP:.95,hrS:.7,ba:
 function simTeam(slots,name,track){
   const hitters=FIELD_SLOTS.map(pos=>{const m=slots[pos]||filler("Fill-in",40);const t=hitTools(m);return{m,pos,zCon:t.con,zPow:t.pow,zEye:t.eye,zSpd:t.run,t,arch:archetype(m),st:{pa:0,ab:0,h:0,d:0,t:0,hr:0,r:0,rbi:0,bb:0,k:0,sb:0,cs:0}}});
   const presence=legendaryPresence(slots)*.025;
-  hitters.forEach(h=>{h.zCon+=presence;h.zPow+=presence;h.zEye+=presence});
+  // Shiny spark shows up in the box scores too: about the same runs the rating gives each linked player.
+  const spk=sparkRuns(slots,Object.keys(slots)),spz=s=>spk.linked.includes(s)?spk.each*.05:0;
+  hitters.forEach(h=>{const z=presence+spz(h.pos);h.zCon+=z;h.zPow+=z;h.zEye+=z});
   const order=buildLineup(hitters);
   let dsum=0,dw=0;for(const pos of FIELD_SLOTS){if(pos==="DH")continue;dsum+=glove(slots[pos]||filler("",40),pos)*DEF_IMP[pos];dw+=DEF_IMP[pos]}
   // Relievers air it out for one inning, so velocity adds to their stuff in the game sim too.
-  const mkP=(m,role)=>({m,role,zStf:role.startsWith("SP")||role==="FILL"?zOf(m,"stf"):.75*zOf(m,"stf")+.35*zOf(m,"vel"),zCtl:zOf(m,"ctl")+presence,zSta:zOf(m,"sta"),st:{g:0,gs:0,w:0,l:0,sv:0,outs:0,h:0,r:0,bb:0,k:0,hr:0}});
+  const mkP=(m,role)=>({m,role,zStf:(role.startsWith("SP")||role==="FILL"?zOf(m,"stf"):.75*zOf(m,"stf")+.35*zOf(m,"vel"))+spz(role),zCtl:zOf(m,"ctl")+presence+spz(role),zSta:zOf(m,"sta"),st:{g:0,gs:0,w:0,l:0,sv:0,outs:0,h:0,r:0,bb:0,k:0,hr:0}});
   const rot=["SP1","SP2","SP3","SP4","SP5"].filter(s=>slots[s]).map(s=>mkP(slots[s],s));
   while(rot.length<5)rot.push(mkP(filler("Spot starter",45),"FILL"));
   return{name,track,order,hitters,defZ:Z(dsum/dw),armZ:Z((slots.C||filler("",40)).arm),
@@ -544,6 +557,8 @@ function teamRuns(slots,list){
     if(s==="DH")rs+=m.dhR;
     else if(FIELD_SLOTS.includes(s)){rs+=m.batR;ra-=m.fldR[s]}
     else ra-=slotRuns(m,s);}
+  // Shiny spark: linked hitters score a little more, linked pitchers allow a little less.
+  const sp=sparkRuns(slots,list);for(const s of sp.linked){if(FIELD_SLOTS.includes(s))rs+=sp.each;else ra-=sp.each}
   // Small morale edge: 1% more scoring and 1% fewer runs allowed.
   if(legendaryPresence(slots)){rs*=1.01;ra*=.99}
   // Run prevention tapers off near the bottom instead of stopping dead at a hard floor, so great pitching always counts a little.
