@@ -9,9 +9,9 @@ const isPack=()=>mode==="pack";
 const runKey=(m,size)=>m==="daily"?"pbc2-daily-"+today()+(size===16?"-16":""):m==="pack"?"pbc2-pack-"+size:"pbc2-practice-"+size;
 // Each device gets its own daily spins: one run per day, different for every player.
 function deviceId(){let id=store.get("pbc2-id");if(!id){id=String((Math.random()*2**32)>>>0);store.set("pbc2-id",id)}return id}
-function saveRun(){store.set(runKey(run.mode,run.size),JSON.stringify({...run,slots:Object.fromEntries(Object.entries(run.slots).map(([k,m])=>[k,m.id])),result:run.result||null}))}
-function loadRun(m){
-  try{const o=JSON.parse(store.get(runKey(m,prefSize()))||"null");if(!o)return null;
+function saveRun(){store.set(run.week?"pbc5-weekly-"+run.week:runKey(run.mode,run.size),JSON.stringify({...run,slots:Object.fromEntries(Object.entries(run.slots).map(([k,m])=>[k,m.id])),result:run.result||null}))}
+function loadRun(m,key){
+  try{const o=JSON.parse(store.get(key||runKey(m,prefSize()))||"null");if(!o)return null;
     if(o.locked&&(!o.result?.me?.order||!o.result?.post)){if(Number.isFinite(o.result?.wins))o.previousWins=o.result.wins;o.result=null;o.locked=false;}
     if(!o.used||(o.size!==11&&o.size!==16))return null;if(o.doubles==null)o.doubles=1;if(o.releases==null)o.releases=1;if(o.candies==null)o.candies=1;o.moving=null;o.selected=o.hand?.held||null;o.unrevealed=!!o.unrevealed;o.justRipped=false;o.showStats=true;if(!o.keeps)o.keeps={type:1,gen:1};o.slots=Object.fromEntries(Object.entries(o.slots).map(([k,id])=>[k,BYID.get(id)]));return o}catch(e){return null}
 }
@@ -445,7 +445,7 @@ function wireSubmit(){
     if(!team){msg.textContent="Give your team a name first.";inp.focus();return}
     btn.disabled=true;msg.textContent="Posting…";
     const list=slotList(),res=run.result;
-    const row={team,size:run.size,wins:res.wins,grade:res.grade,rs:Math.round(res.runs.rs),ra:Math.round(res.runs.ra),roster:list.map(s=>run.slots[s]?run.slots[s].id:0),device:deviceId().slice(0,16),mode:isPack()?"pack":"spin"};
+    const row={team,size:run.size,wins:res.wins,grade:res.grade,rs:Math.round(res.runs.rs),ra:Math.round(res.runs.ra),roster:list.map(s=>run.slots[s]?run.slots[s].id:0),device:deviceId().slice(0,16),mode:isPack()?"pack":"spin",week:run.week||null,leagues:typeof leagueCodes==="function"?leagueCodes():[]};
     try{
       const r=await fetch(LB_URL,{method:"POST",headers:lbHead({"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
       if(!r.ok)throw new Error(r.status);
