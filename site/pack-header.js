@@ -30,9 +30,16 @@
   d.prepend(head,bar);
   $('pkUndo')?.addEventListener('click',()=>{handUndoAction();render()});
   const box=document.createElement('div');box.className='rd-next';
-  box.innerHTML=`<h3>Your team is set</h3><p>Check your draft card, then play the season.</p>`;
+  box.innerHTML=`<h3>Your team is set</h3><p>Your lineup is final once the season starts.</p>`;
   pb.before(box);box.append(pb);
-  pb.innerHTML='<span>Review team</span><i aria-hidden="true">→</i>';pb.setAttribute('aria-label','Review team');
+  // One step to the season: the button plays it. The draft card is an optional look, not a gate.
+  const openCard=pb.onclick;
+  pb.innerHTML='<span>Play season</span><i aria-hidden="true">→</i>';pb.setAttribute('aria-label','Play season');
+  if(pb._play){
+   pb.onclick=pb._play;
+   const card=document.createElement('button');card.type='button';card.className='btn quiet rd-card';card.id='rdCard';card.textContent='View or share team card';
+   card.onclick=openCard;box.append(card);
+  }
   box.insertAdjacentHTML('beforeend','<p class="rd-tip">Want to change something first? Tap any player on the field to move them.</p>');
   const start=$('newRun');if(start){start.classList.add('pk-start');d.append(start)}
  }

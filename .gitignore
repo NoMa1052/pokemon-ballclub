@@ -1,2 +1,5 @@
-site/fonts.css
-ballclub.html
+*.zip
+*.md.bak
+logo-b64.txt
+node_modules
+dist
