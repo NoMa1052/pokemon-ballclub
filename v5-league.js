@@ -41,7 +41,7 @@
  document.body.appendChild(sheet);
  const lock=on=>{document.documentElement.classList.toggle('lg-lock',on)};
  function close(){sheet.hidden=true;lock(false)}
- function open(){sheet.hidden=false;lock(true);$('lgBody').scrollTop=0;note='';form=null;if(scope!=='all'&&!mine().some(x=>x.code===scope))scope='all';draw();$('lgClose').focus({preventScroll:true})}
+ function open(){sheet.hidden=false;lock(true);$('lgBody').scrollTop=0;note='';form=null;if(!mine().some(x=>x.code===scope))scope=mine()[0]?.code||'all';draw();$('lgClose').focus({preventScroll:true})}
  $('lgClose').onclick=close;sheet.addEventListener('click',e=>{if(e.target===sheet)close()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sheet.hidden)close()});
  $('lgBtn').onclick=open;
@@ -64,20 +64,19 @@
   const wireViews=()=>body.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{view=b.dataset.view;draw()});
   if(view==='dex'&&typeof collectionHTML==='function'){token++;body.innerHTML=views+collectionHTML();wireViews();return}
   body.innerHTML=views+weeklyCard()
-   +`<div class="lg-chips" role="group" aria-label="Whose teams">${chip('all','Everyone',scope==='all')}${ls.map(x=>chip(x.code,x.name,scope===x.code)).join('')}${ls.length<3?'<button type="button" id="lgAdd">Join or create</button>':''}</div>`
+   +`<div class="lg-chips" role="group" aria-label="Whose teams">${ls.map(x=>chip(x.code,x.name,scope===x.code)).join('')}${ls.length<3?'<button type="button" id="lgAdd">Join or create</button>':''}</div>`
    +(form?`<div class="lg-form"><label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div></div>`:'')
    +(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')
    +(cur?`<div class="lg-admin"><span>Code <b>${cur.code}</b></span><button type="button" class="btn" id="lgInvite">Invite</button><button type="button" class="btn quiet" id="lgLeave">Leave</button></div>`:'')
-   +`<div class="seg lg-board" role="group" aria-label="Board"><button type="button" data-board="week" aria-pressed="${board==='week'}">This week</button><button type="button" data-board="all" aria-pressed="${board==='all'}">All time</button></div><div id="lgList"><p class="hint">Loading…</p></div>`;
+   +`<h3 class="lg-h">This week's standings <span>${cur?esc(cur.name):'Everyone'}</span></h3><div id="lgList"><p class="hint">Loading…</p></div>`;
   $('lgPlay').onclick=playWeekly;
   wireViews();
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';draw()});
-  body.querySelectorAll('[data-board]').forEach(b=>b.onclick=()=>{board=b.dataset.board;draw()});
   if($('lgAdd'))$('lgAdd').onclick=()=>{form=!form;note='';draw();$('lgCode')?.focus()};
   if($('lgJoin')){$('lgJoin').onclick=()=>join($('lgCode').value);$('lgCode').onkeydown=e=>{if(e.key==='Enter')join($('lgCode').value)}}
   if($('lgMake')){$('lgMake').onclick=()=>make($('lgName').value);$('lgName').onkeydown=e=>{if(e.key==='Enter')make($('lgName').value)}}
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
-  if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope='all';draw()};
+  if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';draw()};
   list();
  }
  async function list(){
@@ -91,8 +90,8 @@
   const seen=new Set();
   rows=rows.map(x=>({...x,ovr:rosterOvr(x.roster,FULL)})).sort(lbRank).filter(x=>!seen.has(x.device)&&seen.add(x.device)).slice(0,50);
   const roster=x=>`<div class="lbroster">${x.roster.map((id,i)=>{const m=BYID.get(id);return m?`<span><i>${lbl(FULL[i]).replace(/^SP1$/,'SP')}</i>${esc(m.name)}</span>`:''}).join('')}</div>`;
-  const empty=board==='week'?(scope==='all'?'Nobody has posted this week yet. Be the first.':'Nobody in this league has posted this week yet.'):(scope==='all'?'No teams yet.':'No teams yet. Teams count from the day a player joins the league.');
-  $('lgList').innerHTML=rows.length?`<ol class="lblist">${rows.map((x,i)=>`<li class="${x.device===me?'me':''}"><details><summary><span class="rk">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Team ${x.ovr}</small></span><span class="rec">${x.wins}–${162-x.wins}</span><span class="gd">${esc(x.grade)}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>${scope!=='all'&&rows.length===1&&rows[0].device===me?'<p class="lg-solo">Only your team is here so far. Tap Invite to send your friends the code.</p>':''}<p class="hint">Each player's best team. Tap a team for its roster. Ties go to the higher team grade.</p>`:`<p class="hint">${empty}</p>`;
+  const empty=scope==='all'?'Nobody has posted the weekly challenge yet. Be the first.':'Nobody in this league has posted the weekly challenge yet. Play it above, then post your team.';
+  $('lgList').innerHTML=rows.length?`<ol class="lblist">${rows.map((x,i)=>`<li class="${x.device===me?'me':''}"><details><summary><span class="rk">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Team ${x.ovr}</small></span><span class="rec">${x.wins}–${162-x.wins}</span><span class="gd">${esc(x.grade)}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>${scope!=='all'&&rows.length===1&&rows[0].device===me?'<p class="lg-solo">Only your team is here so far. Tap Invite to send your friends the code.</p>':''}<p class="hint">Weekly challenge teams only. Tap a team for its roster. All-time boards are in Records.</p>`:`<p class="hint">${empty}</p>`;
   if(typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),rows);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
@@ -102,7 +101,7 @@
   if(mine().some(x=>x.code===code)){scope=code;form=null;note='';draw();return}
   if(mine().length>=3){note='You can be in 3 leagues. Leave one first.';draw();return}
   try{const l=await lookup(code);if(!l){note=`No league with code ${code}.`;draw();return}
-   keep([...mine(),{code:l.code,name:l.name}]);scope=l.code;form=null;note=`Joined ${l.name}. Teams you post from now on count here.`;draw()}
+   keep([...mine(),{code:l.code,name:l.name}]);scope=l.code;form=null;note=`Joined ${l.name}. Play the weekly challenge and post your team to get on the board.`;draw()}
   catch(e){note="Couldn't reach the league list. Try again.";draw()}
  }
  async function make(raw){

@@ -124,3 +124,5 @@ body:has(.sheet:not([hidden])) .res-bar,body:has(.sheet:not([hidden])) .pick-tra
 .lg-solo{margin:8px 0 0;padding:8px 12px;border-radius:8px;border:1px dashed #5d7bb0;font-size:14px;color:#f4eedc}
 .post-where{margin:8px 0 0;font-size:13px;line-height:1.4;color:#a9b8d0}
 #lg .sheet-in,#rivalSheet .sheet-in{max-height:88dvh}
+.sheet-body .lg-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:6px 0 10px;padding:0;background:none!important;font:600 17px/1.2 var(--f-data)}
+.lg-h span{font:600 13px "Barlow",sans-serif;color:#a9b8d0}

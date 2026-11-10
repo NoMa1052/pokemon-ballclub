@@ -276,8 +276,8 @@ function howHTML(){
     <li><b>Shiny Pokémon:</b> rare variants with boosted stats. Their updated ratings are already shown on the card.</li>
     <li><b>Shiny spark:</b> a shiny lifts every teammate that shares one of its types. Each linked teammate plays a few rating points better, shown as a gold +. Up to 5 teammates count, so one shiny is worth building around.</li>
     <li><b>Weekly challenge:</b> open League to play it. Everyone gets the same pack at each pick and one attempt, and a new one starts every Monday.</li>
-    <li><b>Leagues:</b> start one or join with a 5-character code. Teams you post after joining show on that league's board.</li>
-    <li><b>Rival series:</b> finish a 16-pick team, open any team on a League board, and play it in a best of 7.</li></ul>
+    <li><b>Leagues:</b> start one or join with a 5-character code. A league ranks its members on each week's challenge.</li>
+    <li><b>Rival series:</b> finish a 16-pick team, open any team in the League standings, and play it in a best of 7.</li></ul>
   </div></section>
   <section class="guide-topic"><h3>6. What each position needs</h3><div class="guide-content"><p>Use these traits as scouting clues. The displayed position rating is the final comparison.</p><div class="needs">${[...FIELD_SLOTS,"SP","RP"].map(s=>`<div><b>${s==="RP"?"CL / SU":s}</b><span>${NEEDS[s]}</span></div>`).join("")}</div><p class="guide-note">C = catcher; SS = shortstop; LF / CF / RF = left / center / right field; DH = designated hitter; SP = starter; CL / SU = closer / setup reliever. 1B, 2B and 3B are the bases.</p><p>Defense has the biggest effect at catcher, shortstop and center field, and less at first base and left field. DH only hits.</p></div></section>
   <section class="guide-topic"><h3>7. Deeper scouting: body and types</h3><div class="guide-content">
