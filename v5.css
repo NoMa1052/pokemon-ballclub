@@ -17,3 +17,48 @@
 .spark-line b{color:#ffcb05;margin-right:6px;font-weight:700}
 .tc-spark{font:700 11px/1.35 "Barlow",sans-serif;color:#10254a;background:#ffcb05;padding:5px 7px;border-radius:5px;margin:4px 0;text-align:left}
 .rv-mini .tc-spark{font-size:9px;line-height:1.25;padding:3px 4px;text-align:center;margin:2px 0 4px}
+/* Season reveal */
+body.sr-open{overflow:hidden}
+.sr{position:fixed;inset:0;z-index:400;background:#0b1b38;color:#f4eedc;overflow:auto;font-family:"Barlow",sans-serif}
+.sr-in{max-width:460px;margin:0 auto;min-height:100%;box-sizing:border-box;padding:12px 16px 20px;display:flex;flex-direction:column;gap:12px}
+.sr-top{display:flex;align-items:center;justify-content:space-between;font:600 12px/1 var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:#a9b8d0}
+.sr-top .btn{min-height:44px}
+.sr-head{display:grid;gap:2px}
+.sr-head small{font:600 12px/1.3 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#a9b8d0}
+.sr-head b{font:400 64px/1.05 var(--f-display);font-variant-numeric:tabular-nums}
+.sr-head span{font-size:14px;font-weight:600;color:#ffcb05}
+.sr-chart{width:100%;height:auto;border-radius:12px;background:#10254a;border:1px solid #2c4470}
+.sr-chart line{stroke:#3a5380;stroke-width:1}
+.sr-chart polyline{fill:none;stroke-linejoin:round;stroke-linecap:round}
+#srLine{stroke:#ffcb05;stroke-width:2.6}#srRival{stroke:#8fa6cc;stroke-width:1.6}
+.sr-chart text{fill:#a9b8d0;font:500 9px "Barlow",sans-serif}
+.sr-stand{display:grid;gap:2px}
+.sr-stand div{display:grid;grid-template-columns:18px 1fr auto 30px;gap:10px;align-items:center;padding:7px 10px;border-radius:8px;font-size:14px}
+.sr-stand i{font-style:normal;font-weight:700;color:#a9b8d0}
+.sr-stand b{font:600 15px/1 var(--f-data);font-variant-numeric:tabular-nums}
+.sr-stand em{font-style:normal;font-size:12px;color:#a9b8d0;text-align:right}
+.sr-stand .me{background:#1d3a6b;font-weight:700}
+.sr-notes{display:grid;gap:6px;min-height:96px;align-content:start}
+.sr-notes p,.sr-post p{margin:0;padding:8px 12px;border-radius:8px;background:#142c55;border-left:0;font-size:14px;line-height:1.35;display:flex;gap:10px;align-items:baseline}
+.sr-notes small,.sr-post small{flex:none;min-width:64px;font:600 11px/1.3 var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:#a9b8d0}
+.sr-notes .good,.sr-post .good{color:#9ee6b4}.sr-notes .bad,.sr-post .bad{color:#ffb39e}
+.sr-post{display:grid;gap:6px}
+.sr-post .champ{justify-content:center;background:#ffcb05;color:#10254a;font:700 16px/1.3 var(--f-data);letter-spacing:.08em;text-transform:uppercase}
+.sr-done{min-height:52px;width:100%;margin-top:auto}
+/* Results */
+.weak-link{margin:12px 0 0;padding:10px 12px;border-radius:8px;background:rgba(255,203,5,.08);border:1px solid rgba(255,203,5,.4);font-size:14px;line-height:1.4;color:#f4eedc}
+.weak-link b{color:#ffcb05}
+.res-bar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#0b1b38;border-top:1px solid #2c4470;transition:transform .2s}
+.res-bar .btn{flex:1;min-height:46px;margin:0}
+.res-bar.away{transform:translateY(110%)}
+@media(max-width:999px){body.has-results{padding-bottom:76px}}
+@media(prefers-reduced-motion:reduce){.res-bar{transition:none}}
+/* Pick tray */
+.pick-tray{position:fixed;left:0;right:0;bottom:0;z-index:55;display:flex;gap:6px;justify-content:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:#0b1b38;border-top:2px solid #ffcb05}
+.pick-tray button{flex:1 1 0;max-width:84px;min-width:0;min-height:88px;padding:6px 2px 5px;border-radius:10px;border:1px solid #3a5380;background:#142c55;color:#f4eedc;display:grid;justify-items:center;gap:2px;font-family:"Barlow",sans-serif}
+.pick-tray button[aria-pressed="true"]{background:#f4eedc;color:#10254a;border:2px solid #ffcb05}
+.pick-tray .tok{width:34px;height:34px;min-width:34px}
+.pick-tray b{font-size:11px;font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pick-tray em{font:700 17px/1 var(--f-data);font-style:normal;display:flex;align-items:baseline;gap:3px}
+.pick-tray small{font:600 10px/1 "Barlow",sans-serif;opacity:.75}
+body.tray-on{padding-bottom:112px}
