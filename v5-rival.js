@@ -49,13 +49,13 @@
  const DEX='pbc5-dex',REGIONS=['Kanto','Johto','Hoenn','Sinnoh'];
  function dex(){
   let d;try{d=JSON.parse(store.get(DEX)||'null')}catch(e){}
-  if(!d||!Array.isArray(d.nums)){
-   // First visit: fill in from seasons already saved in the Clubhouse.
-   d={nums:[],shiny:[]};
-   try{const c=JSON.parse(store.get('pbc3-clubhouse-v1')||'null');for(const h of c?.history||[])add(d,(h.ids||[]).map(id=>BYID.get(id)).filter(Boolean))}catch(e){}
-   store.set(DEX,JSON.stringify(d));
-  }
+  if(!d||!Array.isArray(d.nums))d={nums:[],shiny:[]};
   if(!Array.isArray(d.shiny))d.shiny=[];
+  if(d.v!==2){
+   // Fill in from seasons already saved in the Clubhouse (its last 40).
+   try{const c=JSON.parse(store.get('pbc3-clubhouse-v1')||'null');for(const h of c?.history||[])add(d,(h.roster||[]).map(id=>BYID.get(id)).filter(Boolean))}catch(e){}
+   d.v=2;store.set(DEX,JSON.stringify(d));
+  }
   return d;
  }
  function add(d,mons){for(const m of mons){if(!d.nums.includes(m.num))d.nums.push(m.num);if(m.shiny&&!d.shiny.includes(m.num))d.shiny.push(m.num)}}
@@ -66,7 +66,7 @@
   const legs=all.filter(m=>m.leg),gotLegs=legs.filter(m=>own.has(m.num)).length,got=all.filter(m=>own.has(m.num)).length;
   const region=g=>{const list=all.filter(m=>m.gen===g),n=list.filter(m=>own.has(m.num)).length;
    return `<section class="dex-region"><h3>${REGIONS[g-1]} <span>${n} of ${list.length}</span></h3><div class="dex-bar"><i style="width:${(100*n/list.length).toFixed(1)}%"></i></div><div class="dex-grid">${list.map(m=>own.has(m.num)?`<span class="got${shiny.has(m.num)?' sh':''}${m.leg?' lg':''}">${esc(m.name)}</span>`:`<span>${m.num}</span>`).join('')}</div></section>`};
-  return `<div class="dex-top"><b>${got}</b><span>of ${all.length} Pokémon rostered in a finished season</span><small>${gotLegs} of ${legs.length} legendaries · ${shiny.size} shin${shiny.size===1?'y':'ies'}</small></div>${[1,2,3,4].map(region).join('')}<p class="hint">A Pokémon is added when you finish a season with it on your team. Gold names were shiny; outlined names are legendaries.</p>`;
+  return `<div class="dex-top"><b>${got}</b><span>of ${all.length} Pokémon rostered in a finished season</span><small>${gotLegs} of ${legs.length} legendaries · ${shiny.size} shin${shiny.size===1?'y':'ies'}</small></div>${[1,2,3,4].map(region).join('')}<p class="hint">Every finished season counts, in any mode. Gold names were shiny; outlined names are legendaries.</p>`;
  };
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);record();return v};
  if(run?.result)record();

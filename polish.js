@@ -53,7 +53,7 @@
     const filters=tab==='leaderboard'?`<div class="records-filters"><div><span>Mode</span><div class="records-filter-buttons" role="group" aria-label="Leaderboard mode">${[['spin','Spin'],['pack','Packs']].map(([v,l])=>`<button data-record-mode="${v}" aria-pressed="${lbMode===v}">${l}</button>`).join('')}</div></div><div><span>Roster size</span><div class="records-filter-buttons" role="group" aria-label="Leaderboard roster size">${[16,11].map(v=>`<button data-record-size="${v}" aria-pressed="${lbSize===v}">${v===16?'Standard':'Quick'}<small>${v} players</small></button>`).join('')}</div></div></div>`:'';
     const shell=content=>recordsNav()+`<div id="recordsPanel" role="tabpanel" aria-labelledby="${tab==='leaderboard'?'recordsPublicTab':'recordsClubTab'}">${filters}<div class="records-results">${content}</div></div>`;
     const paint=(content,initial=false)=>{if(initial)body.innerHTML=shell(content);else body.querySelector('.records-results').innerHTML=content;wireRecords();if(focus&&initial)$(tab==='leaderboard'?'recordsPublicTab':'recordsClubTab').focus()};
-    if(tab==='clubhouse'){paint(`<div class="records-clubhouse">${careerHTML()}</div>`,true);return}
+    if(tab==='clubhouse'){paint(`<div class="records-clubhouse">${careerHTML()}${typeof collectionHTML==='function'?`<section class="records-dex"><h3>Collection</h3>${collectionHTML()}</section>`:''}</div>`,true);return}
     paint('<p class="hint" role="status">Loading teams…</p>',true);
     const size=lbSize,which=lbMode;
     let rows;

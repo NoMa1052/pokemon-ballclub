@@ -126,3 +126,5 @@ body:has(.sheet:not([hidden])) .res-bar,body:has(.sheet:not([hidden])) .pick-tra
 #lg .sheet-in,#rivalSheet .sheet-in{max-height:88dvh}
 .sheet-body .lg-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:6px 0 10px;padding:0;background:none!important;font:600 17px/1.2 var(--f-data)}
 .lg-h span{font:600 13px "Barlow",sans-serif;color:#a9b8d0}
+.records-dex{margin-top:18px;padding-top:4px}
+.sheet-body .records-dex>h3{margin:0 0 8px}
