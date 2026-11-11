@@ -263,7 +263,7 @@ function howHTML(){
     <p>A strong hitter is not automatically a strong catcher. Compare position ratings instead of adding the OFF and DEF numbers yourself.</p>
     <p class="guide-note">Only the skills relevant to a role count there: DH does not use fielding, and a non-pitcher is not penalized for weak pitching. CL and SU share a displayed relief rating, but the closer has more impact in the simulation.</p>
   </div></section>
-  <section class="guide-topic"><h3>4. Play a season, share it, and try again</h3><div class="guide-content"><p>Fill every roster spot, review your swaps, then choose <b>Play your season</b>. The game simulates 162 regular-season games and a postseason if your team qualifies. Chase 162–0, but a high roster rating does not guarantee it.</p><ul>
+  <section class="guide-topic"><h3>4. Play a season, share it, and try again</h3><div class="guide-content"><p>Fill every roster spot, review your swaps, then choose <b>Play season</b>. The game simulates 162 regular-season games and a postseason if your team qualifies. Chase 162–0, but a high roster rating does not guarantee it.</p><ul>
     <li><b>Results:</b> see your record, season grade, team strengths, MVP and best pitcher. Expand the full stats for a deeper look.</li>
     <li><b>Share:</b> copy or share your result. Enter a team name and post it to the public leaderboard if you want.</li>
     <li><b>Leaderboards:</b> Spin and Packs have separate boards, with Quick and Standard separated too.</li>
@@ -274,13 +274,15 @@ function howHTML(){
     <li><b>Bonus legendary:</b> a pack can contain a rare sixth card.</li>
     <li><b>Legendary presence:</b> finish with a legendary on your roster for +1 team rating, capped at 99, plus a small hitting and pitching boost. Extra legendaries do not stack this team bonus.</li>
     <li><b>Shiny Pokémon:</b> rare variants with boosted stats. Their updated ratings are already shown on the card.</li>
-    <li><b>Shiny spark:</b> a shiny lifts every teammate that shares one of its types. Each linked teammate plays a few rating points better, shown as a gold +. Up to 5 teammates count, so one shiny is worth building around.</li>
-    <li><b>Weekly challenge:</b> open League to play it. Everyone gets the same pack at each pick and one attempt, and a new one starts every Monday.</li>
-    <li><b>Leagues:</b> start one or join with a 5-character code. A league ranks its members on each week's challenge.</li>
-    <li><b>Rival series:</b> finish a 16-pick team, then open any team in Records or League and play it in a best of 7. You pick each game's starter, watch the at-bats, and decide when to go to the bullpen. Results post to your league.</li>
-    <li><b>Collection:</b> in Records, under My Clubhouse. Every Pokémon you have finished a season with, in any mode.</li></ul>
+    <li><b>Shiny spark:</b> a shiny lifts every teammate that shares one of its types. Each linked teammate plays a few rating points better, shown as a gold +. Up to 5 teammates count, so one shiny is worth building around.</li></ul>
   </div></section>
-  <section class="guide-topic"><h3>6. What each position needs</h3><div class="guide-content"><p>Use these traits as scouting clues. The displayed position rating is the final comparison.</p><div class="needs">${[...FIELD_SLOTS,"SP","RP"].map(s=>`<div><b>${s==="RP"?"CL / SU":s}</b><span>${NEEDS[s]}</span></div>`).join("")}</div><p class="guide-note">C = catcher; SS = shortstop; LF / CF / RF = left / center / right field; DH = designated hitter; SP = starter; CL / SU = closer / setup reliever. 1B, 2B and 3B are the bases.</p><p>Defense has the biggest effect at catcher, shortstop and center field, and less at first base and left field. DH only hits.</p></div></section>
+  <section class="guide-topic"><h3>6. League, weekly challenge and rival series</h3><div class="guide-content"><ul>
+    <li><b>Weekly challenge:</b> tap League. Everyone opens the same pack at each pick and gets one attempt. A new challenge starts every Monday.</li>
+    <li><b>Leagues:</b> start one or join with a 5-character code, then send the invite link. A league ranks its members on each week's challenge.</li>
+    <li><b>Rival series:</b> after a 16-player season, tap Pick a rival and play a league mate or a top club in a best of 7. You pick each game's starter, watch the at-bats, check the box score, and decide when to go to the bullpen. Results post to your league.</li>
+    <li><b>Collection:</b> in Records, under My Clubhouse. Every Pokémon you have finished a season with.</li></ul>
+  </div></section>
+  <section class="guide-topic"><h3>7. What each position needs</h3><div class="guide-content"><p>Use these traits as scouting clues. The displayed position rating is the final comparison.</p><div class="needs">${[...FIELD_SLOTS,"SP","RP"].map(s=>`<div><b>${s==="RP"?"CL / SU":s}</b><span>${NEEDS[s]}</span></div>`).join("")}</div><p class="guide-note">C = catcher; SS = shortstop; LF / CF / RF = left / center / right field; DH = designated hitter; SP = starter; CL / SU = closer / setup reliever. 1B, 2B and 3B are the bases.</p><p>Defense has the biggest effect at catcher, shortstop and center field, and less at first base and left field. DH only hits.</p></div></section>
   <section class="guide-topic"><h3>7. Deeper scouting: body and types</h3><div class="guide-content">
     <h4>Body traits</h4><ul><li>Limited arms reduce throwing, pitching and some batting skills.</li><li>Heavier Pokémon gain power but can lose infield range. Smaller Pokémon benefit from a smaller strike zone.</li><li>Flying Pokémon cover more ground in the outfield.</li></ul>
     <h4>Type perks</h4><p>Types give small boosts, not guaranteed best positions. These effects are already included in the ratings.</p><div class="guide-perks">${Object.entries(PERKS).map(([type,benefit])=>`<div style="--perk-color:${TYPE_COLORS[type]}"><b>${cap(type)}</b><span>${benefit}</span></div>`).join("")}</div>

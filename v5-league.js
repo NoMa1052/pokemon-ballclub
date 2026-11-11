@@ -46,7 +46,7 @@
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sheet.hidden)close()});
  $('lgBtn').onclick=open;
  // Before a run the button doubles as the weekly challenge prompt; mid-run it is a short label.
- const labelBtn=()=>{const b=$('lgBtn');if(b)b.textContent=innerWidth<1000&&!document.body.classList.contains('draft-started')?`Weekly challenge · ${weekLeft()}`:'League'};
+ const labelBtn=()=>{const b=$('lgBtn');if(!b)return;const s=weeklyState(),wide=innerWidth<1000&&!document.body.classList.contains('draft-started');b.textContent=!wide?'League':s.done?`League · weekly done, ${s.wins}–${162-s.wins}`:s.started?'Weekly challenge · resume':`Weekly challenge · ${weekLeft()}`};
  const prevRender=render;render=function(){const v=prevRender.apply(this,arguments);labelBtn();return v};labelBtn();
 
  function weeklyCard(){
@@ -88,7 +88,7 @@
   rows=rows.map(x=>({...x,ovr:rosterOvr(x.roster,FULL)})).sort(lbRank).filter(x=>!seen.has(x.device)&&seen.add(x.device)).slice(0,50);
   const roster=x=>`<div class="lbroster">${x.roster.map((id,i)=>{const m=BYID.get(id);return m?`<span><i>${lbl(FULL[i]).replace(/^SP1$/,'SP')}</i>${esc(m.name)}</span>`:''}).join('')}</div>`;
   const empty=scope==='all'?'Nobody has posted the weekly challenge yet. Be the first.':'Nobody in this league has posted the weekly challenge yet. Play it above, then post your team.';
-  $('lgList').innerHTML=rows.length?`<ol class="lblist">${rows.map((x,i)=>`<li class="${x.device===me?'me':''}"><details><summary><span class="rk">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Team ${x.ovr}</small></span><span class="rec">${x.wins}–${162-x.wins}</span><span class="gd">${esc(x.grade)}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>${scope!=='all'&&rows.length===1&&rows[0].device===me?'<p class="lg-solo">Only your team is here so far. Tap Invite to send your friends the code.</p>':''}<p class="hint">Weekly challenge teams only. Tap a team for its roster. All-time boards are in Records.</p>`:`<p class="hint">${empty}</p>`;
+  $('lgList').innerHTML=rows.length?`<ol class="lblist">${rows.map((x,i)=>`<li class="${x.device===me?'me':''}"><details><summary><span class="rk">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Rating ${x.ovr}</small></span><span class="rec">${x.wins}–${162-x.wins}</span><span class="gd">${esc(x.grade)}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>${scope!=='all'&&rows.length===1&&rows[0].device===me?'<p class="lg-solo">Only your team is here so far. Tap Invite to send your friends the code.</p>':''}<p class="hint">Weekly challenge teams only. Tap a team for its roster. All-time boards are in Records.</p>`:`<p class="hint">${empty}</p>`;
   if(typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),rows);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}

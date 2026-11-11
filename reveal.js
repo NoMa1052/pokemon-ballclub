@@ -40,8 +40,8 @@ function openReveal(sp,chooseAll=false){
     el.innerHTML=`<div class="rv-top"><span class="rv-count">${run.doubleArmed?`Choose 2 cards · ${selected.length}/2`:"Your pack"}</span><button class="btn rv-btn" id="rvList">Back to field</button></div>
       <div class="rv-grid">${ms.map(m=>`<button class="rv-mini${selected.includes(m.id)?' master-selected':''}" data-id="${m.id}" aria-pressed="${selected.includes(m.id)}" aria-label="${run.doubleArmed?'Select':'Pick'} ${esc(m.name)}">${tcardHTML(m,true)}${selected.includes(m.id)?`<span class="master-order">${selected.indexOf(m.id)+1}</span>`:""}</button>`).join("")}</div>
       <div class="rv-opts">
-        <button class="btn rv-opt" id="rvRerip" ${run.rerolls&&!run.second?"":"disabled"}>Re-rip<small>${run.rerolls} left</small></button>
-        <button class="btn rv-opt${run.doubleArmed?" armed":""}" id="rvTake2" aria-pressed="${!!run.doubleArmed}" ${run.doubles&&!run.second&&run.picks.length<run.size-1?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}<small>${run.doubles} left</small></button>
+        <button class="btn rv-opt" id="rvRerip" ${run.rerolls&&!run.second?"":"disabled"}>Re-rip<small>New pack · ${run.rerolls} left</small></button>
+        <button class="btn rv-opt${run.doubleArmed?" armed":""}" id="rvTake2" aria-pressed="${!!run.doubleArmed}" ${run.doubles&&!run.second&&run.picks.length<run.size-1?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}<small>Keep 2 cards · ${run.doubles} left</small></button>
       </div>
       ${run.doubleArmed?`<div class="master-confirm"><p>Choose two cards, then place them one at a time.</p><button class="btn primary" id="masterConfirm" ${selected.length===2?"":"disabled"}>Keep these 2 cards</button></div>`:`<p class="rv-hint">Tap a card to pick it</p>`}`;
     el.querySelectorAll(".rv-mini").forEach(b=>b.onclick=()=>{const id=+b.dataset.id;if(!run.doubleArmed){pick(id);return}if(takenNums().includes(BYID.get(id).num)&&!developmentOptions(BYID.get(id)).length)return;if(selected.includes(id))selected=selected.filter(x=>x!==id);else if(selected.length<2)selected.push(id);spread()});

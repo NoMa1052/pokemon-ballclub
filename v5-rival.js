@@ -21,8 +21,8 @@
   const all=[...new Map(MONS.filter(m=>!m.shiny&&m.id<SHINY_ID&&!m.baseId).map(m=>[m.num,m])).values()].sort((a,b)=>a.num-b.num);
   const legs=all.filter(m=>m.leg),gotLegs=legs.filter(m=>own.has(m.num)).length,got=all.filter(m=>own.has(m.num)).length;
   const region=g=>{const list=all.filter(m=>m.gen===g),n=list.filter(m=>own.has(m.num)).length;
-   return `<section class="dex-region"><h3>${REGIONS[g-1]} <span>${n} of ${list.length}</span></h3><div class="dex-bar"><i style="width:${(100*n/list.length).toFixed(1)}%"></i></div><div class="dex-grid">${list.map(m=>own.has(m.num)?`<span class="got${shiny.has(m.num)?' sh':''}${m.leg?' lg':''}">${esc(m.name)}</span>`:`<span>${m.num}</span>`).join('')}</div></section>`};
-  return `<div class="dex-top"><b>${got}</b><span>of ${all.length} Pokémon rostered in a finished season</span><small>${gotLegs} of ${legs.length} legendaries · ${shiny.size} shin${shiny.size===1?'y':'ies'}</small></div>${[1,2,3,4].map(region).join('')}<p class="hint">Every finished season counts, in any mode. Gold names were shiny; outlined names are legendaries.</p>`;
+   return `<details class="dex-region"><summary><b>${REGIONS[g-1]}</b><span>${n} of ${list.length}</span><div class="dex-bar"><i style="width:${(100*n/list.length).toFixed(1)}%"></i></div></summary><div class="dex-grid">${list.map(m=>own.has(m.num)?`<span class="got${shiny.has(m.num)?' sh':''}${m.leg?' lg':''}">${esc(m.name)}</span>`:`<span>${m.num}</span>`).join('')}</div></details>`};
+  return `<div class="dex-top"><b>${got}</b><span>of ${all.length} Pokémon rostered in a finished season</span><small>${gotLegs} of ${legs.length} legendaries · ${shiny.size} shin${shiny.size===1?'y':'ies'}</small></div>${[1,2,3,4].map(region).join('')}<p class="hint">Tap a region to see which ones you have. Every finished season counts. Gold names were shiny; outlined names are legendaries.</p>`;
  };
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);record();return v};
  if(run?.result)record();
