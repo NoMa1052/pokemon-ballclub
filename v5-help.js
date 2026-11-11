@@ -2,23 +2,28 @@
 (() => {
  const topic=(title,body)=>`<details class="help-topic"><summary>${title}</summary><div class="help-body">${body}</div></details>`;
  const list=items=>`<ul>${items.map(x=>`<li>${x}</li>`).join('')}</ul>`;
+ const art=k=>`<img class="help-ico" src="${ITEM_ART[k]}" alt="">`;
+ const item=(icon,name,per,text)=>`<div class="help-item">${icon}<div><b>${name}</b><small>${per}</small><p>${text}</p></div></div>`;
+ const pick=n=>BYID.get(n);
  howHTML=function(){
+  const sample=pick(461)||pick(143)||BASE[0],leg=pick(150),shiny=BYID.get(SHINY_ID+212)||BYID.get(SHINY_ID+6);
   return `<div class="help">
-  <ol class="help-steps"><li><b>Open a pack</b><span>5 random Pokémon.</span></li><li><b>Keep one</b><span>Tap a card to see its ratings.</span></li><li><b>Give it a spot</b><span>Every open spot shows its rating there.</span></li></ol>
+  <ol class="help-steps"><li><img class="help-pic pack" src="pack-foil-v3.webp" alt=""><b>Open a pack</b><span>5 random Pokémon.</span></li><li><span class="help-pic">${tok(sample)}</span><b>Keep one</b><span>Tap a card to see its ratings.</span></li><li><span class="help-pic spot" aria-hidden="true"><i>SS</i><em>${posOvr(sample,'SS')}</em></span><b>Give it a spot</b><span>Every open spot shows its rating there.</span></li></ol>
   <p class="help-goal">Fill all 16 spots, then play a 162-game season. The dream is 162–0.</p>
   <button class="btn primary" id="quickPlay">Start playing</button>
+  <a class="help-sheet" href="sanity.html"><b>Scouting sheet</b><span>Every Pokémon's rating at every position</span><i aria-hidden="true">›</i></a>
   <h3 class="help-more">Want more? Tap a topic.</h3>
-  ${topic('Your three items',list([
-   '<b>Re-rip</b> (2 per run): swap the pack for a new one before you pick.',
-   '<b>Master Ball</b> (1 per run): keep two cards from one pack.',
-   '<b>Rare Candy</b> (1 per run): evolve or boost one teammate. It does not use a pick.',
-   '<b>Release</b> (1 per run): tap a player on your roster to let him go and draft a replacement.']))}
-  ${topic('Reading a card',`<p>The big number is the card's best rating and where it gets it. Ratings run 40 to 99.</p>${list([
+  ${topic('Your items',
+   item('<img class="help-ico pack" src="pack-foil-v3.webp" alt="">','Re-rip','2 per run','Swap the pack for a new one before you pick.')+
+   item(art('master-ball'),'Master Ball','1 per run','Keep two cards from one pack.')+
+   item(art('rare-candy'),'Rare Candy','1 per run','Evolve or boost one teammate. It does not use a pick.')+
+   item(`<span class="help-ico">${tok(sample)}</span>`,'Release','1 per run','Tap a player on your roster to let him go and draft a replacement.'))}
+  ${topic('Reading a card',`<div class="help-card">${tcardHTML(sample)}</div><p>The big number is the card's best rating and where it gets it. Ratings run 40 to 99.</p>${list([
    '<b>OFF</b>: hitting only. This is the DH rating.',
    '<b>DEF</b>: glove at its best fielding spot.',
    '<b>SP / RP</b>: pitching as a starter or reliever.',
    'A fielder\'s rating is bat plus glove, so go by the number on the spot, not OFF and DEF added up.'])}
-   <dl class="help-key">${KEY.map(([k,,orig,,desc])=>`<dt>${k}</dt><dd>${desc} <small>From ${orig}</small></dd>`).join('')}</dl>`)}
+   <h4>The eight bars</h4><div class="keygrid">${KEY.map(([k,,orig,g,desc])=>`<div><b style="color:var(--${g})">${k}</b><span>${desc}</span><i>From ${orig}</i></div>`).join("")}</div><a class="help-sheet" href="sanity.html"><b>Scouting sheet</b><span>Compare every Pokémon at every spot</span><i aria-hidden="true">›</i></a>`)}
   ${topic('Evolve and train',list([
    'Pull the <b>next evolution</b> of a player you own to evolve him: +5 to his ratings, +8 after a second evolution.',
    'Pull a <b>duplicate</b> to train him: +2 each time, up to +10.',
@@ -29,7 +34,7 @@
    'Tap an occupied spot to swap the two.',
    'Undo reverses your last move.',
    'Your roster locks when the season starts. Your best starter pitches first and your best reliever closes.']))}
-  ${topic('Legendaries and shinies',list([
+  ${topic('Legendaries and shinies',`<div class="help-duo">${leg?`<figure>${tok(leg)}<figcaption>Legendary</figcaption></figure>`:''}${shiny?`<figure class="sh">${tok(shiny)}<figcaption>Shiny</figcaption></figure>`:''}</div>`+list([
    '<b>Legendary</b>: a pack can hold a rare sixth card. One on your roster adds +1 team rating. More do not stack.',
    '<b>Shiny</b>: a rare version with boosted stats.',
    '<b>Shiny spark</b>: a shiny lifts up to 5 teammates that share one of its types by a few points each, marked with a gold +.',
@@ -52,7 +57,7 @@
   ${topic('Body and type perks',`${list([
    'Few or no arms hurts throwing and pitching.',
    'Heavy Pokémon hit for power but lose infield range.',
-   'Fliers cover more outfield.'])}<p>Types give small boosts that are already in the ratings:</p><div class="guide-perks">${Object.entries(PERKS).map(([type,benefit])=>`<div style="--perk-color:${TYPE_COLORS[type]}"><b>${cap(type)}</b><span>${benefit}</span></div>`).join("")}</div><p>Every Pokémon at every spot: <a href="sanity.html">scouting sheet</a>.</p>`)}
+   'Fliers cover more outfield.'])}<p>Types give small boosts that are already in the ratings:</p><div class="guide-perks">${Object.entries(PERKS).map(([type,benefit])=>`<div style="--perk-color:${TYPE_COLORS[type]}"><b>${cap(type)}</b><span>${benefit}</span></div>`).join("")}</div>`)}
   </div>`;
  };
 })();

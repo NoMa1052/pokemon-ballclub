@@ -298,3 +298,29 @@ body.sr-open{overflow:hidden}
 .help-key{margin:4px 0 0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
 .help-key dt{font-weight:700;color:#ffcb05}.help-key dd{margin:0}.help-key small{color:#a9b8d0}
 .help-note{font-size:13px;color:#a9b8d0}
+/* Help visuals */
+.help-steps li{grid-template-columns:36px 1fr 56px}
+.help-steps .help-pic{grid-column:3;grid-row:1/3;justify-self:center;display:grid;place-items:center}
+.help-steps img.pack{height:52px;width:auto;border-radius:3px}
+.help-steps .help-pic .tok{width:46px;height:46px;min-width:46px}
+.help-steps .spot{width:46px;height:46px;border-radius:50%;border:2px solid #ffcb05;background:#ffcb05;color:#10254a;position:relative}
+.help-steps .spot em{font:700 18px/1 var(--f-data);font-style:normal}
+.help-steps .spot i{position:absolute;top:-8px;left:-8px;padding:1px 5px;border-radius:5px;background:#10254a;color:#f4eedc;border:1px solid #f4eedc;font:700 10px/1.3 var(--f-data);font-style:normal}
+.help-sheet{display:grid;grid-template-columns:1fr auto;gap:0 10px;align-items:center;padding:12px 14px;border-radius:10px;border:1px solid #ffcb05;background:rgba(255,203,5,.07);color:#f4eedc!important;text-decoration:none!important}
+.help-sheet b{font-size:15.5px;color:#ffcb05}.help-sheet span{grid-column:1;font-size:13.5px;color:#cdd7e8}
+.help-sheet i{grid-column:2;grid-row:1/3;font:400 26px/1 "Barlow",sans-serif;font-style:normal;color:#ffcb05}
+.help-item{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid #223b66}
+.help-item:last-child{border-bottom:0}
+.help-ico{width:48px;height:48px;object-fit:contain;image-rendering:pixelated;display:grid;place-items:center;justify-self:center}
+img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
+.help-ico .tok{width:44px;height:44px;min-width:44px}
+.help-item b{font-size:15.5px}.help-item small{margin-left:8px;font:600 12px var(--f-data);letter-spacing:.06em;text-transform:uppercase;color:#ffcb05}
+.help-item p{margin:2px 0 0;font-size:14px;color:#cdd7e8}
+.help-card{display:grid;justify-items:center;padding:4px 0 8px}
+.help-card .tcard{max-width:280px;width:100%;pointer-events:none}
+.help-body h4{margin:6px 0 0;font:600 13px/1.2 var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:#a9b8d0}
+.help-body .keygrid div{background:#0b1b38}.help-body .keygrid span{color:#f4eedc}
+.help-duo{display:flex;gap:24px;justify-content:center;padding:4px 0}
+.help-duo figure{margin:0;display:grid;justify-items:center;gap:4px;font:600 12px var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:#a9b8d0}
+.help-duo .tok{width:60px;height:60px;min-width:60px}
+.help-duo .sh figcaption{color:#ffcb05}
