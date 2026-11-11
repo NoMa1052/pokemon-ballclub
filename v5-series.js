@@ -237,8 +237,12 @@
 
  // Series results go to your leagues' feeds, under the name of your last posted team.
  async function postSeries(){
-  const codes=typeof leagueCodes==='function'?leagueCodes():[],name=myName(),msg=$('bgMsg');
+  const codes=typeof leagueCodes==='function'?leagueCodes():[],msg=$('bgMsg');
   if(!codes.length)return;
+  let name=myName();
+  // No name saved on this phone yet: use the name of the last team this device posted.
+  if(!name){try{const r=await fetch(`${LB_URL}?select=team&device=eq.${encodeURIComponent(me())}&order=created_at.desc&limit=1`,{headers:lbHead()});if(r.ok){name=((await r.json())[0]||{}).team||'';if(name)store.set(LAST+'-name',name)}}catch(e){}}
+  if(!S)return;
   if(!name){if(msg)msg.textContent='Post a team once to give your club a name. Then your series results show in your league.';return}
   const row={device:me(),team:name.slice(0,40),opp_device:S.rival.device||null,opp_team:String(S.rival.team).slice(0,40),w:S.w,l:S.l,games:S.results.map(x=>[x.me,x.opp]),leagues:codes};
   try{const r=await fetch(SERIES_URL,{method:'POST',headers:lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok)throw 0;
@@ -250,7 +254,7 @@
   let rows;try{const r=await fetch(`${SERIES_URL}?select=team,opp_team,w,l,games,device,created_at&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=12`,{headers:lbHead()});if(!r.ok)throw 0;rows=await r.json()}catch(e){return}
   if(!host.isConnected)return;
   const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  host.innerHTML=`<h3 class="lg-h">Rival series <span>Latest results</span></h3>`+(rows.length?`<ul class="lg-series">${rows.map(x=>{const won=x.w>x.l;return `<li class="${x.device===me()?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' ')} · ${day(x.created_at)}</small></li>`}).join('')}</ul>`:'<p class="hint">No series yet. Open a team above and play it in a best of 7; the result shows here for the whole league.</p>');
+  host.innerHTML=`<h3 class="lg-h">Rival series <span>Latest results</span></h3>`+(rows.length?`<ul class="lg-series">${rows.map(x=>{const won=x.w>x.l;return `<li class="${x.device===me()?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`:'<p class="hint">No series yet. Open a team above and play it in a best of 7; the result shows here for the whole league.</p>');
  };
 
  // Results page: a way into the series from the season you just finished.
