@@ -261,3 +261,5 @@ body.sr-open{overflow:hidden}
 .lg-series li.me{border-color:#ffcb05}
 .lg-series em{font:700 17px/1.2 var(--f-data);font-style:normal;grid-row:1/3;align-self:center}
 .lg-series small{font-size:12px;color:#a9b8d0;letter-spacing:.04em}
+.sheet-body ul.lg-series,.sheet-body .records-rivals ul{padding-left:0}
+.lg-series li>span{grid-column:1;grid-row:1}.lg-series li>small{grid-column:1;grid-row:2}.lg-series li>em{grid-column:2;grid-row:1/3}
