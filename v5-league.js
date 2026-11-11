@@ -46,7 +46,7 @@
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sheet.hidden)close()});
  $('lgBtn').onclick=open;
  // Before a run the button doubles as the weekly challenge prompt; mid-run it is a short label.
- const labelBtn=()=>{const b=$('lgBtn');if(!b)return;const s=weeklyState(),wide=innerWidth<1000&&!document.body.classList.contains('draft-started');b.textContent=!wide?'League':s.done?`League · weekly done, ${s.wins}–${162-s.wins}`:s.started?'Weekly challenge · resume':`Weekly challenge · ${weekLeft()}`};
+ const labelBtn=()=>{const b=$('lgBtn');if(!b)return;const s=weeklyState(),wide=innerWidth<1000&&!document.body.classList.contains('draft-started');b.textContent=!wide?'League':s.done?`League · ${s.wins}–${162-s.wins}`:s.started?'Weekly · resume':`Weekly · ${weekLeft()}`};
  const prevRender=render;render=function(){const v=prevRender.apply(this,arguments);labelBtn();return v};labelBtn();
 
  function weeklyCard(){
@@ -124,7 +124,7 @@
  const baseSubmit=submitHTML;
  submitHTML=function(){
   const done=run.submitted,codes=done?(done.leagues||[]):leagueCodes(),names=mine().filter(x=>codes.includes(x.code)).map(x=>x.name);
-  const where=[`${isPack()?'Packs':'Spin'} ${run.size===11?'Quick':'Standard'} board`,...((done?done.week:run.week)?['Weekly challenge']:[]),...names];
+  const where=['Leaderboard',...((done?done.week:run.week)?['Weekly challenge']:[]),...names];
   return baseSubmit()+`<p class="post-where">${done?'Counts on':'Posts to'}: ${where.map(esc).join(' · ')}</p>`;
  };
  // Invite links: ?league=CODE joins and opens the sheet.

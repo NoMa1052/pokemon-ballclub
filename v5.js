@@ -1,6 +1,11 @@
+/* One game mode: Packs with 16 players. Spin and the 11-player Quick mode were retired on Nov 11, 2026;
+   their code stays in place but nothing on screen leads to it. */
+store.set('pbc2-size','16');
+if(mode!=='pack'||run.size!==16)setMode('pack');
+
 /* v5 phase 1: label for the compact in-run header (mode and size switches are hidden mid-run on phones). */
 (() => {
- const label=()=>{const s=document.getElementById('settings');if(s&&run)s.dataset.run=run.week?'Weekly challenge':(run.mode==='pack'?'Packs':'Spin')+' · '+(run.size===11?'Quick':'Standard')};
+ const label=()=>{const s=document.getElementById('settings');if(s&&run)s.dataset.run=run.week?'Weekly challenge':run.result?'Season complete':'Draft'};
  const prev=render;render=function(){const v=prev.apply(this,arguments);label();return v};label();
 })();
 
