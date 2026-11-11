@@ -19,6 +19,12 @@ if(mode!=='pack'||run.size!==16)setMode('pack');
  const go={draft:()=>{document.querySelectorAll('.sheet').forEach(s=>{if(!s.hidden)s.querySelector('.sheet-top .btn')?.click()});scrollTo({top:0,behavior:'smooth'})},
   league:()=>document.getElementById('lgBtn').click(),records:()=>document.getElementById('lbBtn').click(),scout:()=>openScout(),help:()=>document.getElementById('howBtn').click()};
  nav.onclick=e=>{const b=e.target.closest('button');if(b)go[b.dataset.tab]()};
+ // While drafting, the bar stays out of the way behind a menu button in the header.
+ const menu=document.createElement('button');menu.type='button';menu.className='btn menu-btn';menu.id='menuBtn';menu.setAttribute('aria-label','Menu');menu.setAttribute('aria-expanded','false');
+ menu.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+ document.querySelector('header.top').appendChild(menu);
+ menu.onclick=()=>{const on=document.body.classList.toggle('nav-open');menu.setAttribute('aria-expanded',on)};
+ document.addEventListener('click',e=>{if(document.body.classList.contains('nav-open')&&!e.target.closest('#menuBtn')){document.body.classList.remove('nav-open');menu.setAttribute('aria-expanded','false')}});
  // Desktop header: add Scouting beside Records and League, and spell out the help button.
  const sc=document.createElement('button');sc.className='btn lbbtn';sc.id='scBtn';sc.textContent='Scouting';sc.onclick=()=>openScout();
  document.getElementById('settings').appendChild(sc);
