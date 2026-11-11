@@ -65,7 +65,7 @@
    +(form?`<div class="lg-form"><label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div></div>`:'')
    +(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')
    +(cur?`<div class="lg-admin"><span>Code <b>${cur.code}</b></span><button type="button" class="btn" id="lgInvite">Invite</button><button type="button" class="btn quiet" id="lgLeave">Leave</button></div>`:'')
-   +`<h3 class="lg-h">This week's standings <span>${cur?esc(cur.name):'Everyone'}</span></h3><div id="lgList"><p class="hint">Loading…</p></div>`;
+   +`<h3 class="lg-h">This week's standings <span>${cur?esc(cur.name):'Everyone'}</span></h3><div id="lgList"><p class="hint">Loading…</p></div><div id="lgSeries"></div>`;
   $('lgPlay').onclick=playWeekly;
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';draw()});
   if($('lgAdd'))$('lgAdd').onclick=()=>{form=!form;note='';draw();$('lgCode')?.focus()};
@@ -74,6 +74,7 @@
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';draw()};
   list();
+  if(cur&&typeof leagueSeriesFeed==='function')leagueSeriesFeed(cur.code,$('lgSeries'));
  }
  async function list(){
   const my=++token,w=weekKey(),me=deviceId().slice(0,16);

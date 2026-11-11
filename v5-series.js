@@ -6,7 +6,9 @@
  const ready=()=>run&&run.size===16&&FULL.every(s=>run.slots[s]);
  // Your series team: the 16-player team on screen, or the last one you finished a season with.
  const LAST='pbc5-last16';
- function remember(){if(run?.result&&ready())store.set(LAST,JSON.stringify(FULL.map(s=>run.slots[s].id)))}
+ function remember(){if(run?.result&&ready()){store.set(LAST,JSON.stringify(FULL.map(s=>run.slots[s].id)));if(run.submitted?.team)store.set(LAST+'-name',run.submitted.team)}}
+ const SERIES_URL=LB_URL.replace(/ballclub_scores$/,'ballclub_series');
+ const myName=()=>{remember();return (ready()&&run.submitted?.team)||store.get(LAST+'-name')||''};
  function team(){
   if(ready())return run.slots;
   try{const ids=JSON.parse(store.get(LAST)||'null');if(Array.isArray(ids)&&ids.length===16){const o=Object.fromEntries(ids.map((id,i)=>[FULL[i],BYID.get(id)]));if(FULL.every(s=>o[s]))return o}}catch(e){}
@@ -109,6 +111,18 @@
   if(!silent)post();
  }
 
+ // Box score: every hitter and pitcher in this game, for either club.
+ function boxHTML(){
+  const g=S.game;if(!g)return'';
+  const side=i=>{const t=g.teams[i],f=g.pit[i],mine=i===S.side;
+   return `<div class="bx-team"><h5>${esc(mine?'Your club':S.rival.team)}</h5>
+    <table class="bx"><thead><tr><th scope="col">Batting</th><th scope="col">AB</th><th scope="col">R</th><th scope="col">H</th><th scope="col">HR</th><th scope="col">RBI</th><th scope="col">BB</th><th scope="col">K</th></tr></thead><tbody>${t.order.map(b=>`<tr><th scope="row"><small>${esc(lbl(b.pos))}</small>${esc(short(b.m))}</th><td>${b.g.ab}</td><td>${b.g.r}</td><td class="${b.g.h?'hi':''}">${b.g.h}</td><td class="${b.g.hr?'hi':''}">${b.g.hr}</td><td>${b.g.rbi}</td><td>${b.g.bb}</td><td>${b.g.k}</td></tr>`).join('')}</tbody></table>
+    <table class="bx"><thead><tr><th scope="col">Pitching</th><th scope="col">IP</th><th scope="col">H</th><th scope="col">R</th><th scope="col">BB</th><th scope="col">K</th></tr></thead><tbody>${f.used.map(p=>`<tr><th scope="row">${esc(p.m.id?short(p.m):'Middle relief')}</th><td>${ip(p.g.outs)}</td><td>${p.g.h}</td><td>${p.g.r}</td><td>${p.g.bb}</td><td class="${p.g.k>=6?'hi':''}">${p.g.k}</td></tr>`).join('')}</tbody></table></div>`};
+  return side(S.side)+side(1-S.side);
+ }
+ const boxBlock=open=>`<details class="bg-box" id="bgBox"${open?' open':''}><summary>Box score</summary><div id="bgBoxIn">${open?boxHTML():''}</div></details>`;
+ function wireBox(){const d=$('bgBox');if(d)d.ontoggle=()=>{S.boxOpen=d.open;if(d.open)$('bgBoxIn').innerHTML=boxHTML()}}
+
  // ---------- the game ----------
  function play(pick){
   newGame(pick);
@@ -118,12 +132,13 @@
    <div class="bg-field"><div class="bg-diamond" id="bgDiamond" aria-hidden="true"><svg viewBox="0 0 200 150"><path d="M100 140 L20 60 A113 113 0 0 1 180 60 Z" class="grass"/><path d="M100 138 L52 90 L100 42 L148 90 Z" class="dirt"/><path d="M100 124 L66 90 L100 56 L134 90 Z" class="grass"/><circle cx="100" cy="92" r="6" class="dirt"/></svg><span class="base b1" id="bgB1"></span><span class="base b2" id="bgB2"></span><span class="base b3" id="bgB3"></span><span class="base hp" id="bgHP"></span><i class="bg-ball" id="bgBall"></i></div>
     <div class="bg-state"><b id="bgInn"></b><span class="bg-outs" id="bgOuts" aria-hidden="true"></span><small id="bgOutsT"></small><p id="bgMatch"></p></div></div>
    <p class="bg-call" id="bgCall" aria-live="polite"></p>
-   <ol class="bg-feed" id="bgFeed" aria-label="Scoring plays"></ol>
    <div class="bg-prompt" id="bgPrompt" hidden></div>
+   <ol class="bg-feed" id="bgFeed" aria-label="Scoring plays"></ol>
+   ${boxBlock(S.boxOpen)}
    <div class="bg-ctl"><button type="button" class="btn" id="bgSpeed" aria-pressed="${S.fast}">${S.fast?'Speed: Fast':'Speed: Normal'}</button><button type="button" class="btn" id="bgSkip">Skip to final</button></div></div>`;
   $('bgSpeed').onclick=()=>{S.fast=!S.fast;$('bgSpeed').textContent=S.fast?'Speed: Fast':'Speed: Normal';$('bgSpeed').setAttribute('aria-pressed',S.fast)};
   $('bgSkip').onclick=()=>{stop();finishGame()};
-  S.names=names;paint(null);
+  S.names=names;wireBox();paint(null);
   timer=setTimeout(tick,700);
  }
  function line(){
@@ -133,6 +148,7 @@
  }
  function paint(ev){
   const g=S.game;line();
+  if(S.boxOpen&&$('bgBoxIn'))$('bgBoxIn').innerHTML=boxHTML();
   const bases=ev&&!ev.endHalf?ev.bases:g.bases.map(x=>x?x.m:null);
   ['bgB1','bgB2','bgB3'].forEach((id,i)=>{$(id).innerHTML=bases[i]?tok(bases[i]):'';$(id).classList.toggle('on',!!bases[i])});
   $('bgInn').textContent=g.done?'Final':`${g.half?'Bottom':'Top'} ${ord(g.inning)}`;
@@ -193,14 +209,16 @@
   $('bgStage').innerHTML=`<div class="bg-post"><p class="bg-final ${res.won?'w':'l'}"><small>Game ${S.no+1} final${g.inning>9?' · '+g.inning+' innings':''}</small><b>${res.won?'You win':'You lose'} ${res.me}–${res.opp}</b></p>
    <div class="bg-board"><table class="bg-line" id="bgLine" aria-label="Line score"></table></div>
    <ul class="bg-notes"><li>${tok(star.m)}<span><b>${esc(short(star.m))}</b> ${star.g.h} for ${star.g.ab}${star.g.hr?', '+star.g.hr+' HR':''}${star.g.rbi?', '+star.g.rbi+' RBI':''}</span></li><li>${tok(sp.m)}<span><b>${esc(short(sp.m))}</b> ${ip(sp.g.outs)} innings, ${sp.g.r} run${sp.g.r===1?'':'s'}, ${sp.g.k} strikeout${sp.g.k===1?'':'s'}</span></li></ul>
+   ${boxBlock(true)}
    ${S.feed&&S.feed.length?`<details class="bg-plays"><summary>Scoring plays</summary><ol class="bg-feed">${[...S.feed].reverse().join('')}</ol></details>`:''}
    <button type="button" class="btn primary bg-go" id="bgNext">${over?'See the series result':'Next game'}</button></div>`;
-  line();
+  line();wireBox();
   $('bgNext').onclick=()=>{if(over)end();else{S.no++;pre()}};$('bgNext').focus({preventScroll:true});
  }
  function end(){
   stop();strip();
   const won=S.w>S.l,key=S.rival.device+'|'+S.rival.team,all=book(),rec=all[key]||{team:S.rival.team,w:0,l:0};
+  const fresh=!S.saved;
   if(!S.saved){rec[won?'w':'l']++;rec.team=S.rival.team;rec.last=Date.now();all[key]=rec;store.set(KEY,JSON.stringify(all));S.saved=true}
   const mvp=S.mine.order.reduce((a,b)=>(b.ser.h+2*b.ser.hr+1.5*b.ser.rbi)>(a.ser.h+2*a.ser.hr+1.5*a.ser.rbi)?b:a);
   const games=S.results.map((x,i)=>`<li class="${x.won?'w':'l'}"><small>G${i+1}</small><b>${x.won?'W':'L'}</b><span>${x.me}–${x.opp}</span></li>`).join('');
@@ -210,11 +228,30 @@
    <p class="hint">All-time against this club: ${rec.w}–${rec.l} in series. Your records are in Records, under My Clubhouse.</p>
    <div class="bg-actions"><button type="button" class="btn primary" id="bgShare">Share result</button><button type="button" class="btn" id="bgAgain">Rematch</button><button type="button" class="btn" id="bgDone">Done</button></div><p class="hint" id="bgMsg" role="status"></p></div>`;
   $('bgAgain').onclick=()=>start(S.rival);$('bgDone').onclick=leave;
+  if(fresh)postSeries();
   $('bgShare').onclick=async()=>{
    const text=`⚾ Pokémon Ballclub · Rival series\n${won?'Beat':'Lost to'} ${S.rival.team} ${Math.max(S.w,S.l)}–${Math.min(S.w,S.l)}\n${S.results.map(x=>x.won?'🟩':'🟥').join('')}\n⭐ ${short(mvp.m)}: ${mvp.ser.h} hits, ${mvp.ser.hr} HR, ${mvp.ser.rbi} RBI\n${SITE}`;
    try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({text});return}await navigator.clipboard.writeText(text);$('bgMsg').textContent='Result copied.'}catch(e){if(e?.name!=='AbortError')$('bgMsg').textContent='Could not share from this browser.'}};
   $('bgShare').focus({preventScroll:true});
  }
+
+ // Series results go to your leagues' feeds, under the name of your last posted team.
+ async function postSeries(){
+  const codes=typeof leagueCodes==='function'?leagueCodes():[],name=myName(),msg=$('bgMsg');
+  if(!codes.length)return;
+  if(!name){if(msg)msg.textContent='Post a team once to give your club a name. Then your series results show in your league.';return}
+  const row={device:me(),team:name.slice(0,40),opp_device:S.rival.device||null,opp_team:String(S.rival.team).slice(0,40),w:S.w,l:S.l,games:S.results.map(x=>[x.me,x.opp]),leagues:codes};
+  try{const r=await fetch(SERIES_URL,{method:'POST',headers:lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok)throw 0;
+   if(msg&&S)msg.textContent='Posted to your league.'}
+  catch(e){if(msg&&S)msg.textContent="Couldn't post this series to your league."}
+ }
+ window.leagueSeriesFeed=async(code,host)=>{
+  if(!host)return;host.innerHTML='';
+  let rows;try{const r=await fetch(`${SERIES_URL}?select=team,opp_team,w,l,games,device,created_at&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=12`,{headers:lbHead()});if(!r.ok)throw 0;rows=await r.json()}catch(e){return}
+  if(!host.isConnected)return;
+  const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  host.innerHTML=`<h3 class="lg-h">Rival series <span>Latest results</span></h3>`+(rows.length?`<ul class="lg-series">${rows.map(x=>{const won=x.w>x.l;return `<li class="${x.device===me()?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' ')} · ${day(x.created_at)}</small></li>`}).join('')}</ul>`:'<p class="hint">No series yet. Open a team above and play it in a best of 7; the result shows here for the whole league.</p>');
+ };
 
  // Results page: a way into the series from the season you just finished.
  function card(){
