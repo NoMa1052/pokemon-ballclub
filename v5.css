@@ -273,10 +273,6 @@ body.sr-open{overflow:hidden}
 .sheet-body .records-rivals>h3::after,.sheet-body .records-dex>h3::after{display:none!important}
 /* One mode: no mode or size switches */
 #modeSeg,#sizeSeg{display:none!important}
-@media(max-width:999px){
-  #settings{display:grid!important;grid-template-columns:1fr 1fr;gap:8px}
-  #settings>#lbBtn,#settings>#lgBtn{grid-column:auto!important;width:100%!important;min-height:48px!important;margin:0!important}
-}
 /* Help */
 .help{display:grid;gap:10px}
 .help-steps{list-style:none;margin:0;padding:0!important;display:grid;gap:8px;counter-reset:hs}
@@ -360,3 +356,51 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 .sc-grid div{display:grid;justify-items:center;gap:1px;padding:7px 2px;border-radius:8px;background:#142c55;border:2px solid transparent}
 .sc-grid div.best{border-color:#ffcb05}
 .sc-grid small{font:600 11px var(--f-data);color:#a9b8d0}.sc-grid b{font:700 19px/1.1 var(--f-data)}
+
+/* ---------- Navigation ---------- */
+.tabbar{display:none}
+@media(max-width:999px){
+  #settings,#howBtn{display:none!important}
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:28;display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));background:#081428;border-top:1px solid #2c4470;box-shadow:0 -8px 24px rgba(0,0,0,.35)}
+  .tabbar button{position:relative;display:grid;justify-items:center;gap:3px;min-height:50px;padding:4px 0;border:0;border-radius:10px;background:none;color:#a9b8d0;font:600 11px/1.2 "Barlow",sans-serif}
+  .tabbar svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar button:first-child{color:#ffcb05}
+  .tabbar button:active{background:#142c55}
+  .tabbar .due::after{content:"";position:absolute;top:4px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:#e3350d;border:2px solid #081428}
+  body{padding-bottom:calc(70px + env(safe-area-inset-bottom))!important}
+  body.tray-on .tabbar,body:has(.reveal) .tabbar{display:none}
+  body.tray-on{padding-bottom:112px!important}
+  .res-bar{bottom:calc(63px + env(safe-area-inset-bottom));padding-bottom:10px}
+  body.has-results{padding-bottom:calc(140px + env(safe-area-inset-bottom))!important}
+  header.top{justify-content:center!important}
+  body.draft-started header.top::after{content:attr(data-run);position:absolute;right:16px;top:50%;transform:translateY(-50%);font:600 12px/1 var(--f-data);letter-spacing:.1em;text-transform:uppercase;color:#a9b8d0}
+  header.top{position:relative}
+}
+@media(min-width:1000px){#settings>#scBtn{grid-column:5!important;grid-row:1!important;margin:0!important;width:auto!important;min-height:0;padding-inline:18px!important}}
+/* The pack is the hero of the home screen */
+#spinBtn{filter:drop-shadow(0 22px 34px rgba(0,0,0,.55)) drop-shadow(0 0 26px rgba(255,203,5,.18))}
+@media(prefers-reduced-motion:no-preference){body:not(.draft-started) #spinBtn{animation:packFloat 3.4s ease-in-out infinite}}
+@keyframes packFloat{0%,100%{transform:translateY(0) rotate(-.6deg)}50%{transform:translateY(-8px) rotate(.6deg)}}
+/* Desktop: all five cards on screen, no carousel */
+@media(min-width:1000px){
+  #draft .cands.cardrow{flex-wrap:wrap!important;justify-content:center;overflow:visible!important;scroll-snap-type:none!important;gap:14px!important;padding:8px 0!important}
+  #draft .cardrow .pcard .tcard{width:206px!important}
+  #draft .card-nav{display:none!important}
+}
+/* Help: three pictures instead of three boxes */
+.help-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:start;padding:14px 10px;border-radius:12px;background:#142c55;border:1px solid #2c4470}
+.help-flow figure{margin:0;display:grid;justify-items:center;gap:8px;text-align:center}
+.help-flow figure>:first-child{height:92px;display:grid;place-items:center}
+.help-flow img.pack{height:92px;width:auto;border-radius:4px;filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.help-flow figcaption{font-size:12.5px;line-height:1.3;color:#cdd7e8}
+.help-flow figcaption b{display:block;font-size:14px;color:#f4eedc}
+.help-flow>i{align-self:center;margin-top:-34px;font:400 26px/1 "Barlow",sans-serif;font-style:normal;color:#ffcb05}
+.help-mini{pointer-events:none}.help-mini .tcard{zoom:.5;width:150px}
+.help-flow .spot{width:64px;height:64px!important;border-radius:50%;background:#ffcb05;color:#10254a;position:relative;display:grid;place-items:center;box-shadow:0 0 0 4px rgba(255,203,5,.25)}
+.help-flow .spot strong{font:700 26px/1 var(--f-data)}
+.help-flow .spot em{position:absolute;top:-6px;left:-8px;padding:1px 6px;border-radius:5px;background:#10254a;color:#f4eedc;border:1px solid #f4eedc;font:700 11px/1.3 var(--f-data);font-style:normal}
+.help-flow img.pack{width:auto!important;max-width:100%;object-fit:contain}
+@media(min-width:1000px){
+  #howBtn{width:auto!important;white-space:nowrap;padding-inline:16px!important;aspect-ratio:auto!important}
+  #draft .cardrow .pcard .tc-bars,#draft .cardrow .pcard .tc-meta{display:none!important}
+}

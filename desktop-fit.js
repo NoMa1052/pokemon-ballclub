@@ -42,6 +42,7 @@
    return;
   }
   const row=c.closest('.cardrow'),rr=row.getBoundingClientRect(),cr=c.getBoundingClientRect();
+  if(row.scrollWidth<=row.clientWidth+4)return; // every card is on screen: a click picks it
   if(Math.abs((cr.left+cr.width/2)-(rr.left+rr.width/2))<cr.width*.3)return;
   e.preventDefault();e.stopImmediatePropagation();
   const z=parseFloat(getComputedStyle(row).zoom)||1;

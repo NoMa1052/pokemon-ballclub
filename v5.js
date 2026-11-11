@@ -5,8 +5,24 @@ if(mode!=='pack'||run.size!==16)setMode('pack');
 
 /* v5 phase 1: label for the compact in-run header (mode and size switches are hidden mid-run on phones). */
 (() => {
- const label=()=>{const s=document.getElementById('settings');if(s&&run)s.dataset.run=run.week?'Weekly challenge':run.result?'Season complete':'Draft'};
+ const label=()=>{const s=document.querySelector('header.top');if(s&&run)s.dataset.run=run.week?'Weekly challenge':run.result?'Season complete':'Draft'};
  const prev=render;render=function(){const v=prev.apply(this,arguments);label();return v};label();
+})();
+
+/* Navigation: a tab bar on phones, the same buttons in the header on desktop. */
+(() => {
+ const ic={draft:'<path d="M7 3h10v18H7z"/><path d="M7 7h10M7 17h10"/>',league:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7"/>',records:'<path d="M5 20V10M12 20V4M19 20v-7"/>',scout:'<circle cx="11" cy="11" r="6"/><path d="m20 20-4.5-4.5"/>',help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>'};
+ const tabs=[['draft','Draft'],['league','League'],['records','Records'],['scout','Scouting'],['help','How to play']];
+ const nav=document.createElement('nav');nav.className='tabbar';nav.id='tabbar';nav.setAttribute('aria-label','Game');
+ nav.innerHTML=tabs.map(([k,l])=>`<button type="button" data-tab="${k}"><svg viewBox="0 0 24 24" aria-hidden="true">${ic[k]}</svg><span>${l}</span></button>`).join('');
+ document.body.appendChild(nav);
+ const go={draft:()=>{document.querySelectorAll('.sheet').forEach(s=>{if(!s.hidden)s.querySelector('.sheet-top .btn')?.click()});scrollTo({top:0,behavior:'smooth'})},
+  league:()=>document.getElementById('lgBtn').click(),records:()=>document.getElementById('lbBtn').click(),scout:()=>openScout(),help:()=>document.getElementById('howBtn').click()};
+ nav.onclick=e=>{const b=e.target.closest('button');if(b)go[b.dataset.tab]()};
+ // Desktop header: add Scouting beside Records and League, and spell out the help button.
+ const sc=document.createElement('button');sc.className='btn lbbtn';sc.id='scBtn';sc.textContent='Scouting';sc.onclick=()=>openScout();
+ document.getElementById('settings').appendChild(sc);
+ const how=document.getElementById('howBtn');if(how){how.textContent='How to play';how.setAttribute('aria-label','How to play')}
 })();
 
 /* Shiny spark: mark linked teammates on the field, explain the link, and flag cards that would link. */

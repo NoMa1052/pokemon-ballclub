@@ -8,9 +8,8 @@
  howHTML=function(){
   const sample=pick(461)||pick(143)||BASE[0],leg=pick(150),shiny=BYID.get(SHINY_ID+212)||BYID.get(SHINY_ID+6);
   return `<div class="help">
-  <ol class="help-steps"><li><img class="help-pic pack" src="pack-foil-v3.webp" alt=""><b>Open a pack</b><span>5 random Pokémon.</span></li><li><span class="help-pic">${tok(sample)}</span><b>Keep one</b><span>Tap a card to see its ratings.</span></li><li><span class="help-pic spot" aria-hidden="true"><i>SS</i><em>${posOvr(sample,'SS')}</em></span><b>Give it a spot</b><span>Every open spot shows its rating there.</span></li></ol>
-  <p class="help-goal">Fill all 16 spots, then play a 162-game season. The dream is 162–0.</p>
-  <button class="btn primary" id="quickPlay">Start playing</button>
+  <div class="help-flow" role="img" aria-label="Open a pack, keep one card, give it a spot"><figure><img class="pack" src="pack-foil-v3.webp" alt=""><figcaption><b>1. Open a pack</b>5 random Pokémon</figcaption></figure><i aria-hidden="true">›</i><figure><div class="help-mini">${tcardHTML(sample,true)}</div><figcaption><b>2. Keep one</b>Tap a card for its ratings</figcaption></figure><i aria-hidden="true">›</i><figure><span class="spot" aria-hidden="true"><em>SS</em><strong>${posOvr(sample,'SS')}</strong></span><figcaption><b>3. Give it a spot</b>Each spot shows its rating</figcaption></figure></div>
+  <p class="help-goal">Fill all 16 spots, then play a 162-game season. The dream is 162–0.</p><span id="quickPlay" hidden></span>
   <a class="help-sheet" href="sanity.html"><b>Scouting sheet</b><span>Every Pokémon's rating at every position</span><i aria-hidden="true">›</i></a>
   <h3 class="help-more">Want more? Tap a topic.</h3>
   ${topic('Your items',

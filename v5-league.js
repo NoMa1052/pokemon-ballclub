@@ -46,7 +46,7 @@
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!sheet.hidden)close()});
  $('lgBtn').onclick=open;
  // Before a run the button doubles as the weekly challenge prompt; mid-run it is a short label.
- const labelBtn=()=>{const b=$('lgBtn');if(!b)return;const s=weeklyState(),wide=innerWidth<1000&&!document.body.classList.contains('draft-started');b.textContent=!wide?'League':s.done?`League · ${s.wins}–${162-s.wins}`:s.started?'Weekly · resume':`Weekly · ${weekLeft()}`};
+ const labelBtn=()=>{const b=$('lgBtn');if(b)b.textContent='League';const t=document.querySelector('#tabbar [data-tab=league]');if(t)t.classList.toggle('due',!weeklyState().done)};
  const prevRender=render;render=function(){const v=prevRender.apply(this,arguments);labelBtn();return v};labelBtn();
 
  function weeklyCard(){
