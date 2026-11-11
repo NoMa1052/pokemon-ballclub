@@ -4,17 +4,25 @@
  const $=id=>document.getElementById(id);
  const KEY='pbc5-rivals',SITE='pokemon-ballclub.vercel.app';
  const ready=()=>run&&run.size===16&&FULL.every(s=>run.slots[s]);
+ // Your series team: the 16-player team on screen, or the last one you finished a season with.
+ const LAST='pbc5-last16';
+ function remember(){if(run?.result&&ready())store.set(LAST,JSON.stringify(FULL.map(s=>run.slots[s].id)))}
+ function team(){
+  if(ready())return run.slots;
+  try{const ids=JSON.parse(store.get(LAST)||'null');if(Array.isArray(ids)&&ids.length===16){const o=Object.fromEntries(ids.map((id,i)=>[FULL[i],BYID.get(id)]));if(FULL.every(s=>o[s]))return o}}catch(e){}
+  return null;
+ }
  const book=()=>{try{return JSON.parse(store.get(KEY)||'{}')||{}}catch(e){return{}}};
  const short=m=>m.name.replace(/^Shiny /,'');
  const ord=n=>n+(n%10===1&&n!==11?'st':n%10===2&&n!==12?'nd':n%10===3&&n!==13?'rd':'th');
  const ip=o=>Math.floor(o/3)+(o%3?'.'+o%3:'');
  const me=()=>deviceId().slice(0,16);
 
- window.rivalSeriesButton=x=>x.device===me()?'':`<button type="button" class="btn rival-btn"${ready()?'':' disabled'}>${ready()?'Play a best of 7 against this club':'Finish a 16-pick team to play this club'}</button>`;
- window.wireRivalSeries=(root,rows)=>{const theirs=rows.filter(x=>x.device!==me());root.querySelectorAll('.rival-btn').forEach((b,i)=>b.onclick=()=>{if(theirs[i]&&ready())start(theirs[i])})};
+ window.rivalSeriesButton=x=>x.device===me()?'':`<button type="button" class="btn rival-btn"${team()?'':' disabled'}>${team()?'Play a best of 7 against this club':'Finish a 16-player season to play this club'}</button>`;
+ window.wireRivalSeries=(root,rows)=>{const theirs=rows.filter(x=>x.device!==me());root.querySelectorAll('.rival-btn').forEach((b,i)=>b.onclick=()=>{if(theirs[i]&&team())start(theirs[i])})};
  window.rivalriesHTML=()=>{
   const list=Object.values(book()).filter(x=>x&&x.team).sort((a,b)=>b.last-a.last).slice(0,8);
-  return `<section class="records-rivals"><h3>Rival series</h3>${list.length?`<ul>${list.map(x=>`<li><span>${esc(x.team)}</span><b class="${x.w>x.l?'up':x.w<x.l?'down':''}">${x.w}–${x.l}</b></li>`).join('')}</ul><p class="hint">Series won and lost against each club.</p>`:'<p class="hint">Open any 16-player team on the Leaderboard and play it in a best of 7. Your series records show up here.</p>'}</section>`;
+  return `<section class="records-rivals"><h3>Rival series</h3>${list.length?`<ul>${list.map(x=>`<li><span>${esc(x.team)}</span><b class="${x.w>x.l?'up':x.w<x.l?'down':''}">${x.w}–${x.l}</b></li>`).join('')}</ul><p class="hint">Series won and lost against each club.</p>`:'<p class="hint">Play any posted club in a best of 7. Your series records show up here.</p>'}<button type="button" class="btn rival-pick" onclick="pickRival()">Pick a rival</button></section>`;
  };
 
  let S=null,timer=0;
@@ -22,16 +30,41 @@
  function start(rival){
   stop();
   const them=Object.fromEntries(rival.roster.map((id,i)=>[FULL[i],BYID.get(id)]).filter(x=>x[1]));
-  S={rival,mine:Ballgame.club(run.slots,'Your club'),theirs:Ballgame.club(them,rival.team),r:rngFrom((Math.random()*2**32)>>>0),no:0,w:0,l:0,results:[],game:null,fast:false,auto:false,asked:'',saved:false};
+  const mineSlots=team();if(!mineSlots)return;
+  S={rival,mine:Ballgame.club(mineSlots,'Your club'),theirs:Ballgame.club(them,rival.team),r:rngFrom((Math.random()*2**32)>>>0),no:0,w:0,l:0,results:[],game:null,fast:false,auto:false,asked:'',saved:false};
+  shell();pre();
+ }
+ function shell(){
   let el=$('series');
   if(!el){el=document.createElement('div');el.id='series';el.className='bg';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Rival series');document.body.appendChild(el);
    el.addEventListener('keydown',e=>{if(e.key==='Escape')leave()})}
-  el.innerHTML=`<div class="bg-in"><header class="bg-top"><span>Rival series · Best of 7</span><button type="button" class="btn" id="bgClose">Leave</button></header><div class="bg-series" id="bgSeries"></div><div class="bg-stage" id="bgStage"></div></div>`;
+  el.innerHTML=`<div class="bg-in"><header class="bg-top"><span>Rival series · Best of 7</span><button type="button" class="btn" id="bgClose">Leave</button></header><div class="bg-series" id="bgSeries" hidden></div><div class="bg-stage" id="bgStage"></div></div>`;
   $('bgClose').onclick=leave;
   document.documentElement.classList.add('lg-lock');
-  document.querySelectorAll('.sheet').forEach(s=>{if(!s.hidden&&s.id!=='series')s.hidden=true});
-  pre();
+  document.querySelectorAll('.sheet').forEach(s=>{if(!s.hidden)s.hidden=true});
  }
+ // ---------- choosing a rival ----------
+ let pickToken=0;
+ window.pickRival=async function(){
+  stop();S=null;shell();
+  const stage=$('bgStage'),my=++pickToken;
+  if(!team()){stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Finish a season with a 16-player team first. That team plays the series.</p></div>';return}
+  stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Loading clubs…</p></div>';
+  let leagues=[];try{leagues=(JSON.parse(store.get('pbc5-leagues')||'[]')||[]).filter(x=>x&&x.code)}catch(e){}
+  const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
+  const best=rows=>{const seen=new Set();return rows.filter(x=>x.device!==me()&&Array.isArray(x.roster)&&x.roster.length===16&&!seen.has(x.device)&&seen.add(x.device))};
+  let groups;
+  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&leagues=cs.%7B'+l.code+'%7D'))]),(async()=>['Top of the leaderboard',best(await get('')).slice(0,12)])()])}
+  catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" onclick="pickRival()">Try again</button></div>';return}
+  if(my!==pickToken||!$('bgStage'))return;
+  const recs=book(),flat=[];
+  const html=groups.map(([name,rows],gi)=>{
+   const isLeague=gi<leagues.length;
+   if(!rows.length)return isLeague?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet.</p>`:'';
+   return `<h4>${esc(name)}</h4><ul class="bg-rivals">${rows.map(x=>{const i=flat.push(x)-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.team)}</b><small>${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+  stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished 16-player team plays a best of 7 against the club you choose.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
+  stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
+ };
  function stop(){clearTimeout(timer);timer=0}
  function leave(){stop();$('series')?.remove();S=null;document.documentElement.classList.remove('lg-lock')}
  const pips=n=>Array.from({length:4},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('');
@@ -43,7 +76,7 @@
 
  // ---------- before the game ----------
  function pre(){
-  stop();strip();
+  stop();$('bgSeries').hidden=false;strip();
   const no=S.no,home=HOME[no],ts=theirStarter(),avail=S.mine.rot.map(p=>Ballgame.rested(p,no));
   let pick=S.mine.rot.findIndex((p,i)=>avail[i]);
   S.mine.rot.forEach((p,i)=>{if(avail[i]&&posOvr(p.m,'SP1')>posOvr(S.mine.rot[pick].m,'SP1'))pick=i});
@@ -189,9 +222,9 @@
   if(!run?.result||run.size!==16)return;
   const after=document.querySelector('#season .season-actions');if(!after)return;
   const c=document.createElement('section');c.className='rival-card';
-  c.innerHTML='<div><h3>Rival series</h3><p>Take this team into a best of 7 against any posted club. You pick the starters and make the calls.</p></div><button type="button" class="btn" id="rivalPick">Pick a rival</button>';
-  after.after(c);$('rivalPick').onclick=()=>openLb(16,'pack');
+  c.innerHTML='<div><h3>Rival series</h3><p>Take this team into a best of 7 against a friend in your league or any posted club.</p></div><button type="button" class="btn" id="rivalPick">Pick a rival</button>';
+  after.after(c);$('rivalPick').onclick=()=>pickRival();
  }
- const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);card();return v};
- if(run?.result)card();
+ const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);remember();card();return v};
+ if(run?.result){remember();card()}
 })();
