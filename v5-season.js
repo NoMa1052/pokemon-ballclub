@@ -26,67 +26,116 @@
   return out.sort((a,b)=>a[0]-b[0]);
  }
 
+ // The season plays out month by month on a ballpark scoreboard: the record ticks up, the pennant race
+ // moves, and one of your players takes the headline. October follows game by game.
+ const ENDS=MONTHS.map(m=>m[0]),SHORT=['APR','MAY','JUN','JUL','AUG','SEP'];
+ const nm=m=>m.name.replace(/^Shiny /,'');
+ function headlines(res,r,monthW){
+  const ops=h=>{const s=h.st;return (s.h+s.bb)/Math.max(1,s.pa)+(s.h+s.d+2*s.t+3*s.hr)/Math.max(1,s.ab)};
+  const bats=[...res.me.order].sort((a,b)=>ops(b)-ops(a)),era=p=>p.st.outs?p.st.r*27/p.st.outs:9;
+  const arms=res.me.rot.filter(p=>p.role!=='FILL'&&p.st.outs>60).sort((a,b)=>era(a)-era(b));
+  const closer=res.me.cl&&res.me.cl.m&&res.me.cl.m.id&&res.me.cl.st.sv>5?res.me.cl:null;
+  const hot=()=>1.15+.4*r();
+  const hitter=(h,i)=>{const s=h.st,share=(ENDS[i]-(ENDS[i-1]||0))/162*hot(),avg=Math.min(.42,s.h/Math.max(1,s.ab)+.02+.035*r());
+   return{m:h.m,tag:'Player of the month',text:`hit ${avg.toFixed(3).replace(/^0/,'')} with ${Math.max(1,Math.round(s.hr*share))} HR and ${Math.max(2,Math.round(s.rbi*share))} RBI`}};
+  const starter=(p,i)=>{const starts=5+(r()<.5?1:0),pct=monthW[i][0]/Math.max(1,monthW[i][0]+monthW[i][1]),w=Math.max(1,Math.min(starts,Math.round(starts*Math.min(1,pct+.1)))),e=Math.max(.6,era(p)*(.62+.25*r()));
+   return{m:p.m,tag:'Pitcher of the month',text:`went ${w}–${starts-w>2?2:Math.max(0,starts-w-1)} with a ${e.toFixed(2)} ERA`}};
+  const saves=(p,i)=>({m:p.m,tag:'Fireman of the month',text:`locked down ${Math.max(3,Math.round(p.st.sv*(ENDS[i]-ENDS[i-1])/162*hot()))} saves`});
+  const pick=[bats[0]&&(i=>hitter(bats[0],i)),arms[0]&&(i=>starter(arms[0],i)),bats[1]&&(i=>hitter(bats[1],i)),closer?(i=>saves(closer,i)):arms[1]&&(i=>starter(arms[1],i)),bats[2]&&(i=>hitter(bats[2],i)),arms[1]?(i=>starter(arms[1],i)):bats[0]&&(i=>hitter(bats[0],i))];
+  return pick.map((f,i)=>f?f(i):null);
+ }
  function show(res){
   $('seasonReveal')?.remove();
   const r=rngFrom(hash('reveal:'+run.seed+':'+run.picks.join(',')));
-  const games=seq(res.wins,r),rivals=[[RIVALS[0],seq(Math.round(90+r()*10),r)],[RIVALS[1],seq(Math.round(78+r()*9),r)],[RIVALS[2],seq(Math.round(64+r()*10),r)]];
-  const notes=moments(games,res);
-  const cum=a=>{let w=0;return a.map(g=>w+=g)},mine=cum(games),theirs=rivals.map(([n,g])=>[n,cum(g)]);
-  const top=theirs.reduce((a,b)=>b[1][161]>a[1][161]?b:a)[1];
-  const diff=(c,i)=>2*c[i]-(i+1),peak=Math.max(12,...mine.map((_,i)=>Math.abs(diff(mine,i))),...top.map((_,i)=>Math.abs(diff(top,i))));
-  const X=i=>(8+i*308/161).toFixed(1),Y=d=>(60-d/peak*52).toFixed(1),pts=(c,n)=>c.slice(0,n).map((_,i)=>X(i)+','+Y(diff(c,i))).join(' ');
+  const games=seq(res.wins,r),clubs=[['Your Ballclub',games,true],[RIVALS[0],seq(Math.round(90+r()*10),r)],[RIVALS[1],seq(Math.round(78+r()*9),r)],[RIVALS[2],seq(Math.round(64+r()*10),r)]];
+  const cum=a=>{let w=0;return a.map(g=>w+=g)};clubs.forEach(c=>c[3]=cum(c[1]));
+  const mine=clubs[0][3],monthW=ENDS.map((e,i)=>{const s=ENDS[i-1]||0,w=mine[e-1]-(s?mine[s-1]:0);return[w,e-s-w]});
+  const notes=moments(games,res).filter(n=>n[2]!=='note'),heads=headlines(res,r,monthW);
+  const top=Math.max(...clubs.map(c=>c[3][161]));
   const el=document.createElement('div');el.id='seasonReveal';el.className='sr';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Season in progress');
   el.innerHTML=`<div class="sr-in">
-   <div class="sr-top"><span>162 games</span><button type="button" class="btn" id="srSkip">Skip to final</button></div>
-   <div class="sr-head"><small id="srGame"></small><b id="srRec" aria-live="off">0–0</b><span id="srPace"></span></div>
-   <svg class="sr-chart" viewBox="0 0 324 120" role="img" aria-label="Games above .500 through the season"><line x1="8" y1="60" x2="316" y2="60"></line><polyline id="srRival" points=""></polyline><polyline id="srLine" points=""></polyline><text x="12" y="112">games above .500</text></svg>
-   <div class="sr-stand" id="srStand"></div>
-   <div class="sr-notes" id="srNotes" aria-live="polite"></div>
-   <div class="sr-post" id="srPost" hidden></div>
+   <div class="sr-top"><span>The season</span><button type="button" class="btn" id="srSkip">Skip</button></div>
+   <div class="szn">
+    <div class="szn-rec"><small id="srMonth">Opening day</small><b id="srRec">0–0</b><span id="srPace">162 games to play</span></div>
+    <table class="szn-months" aria-label="Record by month"><thead><tr><th></th>${SHORT.map(m=>`<th scope="col">${m}</th>`).join('')}</tr></thead><tbody><tr><th scope="row">W</th>${SHORT.map((_,i)=>`<td id="srW${i}"></td>`).join('')}</tr><tr><th scope="row">L</th>${SHORT.map((_,i)=>`<td id="srL${i}"></td>`).join('')}</tr></tbody></table>
+   </div>
+   <div class="sr-race" id="srRace" aria-label="Pennant race"></div>
+   <div class="sr-card" id="srCard" aria-live="polite"></div>
+   <div class="sr-oct" id="srOct" hidden></div>
    <button type="button" class="btn primary sr-done" id="srDone" hidden>See your season</button>
+   <p class="sr-tap" id="srTap">Tap anywhere to speed up</p>
   </div>`;
   document.body.appendChild(el);document.body.classList.add('sr-open');
-  let shown=0,raf=0,start=0,timer=0,closed=false;const PER=62;
+  let timer=0,raf=0,closed=false,hurry=false,month=0,shown=0;
   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(raf);clearTimeout(timer);el.remove();document.body.classList.remove('sr-open');$('season')?.scrollIntoView({block:'start'})};
+  const wait=(ms,fn)=>{timer=setTimeout(fn,hurry?Math.min(ms,120):ms)};
+  function race(n){
+   const rows=clubs.map(c=>[c[0],n?c[3][n-1]:0,c[2]]).sort((a,b)=>b[1]-a[1]||(b[2]?1:-1)),lead=rows[0][1];
+   $('srRace').innerHTML=rows.map(([name,w,me],k)=>`<div class="${me?'me':''}"><span>${name}</span><div class="sr-bar"><i style="width:${(100*w/top).toFixed(1)}%"></i></div><b>${w}–${n-w}</b><em>${n&&w<lead?(lead-w)+' GB':n?'1st':''}</em></div>`).join('');
+  }
   function paint(n){
-   const i=n-1,w=mine[i],l=n-w;
-   $('srGame').textContent=`Game ${n} of 162 · ${MONTHS.find(m=>n<=m[0])[1]}`;
-   $('srRec').textContent=`${w}–${l}`;
+   const w=mine[n-1];$('srRec').textContent=`${w}–${n-w}`;
    $('srPace').textContent=n<162?`On pace for ${Math.round(w/n*162)} wins`:`Final · Grade ${res.grade}`;
-   $('srLine').setAttribute('points',pts(mine,n));$('srRival').setAttribute('points',pts(top,n));
-   const table=[['Your Ballclub',w,true],...theirs.map(([name,c])=>[name,c[i],false])].sort((a,b)=>b[1]-a[1]),lead=table[0][1];
-   $('srStand').innerHTML=table.map(([name,tw,me],k)=>`<div class="${me?'me':''}"><i>${k+1}</i><span>${name}</span><b>${tw}–${n-tw}</b><em>${tw===lead?'—':lead-tw}</em></div>`).join('');
-   const due=notes.filter(x=>x[0]<n).slice(-3).reverse();
-   $('srNotes').innerHTML=due.map(([g,t,c])=>`<p class="${c}"><small>Game ${g+1}</small>${t}</p>`).join('');
+   const rows=$('srRace').children;if(!rows.length)return;
+   // Bars grow in place while a month plays; the order settles when the month ends.
+   [...rows].forEach(row=>{const c=clubs.find(c=>c[0]===row.querySelector('span').textContent),cw=c[3][n-1];row.querySelector('i').style.width=(100*cw/top).toFixed(1)+'%';row.querySelector('b').textContent=`${cw}–${n-cw}`});
   }
-  function finale(){
-   paint(162);$('srSkip').textContent='Skip';
-   const post=res.post,box=$('srPost'),names=['Division Series','Championship Series','World Series'];
-   const lines=post.made?post.games.map(([a,b],k)=>`<p class="${a>b?'good':'bad'}"><small>${names[k]}</small>${a>b?'Won':'Lost'} ${a}–${b}</p>`):[`<p class="bad"><small>October</small>${post.text}</p>`];
-   if(post.made&&post.champ)lines.push('<p class="champ">World Series champions</p>');
-   box.hidden=false;let k=0;
-   const next=()=>{if(closed)return;if(k<lines.length){box.insertAdjacentHTML('beforeend',lines[k++]);timer=setTimeout(next,850)}else{$('srDone').hidden=false;$('srDone').focus({preventScroll:true})}};
-   timer=setTimeout(next,500);
+  function playMonth(){
+   if(closed)return;
+   const from=ENDS[month-1]||0,to=ENDS[month],t0=performance.now(),per=hurry?4:30;
+   $('srMonth').textContent=MONTHS[month][1];
+   el.querySelectorAll('.szn-months th[scope=col]').forEach((th,i)=>th.classList.toggle('now',i===month));
+   const frame=t=>{
+    if(closed)return;
+    const n=Math.min(to,from+1+Math.floor((t-t0)/per));
+    if(n!==shown){shown=n;paint(n)}
+    if(n<to){raf=requestAnimationFrame(frame);return}
+    $('srW'+month).textContent=monthW[month][0];$('srL'+month).textContent=monthW[month][1];
+    $('srW'+month).classList.add('in');$('srL'+month).classList.add('in');
+    race(to);
+    const h=heads[month],extra=notes.filter(x=>x[0]>=from&&x[0]<to).slice(-1)[0];
+    $('srCard').innerHTML=(h?`<div class="sr-head-card">${tok(h.m)}<p><small>${h.tag} · ${MONTHS[month][1]}</small><b>${esc(nm(h.m))}</b> ${h.text}.</p></div>`:'')+(extra?`<p class="sr-note ${extra[2]}">${extra[1]}</p>`:'');
+    month++;
+    wait(h?1700:900,()=>{hurry=false;month<6?playMonth():october()});
+   };
+   raf=requestAnimationFrame(frame);
   }
-  function frame(t){
-   if(closed)return;if(!start)start=t;
-   const n=Math.min(162,Math.floor((t-start)/PER)+1);
-   if(n!==shown){shown=n;paint(n)}
-   if(n<162)raf=requestAnimationFrame(frame);else finale();
+  function october(){
+   if(closed)return;
+   $('srTap').hidden=true;$('srMonth').textContent='October';el.querySelectorAll('.szn-months th.now').forEach(th=>th.classList.remove('now'));
+   const post=res.post,box=$('srOct'),names=['Division Series','Championship Series','World Series'];
+   $('srCard').innerHTML='';box.hidden=false;$('srSkip').textContent='Skip';
+   if(!post.made){box.innerHTML=`<p class="sr-out"><small>October</small>${esc(post.text)}</p>`;$('srDone').hidden=false;$('srDone').focus({preventScroll:true});return}
+   let k=0;
+   const series=()=>{
+    if(closed)return;
+    if(k>=post.games.length){
+     box.insertAdjacentHTML('beforeend',post.champ?'<p class="sr-champ"><small>Champions</small>World Series winners</p>':`<p class="sr-out"><small>Season over</small>${esc(post.text)}</p>`);
+     $('srDone').hidden=false;$('srDone').focus({preventScroll:true});return}
+    const [a,b]=post.games[k],won=a>b,order=shuffle([...Array(a+b-1)].map((_,i)=>i<(won?a-1:a)?1:0),r).concat(won?1:0);
+    box.insertAdjacentHTML('beforeend',`<div class="sr-ser"><span>${names[k]}</span><div class="sr-pips" id="srP${k}"></div><b id="srS${k}">0–0</b></div>`);
+    let g=0,wa=0,wb=0;
+    const game=()=>{
+     if(closed)return;
+     if(g<order.length){order[g]?wa++:wb++;$('srP'+k).insertAdjacentHTML('beforeend',`<i class="${order[g]?'w':'l'}">${order[g]?'W':'L'}</i>`);$('srS'+k).textContent=`${wa}–${wb}`;g++;wait(420,game)}
+     else{$('srS'+k).classList.add(won?'w':'l');k++;wait(600,series)}
+    };
+    wait(350,game);
+   };
+   series();
   }
   $('srSkip').onclick=close;$('srDone').onclick=close;
   el.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-  paint(1);raf=requestAnimationFrame(frame);$('srSkip').focus({preventScroll:true});
+  el.addEventListener('click',e=>{if(!e.target.closest('button'))hurry=true});
+  race(0);$('srSkip').focus({preventScroll:true});wait(700,playMonth);
  }
 
- // What decided it: the spot where a player as good as your typical starter would have added the most wins.
+ // What decided it: the spot where a solid regular (an 85) would have added the most wins.
  function weakLink(){
   const list=run.size===16?FULL:STD,base=winsFor(rating(run.slots,list)),filled=list.filter(s=>run.slots[s]);
-  if(filled.length<3)return null;
-  const runs=filled.map(s=>slotRuns(run.slots[s],s)).sort((a,b)=>a-b),mid=runs[Math.floor(runs.length/2)];
-  const typical={dhR:mid,batR:mid,spR:mid,clR:mid,suR:mid,rpR:mid,fldR:new Proxy({},{get:()=>0}),types:[]};
+  const solid=(85-63)/.7,reg={dhR:solid,batR:solid,spR:solid,clR:solid,suR:solid,rpR:solid,fldR:new Proxy({},{get:()=>0}),types:[]};
   let worst=null;
-  for(const s of filled){const m=run.slots[s],gain=winsFor(rating({...run.slots,[s]:typical},list))-base;if(!worst||gain>worst.gain)worst={s,m,gain}}
+  for(const s of filled){const m=run.slots[s],gain=winsFor(rating({...run.slots,[s]:reg},list))-base;if(!worst||gain>worst.gain)worst={s,m,gain}}
   return worst;
  }
  function addWeakLink(){
@@ -94,7 +143,7 @@
   host.querySelector('.weak-link')?.remove();
   const w=weakLink();if(!w)return;
   const p=document.createElement('p');p.className='weak-link';
-  p.innerHTML=w.gain>=1?`<b>Weak link: ${esc(w.m.name)}, ${lbl(w.s)} ${posOvr(w.m,w.s)}.</b> A player as good as your typical starter there was worth about ${w.gain} more win${w.gain===1?'':'s'}.`:`<b>No weak link.</b> No single spot held this team back by a full win.`;
+  p.innerHTML=w.gain>=1?`<b>Weak link: ${esc(w.m.name)}, ${lbl(w.s)} ${posOvr(w.m,w.s)}.</b> A solid regular (an 85) there was worth about ${w.gain} more win${w.gain===1?'':'s'}.`:`<b>No weak link.</b> Every spot was at least as good as a solid regular.`;
   (host.querySelector('.team-bars')||host.firstElementChild).after(p);
  }
 
