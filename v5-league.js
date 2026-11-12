@@ -108,7 +108,7 @@
  function draw(){
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
   const clubs=data&&!data.error?Object.keys(data.names).length:0;
-  const hero=cur?`<section class="lg-hero"><small>Your league</small><h2>${esc(cur.name)}</h2><p>${clubs?`${clubs} club${clubs===1?'':'s'} on the board · `:''}Code <b>${cur.code}</b></p><div><button type="button" class="btn primary" id="lgInvite">Invite friends</button>${ls.length>1||ls.length<3?`<button type="button" class="btn" id="lgSwitch">${ls.length>1?'Switch league':'Join another'}</button>`:''}</div></section>`
+  const hero=cur?`<section class="lg-hero"><small>Your league</small><h2>${esc(cur.name)}</h2><p>${clubs?`${clubs} club${clubs===1?'':'s'} on the board · `:''}Code <b>${cur.code}</b></p><div><button type="button" class="btn primary" id="lgInvite">Invite friends</button><button type="button" class="btn" id="lgShare">Share standings</button>${ls.length>1||ls.length<3?`<button type="button" class="btn" id="lgSwitch">${ls.length>1?'Switch league':'Join another'}</button>`:''}</div></section>`
    :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
   const picker=form?`<div class="lg-form">${ls.length?`<div class="lg-chips" role="group" aria-label="Your leagues">${ls.map(x=>`<button type="button" data-scope="${x.code}" aria-pressed="${scope===x.code}">${esc(x.name)}</button>`).join('')}</div>`:''}${ls.length<3?`<label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div>`:'<p class="hint">You can be in 3 leagues. Leave one to join another.</p>'}${cur?`<button type="button" class="btn quiet" id="lgLeave">Leave ${esc(cur.name)}</button>`:''}</div>`:'';
   const tabs=cur?`<div class="lg-tabs" role="tablist">${[['week','This week'],['season','Season'],['series','Series']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:`<h3 class="lg-h">This week, everyone</h3>`;
@@ -121,6 +121,7 @@
   if($('lgJoin')){$('lgJoin').onclick=()=>join($('lgCode').value);$('lgCode').onkeydown=e=>{if(e.key==='Enter')join($('lgCode').value)}}
   if($('lgMake')){$('lgMake').onclick=()=>make($('lgName').value);$('lgName').onkeydown=e=>{if(e.key==='Enter')make($('lgName').value)}}
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
+  if($('lgShare'))$('lgShare').onclick=()=>standings(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
   if(data&&!data.error&&cur&&typeof wireRivalSeries==='function'&&tab==='week')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur.code);
  }
@@ -148,8 +149,15 @@
   }
   note="Couldn't create the league. Try again.";draw();
  }
+ async function standings(l){
+  const rows=(data&&!data.error&&data.weeks[weekKey()])||[],wk=Number(weekKey().split('-W')[1]),link=`${SITE.replace(/^https:\/\//,'')}?league=${l.code}`;
+  const text=rows.length?`⚾ ${l.name} · Week ${wk}\n${rows.slice(0,10).map((x,i)=>`${i+1}. ${x.team} ${x.wins}–${162-x.wins}`).join('\n')}${rows.length>10?`\n+${rows.length-10} more`:''}\nResets Monday: ${link}`
+   :`⚾ ${l.name} · Week ${wk}\nNo teams on the board yet. Be the first.\n${link}`;
+  try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({text});return}await navigator.clipboard.writeText(text);note='Standings copied.'}catch(e){if(e?.name==='AbortError')return;note='Could not share from this browser.'}
+  draw();
+ }
  async function invite(l){
-  const text=`Join my Pokémon Ballclub league "${l.name}". Code ${l.code}: ${SITE}?league=${l.code}`;
+  const text=`⚾ Join my Pokémon Ballclub league, ${l.name}.\nEveryone gets the same 16 packs each week. Best record wins.\n${SITE.replace(/^https:\/\//,'')}?league=${l.code}`;
   try{if(navigator.share){await navigator.share({text});return}await navigator.clipboard.writeText(text);note='Invite copied.'}catch(e){if(e?.name==='AbortError')return;note=`Share code ${l.code} with your friends.`}
   draw();
  }

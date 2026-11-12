@@ -4,13 +4,24 @@
 const CW=1080,CH=1350,GAME_URL='https://pokemon-ballclub.vercel.app/';
 let modal=null,objectUrl=null,focusBefore=null;
 const navy='#10254a',ink='#152b46',cream='#f4e9d4',gold='#e6c685',red='#b63e45';
+function shareLink(){let code='';try{code=(typeof leagueCodes==='function'&&leagueCodes()[0])||''}catch(_){}return 'pokemon-ballclub.vercel.app'+(code?'/?league='+code:'')}
+window.shareLink=shareLink;
 function snapshot(){
  if(!run||!run.slots||!slotList().some(s=>run.slots[s]))throw Error('Complete your roster before sharing.');
  const players=slotList().filter(s=>run.slots[s]).map(s=>{const m=run.slots[s];return {slot:s,num:m.num||m.id,shiny:!!m.shiny,name:m.name,rating:posOvr(m,s)}});
- const res=run.result,win=Number(res?.wins);
- return {players,ovr:teamOvr(),mode:isPack()?'Packs':'Spin',size:run.size,team:run.submitted?.team||'My Ballclub',record:res&&Number.isFinite(win)?String(win)+'–'+String(162-win):null,wins:win,champ:!!res?.post?.champ};
+ const res=run.result,win=Number(res?.wins),done=res&&Number.isFinite(win);
+ let team=run.submitted?.team||'';try{team=team||store.get('pbc5-last16-name')||''}catch(_){}
+ let mvp=null;try{const h=Clubhouse.read().history[0];if(done&&h&&h.wins===win&&h.mvp)mvp=h.mvp}catch(_){}
+ const post=res?.post||{};
+ return {players,ovr:teamOvr(),mode:'Packs',size:run.size,team:team||'My Ballclub',record:done?String(win)+'–'+String(162-win):null,wins:win,grade:done?res.grade:'',champ:!!post.champ,made:!!post.made,outcome:done?String(post.text||(post.made?'Made the playoffs':'Missed the playoffs')).replace(/\.$/,''):'',mvp};
 }
-function text(s){const line=s.record?s.record+' · '+(s.champ?'World Series Champions 🏆':'Final record'):'Draft complete';return '⚾ Pokémon Ballclub\n'+line+'\n'+s.ovr+' OVR · '+s.mode+' · '+(s.size===11?'Quick':'Standard')+'\n\nThink you can build a better team?\n'+GAME_URL.replace(/^https:\/\//,'').replace(/\/$/,'');}
+function text(s){
+ const l=[];
+ if(s.record){l.push('⚾ '+s.team+' went '+s.record+(s.grade?' ('+s.grade+')':''));l.push(s.champ?'🏆 World Series champions':s.outcome);
+  if(s.mvp)l.push('⭐ MVP '+s.mvp.name+': '+s.mvp.hr+' HR, '+Number(s.mvp.ops).toFixed(3).replace(/^0/,'')+' OPS');l.push('Beat it: '+shareLink())}
+ else{l.push('⚾ '+s.team+' is drafted: '+s.ovr+' OVR');l.push('Build a better one: '+shareLink())}
+ return l.join('\n');
+}
 function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillStyle=fill;let size=sz;ctx.font='700 '+size+'px "Barlow",Arial,sans-serif';while(max&&ctx.measureText(String(str)).width>max&&size>16){ctx.font='700 '+(--size)+'px "Barlow",Arial,sans-serif'}ctx.fillText(String(str),px,py)}
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
 function image(url){return new Promise(resolve=>{const img=new Image();let done=false;const end=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?img:null)};const timer=setTimeout(()=>end(false),6000);img.crossOrigin='anonymous';img.onload=()=>end(true);img.onerror=()=>end(false);img.src=url})}
@@ -163,7 +174,7 @@ async function open(){
    if(!native){
     const a=document.createElement('a');a.href=out.url;a.download=out.name;document.body.append(a);a.click();a.remove();
     try{if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text(snap)).then(()=>setStatus('Image download requested and message copied. Attach the PNG in your chat.')).catch(()=>setStatus('Image download requested. Use Copy Text to copy the message.'));else setStatus('Image download requested. Use Copy Text for your message.')}catch(e){setStatus('Image download requested. Use Copy Text for your message.')}return}
-   try{navigator.share({files:[file],url:GAME_URL}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
+   try{navigator.share({files:[file],text:text(snap)}).then(()=>setStatus('Share sheet closed.')).catch(e=>{if(e?.name!=='AbortError')setStatus('Sharing failed. Try Save Image instead.')})}catch(e){setStatus('Sharing failed. Try Save Image instead.')}
   };
   save.onclick=()=>{
    if(native&&/iPhone|iPad|iPod/i.test(navigator.userAgent)){
