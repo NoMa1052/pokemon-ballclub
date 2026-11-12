@@ -76,8 +76,8 @@
  }
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
-  const roster=x=>`<div class="lg-roster">${x.roster.map((id,i)=>{const m=BYID.get(id);return m?`<span><i>${lbl(FULL[i]).replace(/^SP1$/,'SP')}</i>${esc(m.name)}</span>`:''}).join('')}</div>`;
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
+  const roster=x=>typeof lineupHTML==='function'?lineupHTML(x.roster):'';
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];
