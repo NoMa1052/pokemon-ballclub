@@ -48,10 +48,10 @@
    '<b>Weekly challenge</b>: everyone opens the same pack at each pick and gets one attempt.',
    'Your league is ranked on that week\'s result. A new challenge starts every Monday.']))}
   ${topic('Rival series',list([
-   'After a season, tap <b>Pick a rival</b> to play a league mate in a best of 7.',
+   'After a season, tap <b>Pick a rival</b> to play a league mate in a best of 7. You can also play top clubs from Records as an exhibition.',
    'You choose each game\'s starter and decide when to go to the bullpen.',
    'Watch the at-bats, open the box score, or skip ahead.',
-   'Results post to your league.']))}
+   'League series post to your league. Exhibitions are not posted.']))}
   ${topic('What each position needs',`<div class="needs">${[...FIELD_SLOTS,"SP","RP"].map(s=>`<div><b>${s==="RP"?"CL / SU":s}</b><span>${NEEDS[s]}</span></div>`).join("")}</div><p class="help-note">C catcher · SS shortstop · LF, CF, RF outfield · DH hitter only · SP starter · CL closer · SU setup. Defense matters most at C, SS and CF.</p>`)}
   ${topic('Body and type perks',`${list([
    'Few or no arms hurts throwing and pitching.',

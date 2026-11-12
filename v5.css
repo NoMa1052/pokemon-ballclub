@@ -532,3 +532,4 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 }
 /* Records opens at full height so it doesn't jump while loading */
 @media(max-width:999px){#lb .sheet-in{height:min(88dvh,900px);display:flex;flex-direction:column}#lb .sheet-body{flex:1}}
+.bg-noleague{margin:0;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1px dashed #5d7bb0;font-size:14px}.bg-noleague .btn{min-height:40px;margin:0;flex:none}

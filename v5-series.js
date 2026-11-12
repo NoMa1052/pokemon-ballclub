@@ -20,7 +20,7 @@
  const ip=o=>Math.floor(o/3)+(o%3?'.'+o%3:'');
  const me=()=>deviceId().slice(0,16);
 
- window.rivalSeriesButton=x=>x.device===me()?'':`<button type="button" class="btn rival-btn"${team()?'':' disabled'}>${team()?'Play a best of 7 against this club':'Finish a 16-player season to play this club'}</button>`;
+ window.rivalSeriesButton=(x,exhibition)=>x.device===me()?'':`<button type="button" class="btn rival-btn"${team()?'':' disabled'}>${team()?(exhibition?'Exhibition: play a best of 7':'Play a best of 7 against this club'):'Finish a 16-player season to play this club'}</button>`;
  window.wireRivalSeries=(root,rows,league)=>{const theirs=rows.filter(x=>x.device!==me()).map(x=>({...x,league}));root.querySelectorAll('.rival-btn').forEach((b,i)=>b.onclick=()=>{if(theirs[i]&&team())start(theirs[i])})};
  window.rivalriesHTML=()=>{
   const list=Object.values(book()).filter(x=>x&&x.team).sort((a,b)=>b.last-a.last).slice(0,8);
@@ -56,15 +56,15 @@
   const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
   const best=rows=>{const seen=new Set();return rows.filter(x=>x.device!==me()&&Array.isArray(x.roster)&&x.roster.length===16&&!seen.has(x.device)&&seen.add(x.device))};
   let groups;
-  if(!leagues.length){stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Rival series are for your league. Start a league or join one with a code, then play your league mates here.</p><button type="button" class="btn primary" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></div>';return}
-  try{groups=await Promise.all(leagues.map(async l=>[l.name,best(await get('&leagues=cs.%7B'+l.code+'%7D')),l.code]))}
+  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&leagues=cs.%7B'+l.code+'%7D')),l.code]),(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])}
   catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" onclick="pickRival()">Try again</button></div>';return}
   if(my!==pickToken||!$('bgStage'))return;
   const recs=book(),flat=[];
-  const html=groups.map(([name,rows,code])=>{
-   if(!rows.length)return `<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`;
-   return `<h4>${esc(name)}</h4><ul class="bg-rivals">${rows.map(x=>{const i=flat.push({...x,league:code})-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.team)}</b><small>${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
-  stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7 against a league mate. The result posts to that league.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
+  const html=(leagues.length?'':'<p class="bg-noleague">Join a league to play series that count. <button type="button" class="btn" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></p>')+groups.map(([name,rows,code])=>{
+   if(!rows.length)return code?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`:'';
+   const note=code?'':'<p class="hint">Just for fun. These results are not posted anywhere.</p>';
+   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push({...x,league:code})-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.team)}</b><small>${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+  stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7. League series post to your league; exhibitions don't.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
  };
  function stop(){clearTimeout(timer);timer=0}
@@ -242,7 +242,7 @@
  async function postSeries(){
   const msg=$('bgMsg'),codes=S.rival.league&&typeof leagueCodes==='function'&&leagueCodes().includes(S.rival.league)?[S.rival.league]:[];
   // Only series against a league mate post, and only to that league.
-  if(!codes.length)return;
+  if(!codes.length){if(msg&&S)msg.textContent='Exhibition: not posted anywhere.';return}
   let name=myName();
   // No name saved on this phone yet: use the name of the last team this device posted.
   if(!name){try{const r=await fetch(`${LB_URL}?select=team&device=eq.${encodeURIComponent(me())}&order=created_at.desc&limit=1`,{headers:lbHead()});if(r.ok){name=((await r.json())[0]||{}).team||'';if(name)store.set(LAST+'-name',name)}}catch(e){}}
@@ -267,7 +267,7 @@
   if(!run?.result||run.size!==16)return;
   const after=document.querySelector('#season .season-actions');if(!after)return;
   const c=document.createElement('section');c.className='rival-card';
-  c.innerHTML='<div><h3>Rival series</h3><p>Take this team into a best of 7 against a league mate. The result posts to your league.</p></div><button type="button" class="btn" id="rivalPick">Pick a rival</button>';
+  c.innerHTML='<div><h3>Rival series</h3><p>Take this team into a best of 7. Series against league mates post to your league.</p></div><button type="button" class="btn" id="rivalPick">Pick a rival</button>';
   after.after(c);$('rivalPick').onclick=()=>pickRival();
  }
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);remember();card();return v};
