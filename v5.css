@@ -931,3 +931,5 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
   #draft .cands.cardrow>.cand{margin:0!important}
 }
 @media(min-width:1000px){.bg-pre .bg-go{margin-top:18px!important}.bg-pre:not(.bg-choose){flex:none!important}}
+
+@media(min-width:1000px){#draft .cands.cardrow{flex-wrap:wrap!important;overflow:visible!important}body.field-deciding #draft{overflow:visible!important;height:auto!important;max-height:none!important}}

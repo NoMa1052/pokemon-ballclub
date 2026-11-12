@@ -15,5 +15,16 @@
   }catch(e){}
   return v;
  };
+ // Desktop: shrink the pack's cards so the whole pack fits beside the field without scrolling.
+ function fitCards(){
+  const c=document.querySelector('#draft .cands.cardrow');if(!c)return;
+  c.style.zoom='';if(innerWidth<1000)return;
+  const kids=[...c.querySelectorAll('.cand')],n=kids.length;if(!n)return;
+  const k=kids[0].getBoundingClientRect(),cw=k.width,ch=k.height,W=c.clientWidth,top=c.getBoundingClientRect().top+scrollY,H=innerHeight-top-34;
+  let best=0;for(let cols=2;cols<=Math.min(n,4);cols++){const rows=Math.ceil(n/cols),z=Math.min(1,(W-8*(cols-1))/(cols*cw),(H-10*(rows-1))/(rows*ch));if(z>best)best=z}
+  if(best>0&&best<1)c.style.zoom=Math.max(.5,best).toFixed(3);
+ }
+ const prev2=render;render=function(){const v=prev2.apply(this,arguments);try{fitCards()}catch(e){}return v};
+ addEventListener('resize',()=>{try{fitCards()}catch(e){}});
  render();
 })();
