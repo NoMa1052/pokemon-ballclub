@@ -11,36 +11,37 @@
   document.querySelectorAll('.sheet').forEach(s=>{if(!s.hidden)s.hidden=true});
   const el=document.createElement('div');el.id='scout';el.className='bg scout';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Scouting sheet');
   el.innerHTML=`<div class="bg-in"><header class="bg-top"><span>Scouting sheet</span><button type="button" class="btn" id="scClose">Close</button></header>
-   <div class="sc-bar"><input id="scQ" type="search" autocomplete="off" placeholder="Find a Pokémon" aria-label="Find a Pokémon" value="${esc(q)}"><div class="seg" role="group" aria-label="Which Pokémon"><button type="button" data-pool="base">Regular</button><button type="button" data-pool="leg">Legendary</button><button type="button" data-pool="all">All</button></div></div>
-   <div class="seg sc-groups" role="group" aria-label="Columns"><button type="button" data-group="field">Fielding</button><button type="button" data-group="pitch">Pitching</button></div><p class="sc-tip" id="scTip"></p>
-   <div class="sc-wrap"><table class="sc-table" id="scTable"></table></div>
+   <div class="sc-bar"><input id="scQ" type="search" autocomplete="off" placeholder="Find a Pokémon" aria-label="Find a Pokémon" value="${esc(q)}"><div class="seg" role="group" aria-label="Which Pokémon"><button type="button" data-pool="base">Regular</button><button type="button" data-pool="leg">Legendary</button><button type="button" data-pool="all">Everyone</button></div></div>
+   <div class="sc-chips" id="scChips" role="group" aria-label="Rank by position"><button type="button" data-sort="best">Best</button>${SPOTS.map(s=>`<button type="button" data-sort="${s}">${lab(s)}</button>`).join('')}</div>
+   <p class="sc-tip" id="scTip"></p>
+   <div class="sc-list" id="scTable"></div>
    <details class="sc-stars"><summary>How many stars at each spot</summary><div class="bg-board"><table class="sc-dist"><thead><tr><th></th>${SPOTS.map(s=>`<th scope="col">${lab(s)}</th>`).join('')}</tr></thead><tbody>${[95,90,85].map(t=>`<tr><th scope="row">${t}+</th>${SPOTS.map(s=>`<td>${BASE.filter(m=>posOvr(m,s)>=t).length}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="hint">Regular Pokémon only, out of ${BASE.length}.</p></details>
    <div class="sc-card" id="scCard" hidden></div></div>`;
   document.body.appendChild(el);document.documentElement.classList.add('lg-lock');
   $('scClose').onclick=close;el.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('scCard').hidden)hideCard();else close()}});
   $('scQ').oninput=e=>{q=e.target.value;list()};
   el.querySelectorAll('[data-pool]').forEach(b=>b.onclick=()=>{pool=b.dataset.pool;list()});
-  el.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{group=b.dataset.group;if(group==='pitch'&&!['SP1','RP1','best','name'].includes(sortBy))sortBy='SP1';if(group==='field'&&['SP1','RP1'].includes(sortBy))sortBy='best';list()});
-  $('scTable').onclick=e=>{
-   const h=e.target.closest('[data-sort]');if(h){const k=h.dataset.sort;if(sortBy===k)asc=!asc;else{sortBy=k;asc=false}list();return}
-   const r=e.target.closest('[data-id]');if(r)card(BYID.get(+r.dataset.id),r);
-  };
+  $('scChips').onclick=e=>{const h=e.target.closest('[data-sort]');if(h){sortBy=h.dataset.sort;list();h.scrollIntoView({block:'nearest',inline:'center'})}};
+  $('scTable').onclick=e=>{const r=e.target.closest('[data-id]');if(r)card(BYID.get(+r.dataset.id),r)};
   list();
  };
  const cache=new Map();
  const rowOf=m=>{let r=cache.get(m.id);if(!r){const v=SPOTS.map(s=>posOvr(m,s)),bi=v.indexOf(Math.max(...v));r={m,v,best:v[bi],bs:SPOTS[bi]};cache.set(m.id,r)}return r};
+ const SPOTNAME={C:'catcher','1B':'first base','2B':'second base','3B':'third base',SS:'shortstop',LF:'left field',CF:'center field',RF:'right field',DH:'designated hitter',SP1:'starting pitcher',RP1:'reliever'};
+ const LEGSET=new Set(LEGENDS.map(m=>m.id));
  function list(){
   const el=$('scout');if(!el)return;
+  if(sortBy==='name')sortBy='best';
   el.querySelectorAll('[data-pool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.pool===pool));
-  el.dataset.group=group;el.querySelectorAll('[data-group]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.group===group));
-  const term=q.trim().toLowerCase(),key=r=>sortBy==='best'?r.best:sortBy==='name'?r.m.name:r.v[SPOTS.indexOf(sortBy)];
-  let rows=(pool==='leg'?LEGENDS:pool==='base'?BASE:ALL).map(rowOf);
-  rows.sort((a,b)=>sortBy==='name'?(asc?-1:1)*a.m.name.localeCompare(b.m.name)*-1:(asc?1:-1)*(key(a)-key(b))||b.best-a.best);
+  el.querySelectorAll('#scChips [data-sort]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.sort===sortBy));
+  const term=q.trim().toLowerCase(),si=SPOTS.indexOf(sortBy),key=r=>si<0?r.best:r.v[si];
+  let rows=(pool==='leg'?LEGENDS:pool==='base'?BASE:ALL).map(rowOf).sort((a,b)=>key(b)-key(a)||b.best-a.best);
+  rows.forEach((r,i)=>r.rank=i+1);
   if(term)rows=rows.filter(r=>r.m.name.toLowerCase().includes(term));
-  const grp=k=>k==='SP1'||k==='RP1'?' gp':FIELD_SLOTS.includes(k)?' gf':'';
-  const th=(k,l)=>`<th scope="col" class="${sortBy===k?'on':''}${grp(k)}"><button type="button" data-sort="${k}" aria-label="Sort by ${l}">${l}${sortBy===k?(asc?' ▲':' ▼'):''}</button></th>`;
-  $('scTip').textContent=`${rows.length} Pokémon. Tap a column to sort. Gold outline is each one's best spot. Tap a name for its card.`;
-  $('scTable').innerHTML=`<thead><tr>${th('name','Pokémon')}${th('best','Best')}${SPOTS.map(s=>th(s,lab(s))).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr><th scope="row"><button type="button" data-id="${r.m.id}">${tok(r.m)}<span>${esc(r.m.name)}</span></button></th><td class="b ${tier(r.best)}">${r.best}<small>${lab(r.bs)}</small></td>${r.v.map((v,i)=>`<td class="${tier(v)}${SPOTS[i]===sortBy?' on':''}${SPOTS[i]===r.bs?' best':''}${grp(SPOTS[i])}">${v}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="13" class="sc-none">No Pokémon named "${esc(q)}".</td></tr>`}</tbody>`;
+  $('scTip').textContent=`${rows.length} Pokémon, ranked ${si<0?'by their best spot':'at '+SPOTNAME[sortBy]}. Tap one for its card.`;
+  const ty=m=>m.types.map(t=>`<span style="background:${TYPE_COLORS[t]||'#777'}">${t}</span>`).join('');
+  $('scTable').innerHTML=rows.length?rows.map(r=>{const v=key(r),leg=LEGSET.has(r.m.id);
+   return `<button type="button" class="sc-row${leg?' leg':''}${r.m.shiny?' shy':''}" data-id="${r.m.id}"><i>${r.rank}</i>${tok(r.m)}<span class="who"><b>${esc(r.m.name)}${leg?'<small>Legendary</small>':''}</b><span class="ty">${ty(r.m)}<em>Best ${lab(r.bs)} ${r.best}</em></span></span><span class="rt ${tier(v)}">${v}${si<0?`<small>${lab(r.bs)}</small>`:''}</span></button>`}).join(''):`<p class="sc-none">No Pokémon named "${esc(q)}".</p>`;
  }
  let from=null;
  function hideCard(){const c=$('scCard');if(c){c.hidden=true;c.innerHTML=''}from?.focus({preventScroll:true})}

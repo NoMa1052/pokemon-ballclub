@@ -55,11 +55,14 @@
   const el=document.createElement('div');el.id='seasonReveal';el.className='sr';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Season in progress');
   el.innerHTML=`<div class="sr-in">
    <div class="sr-top"><span>The season</span><button type="button" class="btn" id="srSkip">Skip</button></div>
-   <div class="szn">
-    <div class="szn-rec"><small id="srMonth">Opening day</small><b id="srRec">0–0</b><span id="srPace">162 games to play</span></div>
-    <table class="szn-months" aria-label="Record by month"><thead><tr><th></th>${SHORT.map(m=>`<th scope="col">${m}</th>`).join('')}</tr></thead><tbody><tr><th scope="row">W</th>${SHORT.map((_,i)=>`<td id="srW${i}"></td>`).join('')}</tr><tr><th scope="row">L</th>${SHORT.map((_,i)=>`<td id="srL${i}"></td>`).join('')}</tr></tbody></table>
-   </div>
-   <div class="sr-race" id="srRace" aria-label="Pennant race"></div>
+   <div class="szn-cal" id="srCal">${SHORT.map(m=>`<span>${m}</span>`).join('')}<span class="po">OCT</span></div>
+   <div class="szn2"><div class="szn2-in">
+    <div class="szn2-head"><span>Kanto East</span><b id="srGame">Opening day</b></div>
+    <div class="szn2-rec" id="srRec" aria-live="off"></div><p class="szn2-pace" id="srPace">162 games to play</p>
+    <table class="szn2-st" aria-label="Standings"><thead><tr><th></th><th scope="col">Club</th><th scope="col">W</th><th scope="col">L</th><th scope="col">GB</th><th></th></tr></thead><tbody id="srRace"></tbody></table>
+    <div class="szn2-mo">${SHORT.map((m,i)=>`<div id="srM${i}">${m}<b>·</b></div>`).join('')}</div>
+   </div></div>
+   <div class="sr-moh" id="srMoh" hidden><span>Season moments</span></div>
    <div class="sr-card" id="srCard" aria-live="polite"></div>
    <div class="sr-oct" id="srOct" hidden></div>
    <button type="button" class="btn primary sr-done" id="srDone" hidden>See your season</button>
@@ -69,32 +72,39 @@
   let timer=0,raf=0,closed=false,hurry=false,month=0,shown=0;
   const close=()=>{if(closed)return;closed=true;cancelAnimationFrame(raf);clearTimeout(timer);el.remove();document.body.classList.remove('sr-open');$('season')?.scrollIntoView({block:'start'})};
   const wait=(ms,fn)=>{timer=setTimeout(fn,hurry?Math.min(ms,120):ms)};
+  const tiles=(w,l)=>[...String(w)].map(c=>`<span>${c}</span>`).join('')+'<i>–</i>'+[...String(l)].map(c=>`<span>${c}</span>`).join('');
+  const gb=(w,lead,n)=>!n||w===lead?'–':String(lead-w);
+  let rank={};
   function race(n){
    const rows=clubs.map(c=>[c[0],n?c[3][n-1]:0,c[2]]).sort((a,b)=>b[1]-a[1]||(b[2]?1:-1)),lead=rows[0][1];
-   $('srRace').innerHTML=rows.map(([name,w,me],k)=>`<div class="${me?'me':''}"><span>${name}</span><div class="sr-bar"><i style="width:${(100*w/top).toFixed(1)}%"></i></div><b>${w}–${n-w}</b><em>${n&&w<lead?(lead-w)+' GB':n?'1st':''}</em></div>`).join('');
+   $('srRace').innerHTML=rows.map(([name,w,me],k)=>{const was=rank[name],mv=was===undefined||was===k?'':was>k?'<i class="up">▲</i>':'<i class="dn">▼</i>';rank[name]=k;
+    return `<tr class="${me?'me':''}" data-club="${name}"><td class="rk">${k+1}</td><td>${name}</td><td class="n"><span>${w}</span></td><td class="n"><span>${n-w}</span></td><td class="n"><span>${gb(w,lead,n)}</span></td><td class="mv">${mv}</td></tr>`}).join('');
   }
   function paint(n){
-   const w=mine[n-1];$('srRec').textContent=`${w}–${n-w}`;
-   $('srPace').textContent=n<162?`On pace for ${Math.round(w/n*162)} wins`:`Final · Grade ${res.grade}`;
+   const w=mine[n-1];$('srRec').innerHTML=tiles(w,n-w);$('srGame').textContent=n<162?`Game ${n} of 162`:'Final';
+   $('srPace').innerHTML=n<162?`On pace for <b>${Math.round(w/n*162)} wins</b>`:`Final · Grade <b>${res.grade}</b>`;
    const rows=$('srRace').children;if(!rows.length)return;
-   // Bars grow in place while a month plays; the order settles when the month ends.
-   [...rows].forEach(row=>{const c=clubs.find(c=>c[0]===row.querySelector('span').textContent),cw=c[3][n-1];row.querySelector('i').style.width=(100*cw/top).toFixed(1)+'%';row.querySelector('b').textContent=`${cw}–${n-cw}`});
+   // Numbers tick in place while a month plays; the order settles when the month ends.
+   const lead=Math.max(...clubs.map(c=>c[3][n-1]));
+   [...rows].forEach(row=>{const c=clubs.find(c=>c[0]===row.dataset.club),cw=c[3][n-1],t=row.querySelectorAll('.n span');t[0].textContent=cw;t[1].textContent=n-cw;t[2].textContent=gb(cw,lead,n)});
   }
+  const calMark=k=>[...$('srCal').children].forEach((sp,i)=>{sp.classList.toggle('done',i<k);sp.classList.toggle('now',i===k)});
   function playMonth(){
    if(closed)return;
    const from=ENDS[month-1]||0,to=ENDS[month],t0=performance.now(),per=hurry?4:30;
-   $('srMonth').textContent=MONTHS[month][1];
-   el.querySelectorAll('.szn-months th[scope=col]').forEach((th,i)=>th.classList.toggle('now',i===month));
+   calMark(month);
    const frame=t=>{
     if(closed)return;
     const n=Math.min(to,from+1+Math.floor((t-t0)/per));
     if(n!==shown){shown=n;paint(n)}
     if(n<to){raf=requestAnimationFrame(frame);return}
-    $('srW'+month).textContent=monthW[month][0];$('srL'+month).textContent=monthW[month][1];
-    $('srW'+month).classList.add('in');$('srL'+month).classList.add('in');
+    const mw=monthW[month],cell=$('srM'+month);cell.querySelector('b').textContent=`${mw[0]}-${mw[1]}`;cell.className=mw[0]>mw[1]?'hot in':mw[0]<mw[1]?'cold in':'in';
     race(to);
-    const h=heads[month],extra=notes.filter(x=>x[0]>=from&&x[0]<to).slice(-1)[0];
-    $('srCard').innerHTML=(h?`<div class="sr-head-card">${tok(h.m)}<p><small>${h.tag} · ${MONTHS[month][1]}</small><b>${esc(nm(h.m))}</b> ${h.text}.</p></div>`:'')+(extra?`<p class="sr-note ${extra[2]}">${extra[1]}</p>`:'');
+    const h=heads[month],extra=notes.filter(x=>x[0]>=from&&x[0]<to).slice(-1)[0],card=$('srCard');
+    card.querySelectorAll('.sr-head-card').forEach(c=>c.classList.add('old'));card.querySelectorAll('.sr-note').forEach(c=>c.remove());
+    while(card.children.length>2)card.lastElementChild.remove();
+    if(h){$('srMoh').hidden=false;card.insertAdjacentHTML('afterbegin',`<div class="sr-head-card">${tok(h.m)}<p><small>${h.tag} · ${MONTHS[month][1]}</small><b>${esc(nm(h.m))}</b> ${h.text}.</p></div>`)}
+    if(extra)card.insertAdjacentHTML('afterbegin',`<p class="sr-note ${extra[2]}">${extra[1]}</p>`);
     month++;
     wait(h?1700:900,()=>{hurry=false;month<6?playMonth():october()});
    };
@@ -102,7 +112,7 @@
   }
   function october(){
    if(closed)return;
-   $('srTap').hidden=true;$('srMonth').textContent='October';el.querySelectorAll('.szn-months th.now').forEach(th=>th.classList.remove('now'));
+   $('srTap').hidden=true;calMark(6);$('srMoh').hidden=true;
    const post=res.post,box=$('srOct'),names=['Division Series','Championship Series','World Series'];
    $('srCard').innerHTML='';box.hidden=false;$('srSkip').textContent='Skip';
    if(!post.made){box.innerHTML=`<p class="sr-out"><small>October</small>${esc(post.text)}</p>`;$('srDone').hidden=false;$('srDone').focus({preventScroll:true});return}
@@ -151,7 +161,21 @@
  function actionBar(){
   document.getElementById('resBar')?.remove();
   const a=document.querySelector('#season .season-actions'),h=document.querySelector('#season .season-head');
-  if(a&&h&&h.nextElementSibling!==a)h.after(a);
+  if(!h||!run.result)return;
+  let hero=document.getElementById('resHero');
+  if(!hero||hero.nextElementSibling!==h){
+   hero?.remove();
+   const res=run.result,post=res.post||{},names=['Division','Pennant','World Series'],ovr=h.querySelector('.season-tiles div:nth-child(2) b')?.textContent||'',nums=(h.querySelector('.season-runs')?.textContent||'').match(/[\d.]+/g)||[];
+   const tone=post.champ?'gold':post.made?'red':'gray',eyebrow=h.querySelector('.season-eyebrow')?.textContent.trim()||'Final';
+   hero=document.createElement('section');hero.id='resHero';hero.className='res-hero';
+   hero.innerHTML=`<small class="rh-eye">${esc(run.week?'Final · Weekly challenge':eyebrow)}</small>
+    <div class="rh-rec"><b aria-label="${res.wins} wins and ${162-res.wins} losses">${res.wins}–${162-res.wins}</b><span class="ch-stamp"><b>${esc(res.grade)}</b><small>GRADE</small></span></div>
+    <span class="rh-ribbon ${tone}">${esc(String(post.text||'Season over').replace(/\.$/,''))}</span>
+    ${post.made&&post.games?.length?`<div class="rh-oct">${post.games.map(([x,y],i)=>`<div class="${x>y?'w':'l'}"><i>${x>y?'✓':'✕'}</i>${names[i]||'Series'}<b>${x}–${y}</b></div>`).join('')}</div>`:''}
+    <div class="rh-quad"><div>Team OVR<b>${esc(ovr)}</b></div><div>Runs / game<b>${nums[0]||'–'}</b></div><div>Staff ERA<b>${nums[1]||'–'}</b></div></div>`;
+   h.before(hero);
+  }
+  if(a&&h.nextElementSibling!==a)h.after(a);
  }
 
  const prevFinish=finish;

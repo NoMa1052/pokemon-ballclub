@@ -21,8 +21,9 @@
   const all=[...new Map(MONS.filter(m=>!m.shiny&&m.id<SHINY_ID&&!m.baseId).map(m=>[m.num,m])).values()].sort((a,b)=>a.num-b.num);
   const legs=all.filter(m=>m.leg),gotLegs=legs.filter(m=>own.has(m.num)).length,got=all.filter(m=>own.has(m.num)).length;
   const region=g=>{const list=all.filter(m=>m.gen===g),n=list.filter(m=>own.has(m.num)).length;
-   return `<details class="dex-region"><summary><b>${REGIONS[g-1]}</b><span>${n} of ${list.length}</span><div class="dex-bar"><i style="width:${(100*n/list.length).toFixed(1)}%"></i></div></summary><div class="dex-grid">${list.map(m=>own.has(m.num)?`<span class="got${shiny.has(m.num)?' sh':''}${m.leg?' lg':''}">${esc(m.name)}</span>`:`<span>${m.num}</span>`).join('')}</div></details>`};
-  return `<div class="dex-top"><b>${got}</b><span>of ${all.length} Pokémon rostered in a finished season</span><small>${gotLegs} of ${legs.length} legendaries · ${shiny.size} shin${shiny.size===1?'y':'ies'}</small></div>${[1,2,3,4].map(region).join('')}<p class="hint">Tap a region to see which ones you have. Every finished season counts. Gold names were shiny; outlined names are legendaries.</p>`;
+   return `<details class="dex-region"><summary><b>${REGIONS[g-1]}</b><span>${n} of ${list.length}</span><div class="dex-bar"><i style="width:${(100*n/list.length).toFixed(1)}%"></i></div></summary><div class="dex-grid">${list.map(m=>own.has(m.num)?`<span class="got${shiny.has(m.num)?' sh':''}${m.leg?' lg':''}" title="${esc(m.name)}">${tok(m)}<i>${esc(m.name)}</i></span>`:`<span><b></b><i>#${m.num}</i></span>`).join('')}</div></details>`};
+  const pct=Math.round(100*got/all.length);
+  return `<div class="dex-top"><div class="dex-ring" style="--p:${pct}"><b>${got}</b><small>of ${all.length}</small></div><div><span>Pokémon rostered in a finished season</span><div class="dex-chips"><em>${gotLegs}/${legs.length} legendaries</em><em>${shiny.size} shin${shiny.size===1?'y':'ies'}</em></div></div></div>${[1,2,3,4].map(region).join('')}`;
  };
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);record();return v};
  if(run?.result)record();

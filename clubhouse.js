@@ -13,7 +13,8 @@ const Clubhouse = (() => {
     ['champ','World champions','Win the World Series.',(_,r)=>!!r.result.post.champ],
     ['legend','Legend in the clubhouse','Finish a season with a legendary.',(_,r)=>Object.values(r.slots).some(m=>m?.leg)],
     ['shiny','Shining star','Finish a season with a shiny.',(_,r)=>Object.values(r.slots).some(m=>m?.shiny)],
-    ['both','Two-way manager','Complete seasons in Spin and Packs.',b=>Object.keys(b.boards).some(k=>k.startsWith('spin'))&&Object.keys(b.boards).some(k=>k.startsWith('pack'))]
+    ['dynasty','Dynasty','Win three World Series.',b=>Object.values(b.boards).reduce((n,v)=>n+(v.championships||0),0)>=3],
+    ['perfect','Perfect season','Go 162–0.',(_,r)=>r.result.wins===162]
   ];
   function snapshot(r){
     const list=r.size===16?FULL:STD,res=r.result;
