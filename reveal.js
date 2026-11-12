@@ -23,6 +23,18 @@ function unlockRevealScroll(){
   if(revealScroll!==null){const y=revealScroll;revealScroll=null;window.scrollTo(0,y)}
 }
 function closeReveal(){if(revealEl){revealEl.remove();revealEl=null}unlockRevealScroll()}
+// Rebuild the pack row when leaving the reveal. This refreshes card artwork as well as
+// the options UI, instead of uncovering potentially stale card elements underneath.
+function returnToField(){
+  const row=document.querySelector(".cardrow"),scrollLeft=row?.scrollLeft||0;
+  if(run.doubleArmed){run.doubleArmed=false;saveRun();renderBoard()}
+  closeReveal();
+  if(run?.spin?.pack&&!run.unrevealed&&!run.locked){
+    packPoolUI();
+    const refreshed=document.querySelector(".cardrow");
+    if(refreshed)refreshed.scrollLeft=scrollLeft;
+  }
+}
 
 
 function openReveal(sp,chooseAll=false){
@@ -49,7 +61,7 @@ function openReveal(sp,chooseAll=false){
     // Not feeling this pack? Super Rod swaps it for a fresh one (and opens it). Master Ball keeps two cards from this one.
     el.querySelector("#rvRerip").onclick=()=>{if(!run.rerolls||run.second)return;run.rerolls--;run.selected=null;run.doubleArmed=false;run.spin=drawNext();run.justRipped=true;saveRun();closeReveal();render()};
     el.querySelector("#rvTake2").onclick=()=>{if(!run.doubles||run.second)return;run.doubleArmed=!run.doubleArmed;selected=[];saveRun();renderBoard();spread()};
-    el.querySelector("#rvList").onclick=()=>{if(run.doubleArmed){run.doubleArmed=false;saveRun();render()}closeReveal()};
+    el.querySelector("#rvList").onclick=returnToField;
   };
   const show=(entryDirection=0)=>{
     if(revealEl!==el)return;
@@ -58,7 +70,7 @@ function openReveal(sp,chooseAll=false){
     el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose">Back to field</button><span class="rv-count">${i+1} / ${ms.length}</span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
       <button class="rv-stage" id="rvStage" aria-label="Next card" data-autofocus>${tcardHTML(ms[i])}</button>
       <p class="rv-hint">${last?"Swipe or tap to see your pack":"Swipe left or tap to continue"}</p>`;
-    el.querySelector("#rvClose").onclick=closeReveal;
+    el.querySelector("#rvClose").onclick=returnToField;
     el.querySelector("#rvSkip").onclick=e=>{e.stopPropagation();i=ms.length;show()};
     const stage=el.querySelector('#rvStage'),card=stage.querySelector('.tcard');let gesture=null,suppressClick=false;
     // The old cardpop animation filled forwards and masked inline swipe transforms.
@@ -138,4 +150,4 @@ function positionPickerHTML(sel){
     if(run.selected&&run.selected!==lastSel){const pl=document.querySelector(".dpick");if(pl)pl.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"})}}
   lastSel=run&&run.selected;
   if(ripped)openReveal(run.spin)}}
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeReveal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&revealEl)returnToField()});
