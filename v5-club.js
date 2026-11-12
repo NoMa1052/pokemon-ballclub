@@ -21,7 +21,7 @@
    <section class="ch-hero"><div class="ch-hero-top"><small>Best season</small><div class="ch-rec"><b>${best.wins}–${162-best.wins}</b>${best.grade?`<span class="ch-stamp"><b>${best.grade}</b><small>GRADE</small></span>`:''}</div></div>
     <div class="ch-stats"><div>Seasons<b>${bd.seasons}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${bd.championships||0}</b></div></div></section>
    <section class="ch-sec"><h3>Trophy case<em>${ach.filter(a=>earned.has(a[0])).length} of ${ach.length}</em></h3><div class="ch-badges">${ach.map(badge).join('')}</div></section>
-   <section class="ch-sec"><h3>Season log<em>last ${hist.length}</em></h3>${hist.map(season).join('')}</section>
+   <details class="ch-sec ch-log"><summary><h3>Season log<em>${hist.length} season${hist.length===1?'':'s'}</em></h3></summary>${hist.map(season).join('')}</details>
    ${typeof rivalriesHTML==='function'?`<div class="ch-sec ch-riv">${rivalriesHTML()}</div>`:''}
    ${typeof collectionHTML==='function'?`<section class="ch-sec"><h3>Collection</h3>${collectionHTML()}</section>`:''}
   </div>`;

@@ -756,3 +756,14 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
   #how .sheet-body{flex:1;max-height:none!important}
 }
 .league .lg-table .rk,.league .lg-past .rk,.league .lg-series .rk{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font:700 15px var(--f-data);background:#0b1b38;color:#a9b8d0}.league .rk.m1{background:#ffcb05;color:#10254a}.league .rk.m2{background:#c9d3e3;color:#10254a}.league .rk.m3{background:#c98a5a;color:#10254a}
+
+.sheet-body details.ch-log{padding:0;border:0;background:none}
+.ch-log>summary{list-style:none;cursor:pointer;display:block;min-height:44px;padding:10px 12px;border-radius:12px;background:#142c55;border:1px solid #2c4470}
+.ch-log>summary::-webkit-details-marker{display:none}
+.sheet-body .ch-log>summary h3{display:flex;align-items:center;justify-content:space-between;margin:0!important;padding:0!important;background:none!important;border:0!important;font:600 16px/1.5 var(--f-data)!important;letter-spacing:.1em!important;text-transform:uppercase;color:#f4eedc}
+.sheet-body .ch-log>summary h3::after{display:none!important}
+.ch-log>summary h3 em{font:600 11px/1 var(--f-data);letter-spacing:.14em;color:#a9b8d0;font-style:normal;margin-left:auto}
+.ch-log>summary h3 em::after{content:"+";display:inline-block;margin-left:10px;font-size:18px;color:#ffcb05;vertical-align:-2px}
+.ch-log[open]>summary h3 em::after{content:"–"}
+.ch-log[open]>summary{margin-bottom:8px}
+.sheet-body .ch-riv h3{font:600 16px/1.2 var(--f-data)!important;letter-spacing:.1em!important;text-transform:uppercase!important}
