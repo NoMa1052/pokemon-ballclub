@@ -808,3 +808,21 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
   #throwBox .tapcue{margin-top:10px!important;padding:7px 14px!important;font-size:10.500px!important}
   #draft #newRun.pk-start{min-height:32px!important;margin-top:8px!important;font-size:12px!important}
 }
+
+/* Item chips: the item art leads, count sits on it as a badge */
+.pk-hud{gap:8px!important;margin:12px 0 0!important}
+.pk-hud .chip,.pk-hud button{display:grid!important;grid-template-columns:44px minmax(0,1fr)!important;align-items:center;gap:8px!important;min-height:52px!important;padding:4px 8px 4px 4px!important;border-radius:14px!important;background:rgba(6,16,34,.55)}
+.pk-hud .ico{position:relative;display:grid!important;place-items:center;width:44px;height:44px;min-height:0!important;padding:0!important;border-radius:11px!important;background:radial-gradient(circle at 50% 40%,#2a4a86,#12284f)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;grid-template-columns:none!important}
+.pk-hud .ico img{width:38px!important;height:38px!important;margin:0!important;image-rendering:pixelated}
+.pk-hud .ico b{position:absolute;right:-5px;bottom:-4px;min-width:20px;height:20px;padding:0 4px;border-radius:99px;display:grid;place-items:center;background:#ffcb05;color:#12233f;font:700 13px/1 var(--f-data)!important;box-shadow:0 0 0 2px #142c55}
+.pk-hud small{font-size:10px!important;letter-spacing:.08em!important;color:#dfe7f5!important}
+.pk-hud .out{opacity:.45}.pk-hud .out .ico b{background:#5d7bb0;color:#fff}
+.pk-hud button .ico{background:radial-gradient(circle at 50% 40%,#5b49c9,#2a2170)!important}
+/* Super Rod art on the reveal button, like Master Ball */
+#rvRerip,#rerollBtn{position:relative;padding-left:44px!important}
+#rvRerip::before,#rerollBtn::before{content:"";position:absolute;left:5px;top:50%;transform:translateY(-50%);width:40px;height:40px;background:url("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-rod.png") center/contain no-repeat;image-rendering:pixelated}
+/* Item slots: art on top, name underneath */
+.pk-hud .chip,.pk-hud button{grid-template-columns:1fr!important;justify-items:center;gap:6px!important;padding:8px 4px 7px!important;text-align:center!important}
+.pk-hud .ico{width:48px;height:48px}.pk-hud .ico img{width:42px!important;height:42px!important}
+.pk-hud small{white-space:nowrap!important;font-size:10.500px!important;line-height:1.2!important}
+.pk-hud button small i{font-size:9px;margin-top:2px}

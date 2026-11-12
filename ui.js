@@ -169,7 +169,7 @@ function slotChips(){
   const lamps=(k,on)=>`<span class="lamps">${Array.from({length:k},(_,i)=>`<i class="${i<on?"on":""}"></i>`).join("")}</span>`;
   if(run.result){const w=run.result.wins;
     b.innerHTML=cell("Wins",tile(w),"wide")+cell("Losses",tile(162-w),"wide")+cell("Team grade",tile(to??"--"));return}
-  if(isPack()){b.innerHTML=cell("Pick",tile(String(Math.min(n+1,size)).padStart(2,"0")),"wide",`of ${size}`)+cell("Team grade",tile(to??"--"))+cell("Re-rips",lamps(2,run.rerolls))+cell("Master Ball",lamps(1,run.doubles));return}
+  if(isPack()){b.innerHTML=cell("Pick",tile(String(Math.min(n+1,size)).padStart(2,"0")),"wide",`of ${size}`)+cell("Team grade",tile(to??"--"))+cell("Super Rod",lamps(2,run.rerolls))+cell("Master Ball",lamps(1,run.doubles));return}
   b.innerHTML=cell("Pick",tile(String(Math.min(n+1,size)).padStart(2,"0")),"wide",`of ${size}`)+cell("Team grade",tile(to??"--"))+cell("Respins",lamps(2,run.rerolls))+cell("Keeps",`<span class="lamps"><i class="${run.keeps.type?"on":""}"></i><i class="${run.keeps.gen?"on":""}"></i></span>`,"",`<span class="keepsub"><span>Type</span><span>Region</span></span>`);
 }
 function renderDraft(){
@@ -215,9 +215,9 @@ function renderDraft(){
     <div id="place">${slotChips()}</div>
     ${run.spin.pack?`<div class="spinctl packctl">
       <span class="label">Options</span>
-      <button class="btn" id="rerollBtn" ${run.rerolls&&!run.second?"":"disabled"}>Re-rip</button>
+      <button class="btn" id="rerollBtn" ${run.rerolls&&!run.second?"":"disabled"}>Super Rod</button>
       <button class="btn${run.doubleArmed?" armed":""}" id="doubleBtn" aria-pressed="${!!run.doubleArmed}" ${run.doubles&&!run.second&&run.picks.length<size-1?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}</button>
-    </div><p class="hint" style="margin:0">Re-rip swaps this pack for a new one: ${run.rerolls} left. Master Ball keeps two cards from one pack: ${run.doubles} left.</p>`:run.spin.legend?`<p class="hint" style="margin:0">Legend spin. These are rare, so make it count.</p>`:`<div class="spinctl">
+    </div><p class="hint" style="margin:0">Super Rod swaps this pack for a new one: ${run.rerolls} left. Master Ball keeps two cards from one pack: ${run.doubles} left.</p>`:run.spin.legend?`<p class="hint" style="margin:0">Legend spin. These are rare, so make it count.</p>`:`<div class="spinctl">
       <span class="label">Redraw</span>
       <button class="btn" id="rerollBtn" ${run.rerolls?"":"disabled"}>Respin all</button>
       <button class="btn" id="keepType" ${canKeepNow("type")?"":"disabled"}>Keep ${cap(run.spin.type)}</button>
@@ -240,8 +240,8 @@ function howHTML(){
   return `<div class="rules-guide"><p class="guide-intro">Draft your roster, find the best fits, then chase 162–0. Here’s your scouting guide.</p>
   <section class="guide-topic"><h3>1. Choose your mode and roster size</h3><div class="guide-content">
     <div class="guide-mode guide-packs"><h4>Packs <small>5 random cards</small></h4><p>Swipe across the top of the pack, or tap to open it. Inspect the cards, keep one, and give it an open position.</p><ul>
-      <li><b>Re-rip: 2 per run.</b> Replace the current pack before drafting a card.</li>
-      <li><b>Master Ball: once per run.</b> Use it before your first pick to catch one extra Pokémon from that pack. You need at least two open roster spots. You cannot re-rip between those two picks.</li></ul>
+      <li><b>Super Rod: 2 per run.</b> Replace the current pack before drafting a card.</li>
+      <li><b>Master Ball: once per run.</b> Use it before your first pick to catch one extra Pokémon from that pack. You need at least two open roster spots. You cannot use Super Rod between those two picks.</li></ul>
     </div><div class="guide-mode guide-growth"><h4>Raise your teammate <small>Packs only</small></h4><p>Pull its next evolution to evolve a roster Pokémon, or a duplicate to build friendship. Each upgrade uses your pick from that pack. You still need to fill every roster spot.</p><p><b>First evolution: +5</b> friendship to position ratings. <b>Second: +8 total</b>. Duplicates add <b>+2</b>, up to +10 total. Ratings cap at 99. Friendship lasts for this run and improves season performance too.</p><p>Tap a card marked Evolve or Train to preview the new card, ratings and team change. You can still draft an evolution normally for its base ratings.</p></div><div class="guide-mode guide-spin"><h4>Spin <small>Type + region</small></h4><p>Tap the ball to get a group of Pokémon matching a type and region, such as Fire · Johto. Choose one and give it an open position.</p><ul>
       <li><b>Respin all: 2 per run.</b> Prepare a new type-and-region draw, then tap the ball to reveal it.</li>
       <li><b>Keep type: once per run.</b> Keep Fire, for example, and draw from a different region.</li>

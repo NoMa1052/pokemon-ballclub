@@ -19,7 +19,7 @@
   <p class="help-goal">Fill all 16 spots, then play a 162-game season. The dream is 162–0.</p><span id="quickPlay" hidden></span>
   <h3 class="help-more">Want more? Tap a topic.</h3>
   ${topic('Your items',
-   item('<img class="help-ico pack" src="pack-foil-v3.webp" alt="">','Re-rip','2 per run','Swap the pack for a new one before you pick.')+
+   item(art('super-rod'),'Super Rod','2 per run','Don\'t like the pack? Cast again for a new one before you pick.')+
    item(art('master-ball'),'Master Ball','1 per run','Keep two cards from one pack.')+
    item(art('rare-candy'),'Rare Candy','1 per run','Evolve or boost one teammate. It does not use a pick.')+
    item(`<span class="help-ico">${tok(sample)}</span>`,'Release','1 per run','Tap a player on your roster to let him go and draft a replacement.'))}

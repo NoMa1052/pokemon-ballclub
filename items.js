@@ -1,5 +1,5 @@
 /* Once-per-run items. Artwork is the item sprite returned by PokéAPI. */
-const ITEM_ART={"master-ball":"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png","rare-candy":"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png"};
+const ITEM_ART={"master-ball":"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/master-ball.png","rare-candy":"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/rare-candy.png","super-rod":"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/super-rod.png"};
 for(const name of Object.keys(ITEM_ART))fetch('https://pokeapi.co/api/v2/item/'+name+'/').then(r=>r.ok?r.json():null).then(item=>{if(item?.sprites?.default){ITEM_ART[name]=item.sprites.default;document.documentElement.style.setProperty('--'+name+'-art',`url("${item.sprites.default}")`)}}).catch(()=>{});
 function candyOptions(){
  if(!run||run.hand||run.locked||run.result||spinning||!run.candies)return [];

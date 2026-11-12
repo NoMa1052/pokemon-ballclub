@@ -203,7 +203,7 @@
   function decorateControls() {
     const lab=$('spinLabel');if(lab&&!spinning){lab.textContent=isPack()?'Open Pack':'Spin your next pick';lab.nextElementSibling.textContent=`Pick ${Math.min(run.picks.length+1,run.size)} of ${run.size}`;}
     const cue=$('draft').querySelector('.tapcue');if(cue&&isPack())cue.textContent='Swipe to rip · tap to open';
-    const rb=$('rerollBtn');if(rb){rb.innerHTML=isPack()?`Re-rip <small>${run.rerolls} remaining</small>`:`Respin both <small>${run.rerolls} left</small>`;rb.title=isPack()?'Replace these five cards':'Get a new type and region';}
+    const rb=$('rerollBtn');if(rb){rb.innerHTML=isPack()?`Super Rod <small>${run.rerolls} remaining</small>`:`Respin both <small>${run.rerolls} left</small>`;rb.title=isPack()?'Replace these five cards':'Get a new type and region';}
     const db=$('doubleBtn');if(db)db.innerHTML=`${run.doubleArmed?'Master Ball ready':'Master Ball'} <small>${run.doubles} left</small>`;
     for(const [id,kind,key] of [['keepType','type','type'],['keepGen','region','gen']]){
       const b=$(id);if(!b)continue;const sp=run.spin&&!run.unrevealed?run.spin:run.lastSpin;if(!sp)continue;
