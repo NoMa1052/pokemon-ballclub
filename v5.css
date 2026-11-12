@@ -835,3 +835,14 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 .pk-hud .ico img{width:54px!important;height:54px!important;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
 .pk-hud .ico b{right:-6px;bottom:0;box-shadow:0 0 0 2px #0e1f40}
 .pk-hud .ico img{filter:drop-shadow(0 0 5px rgba(170,200,255,.45)) drop-shadow(0 3px 4px rgba(0,0,0,.45))!important}
+/* Header: big logo on a glow, label as a pill, red rule underneath */
+@media(max-width:999px){
+  header.top::before{content:""!important;position:absolute!important;left:50%;top:46%;width:280px;height:160px;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(98,150,255,.32),transparent);pointer-events:none;z-index:0}
+  header.top .logo{position:relative;z-index:1}
+  body.draft-started header.top{padding:6px 0!important;margin-bottom:0!important}
+  body.draft-started header.top .logo,body.draft-started header.top .logo img{width:118px!important;height:auto!important}
+  body.draft-started header.top::after{top:50%!important;transform:translateY(-50%);height:auto!important;width:auto!important;padding:7px 11px;border-radius:99px;background:rgba(244,238,220,.09);font:600 10.500px/1 var(--f-data)!important;letter-spacing:.16em!important;text-transform:uppercase;color:#c9d5e8!important}
+  body.draft-started #menuBtn{top:50%!important;transform:translateY(-50%)}
+  .stitchline.brand-stitch{visibility:visible!important;height:3px!important;border-radius:3px;background:linear-gradient(90deg,transparent,#e3350d 20%,#e3350d 80%,transparent)!important;margin:6px 0 14px!important}
+}
+@media(max-width:999px){body:not(.draft-started) .stitchline.brand-stitch{margin-top:16px!important}}
