@@ -828,3 +828,10 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 .pk-hud button small i{font-size:9px;margin-top:2px}
 /* Card reveal: the stage is refocused for every card, so no focus ring flashing around it */
 .reveal .rv-stage,.reveal .rv-stage:focus,.reveal .rv-stage:focus-visible{outline:0!important;box-shadow:none!important;border-color:transparent!important}
+/* Item slots: one box, bigger art */
+.pk-hud .chip,.pk-hud button{border:0!important;outline:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;padding:6px 4px 8px!important;gap:2px!important}
+.pk-hud button{box-shadow:inset 0 0 0 1.500px #8f7cf0!important}
+.pk-hud .ico,.pk-hud button .ico{background:none!important;box-shadow:none!important;width:56px;height:52px;border-radius:0!important}
+.pk-hud .ico img{width:54px!important;height:54px!important;filter:drop-shadow(0 3px 4px rgba(0,0,0,.45))}
+.pk-hud .ico b{right:-6px;bottom:0;box-shadow:0 0 0 2px #0e1f40}
+.pk-hud .ico img{filter:drop-shadow(0 0 5px rgba(170,200,255,.45)) drop-shadow(0 3px 4px rgba(0,0,0,.45))!important}
