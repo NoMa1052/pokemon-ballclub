@@ -231,10 +231,10 @@
   if(fresh)postSeries();
   $('bgShare').onclick=async()=>{
    const mine=myName()||'My club',hi=Math.max(S.w,S.l),lo=Math.min(S.w,S.l);
-   const games=S.results.map((x,i)=>`G${i+1}  ${x.won?'W':'L'}  ${x.me}–${x.opp}`).join('\n');
-   const text=`⚾ ${mine} ${won?'beat':'lost to'} ${S.rival.team}, ${hi}–${lo}\n\n${games}\n\n⭐ ${short(mvp.m)}: ${mvp.ser.h} for ${mvp.ser.ab}${mvp.ser.hr?`, ${mvp.ser.hr} HR`:''}, ${mvp.ser.rbi} RBI\n\nPokémon Ballclub rival series`;
-   const url='https://'+SITE;
-   try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({text,url});return}await navigator.clipboard.writeText(text+'\n'+url);$('bgMsg').textContent='Result copied.'}catch(e){if(e?.name!=='AbortError')$('bgMsg').textContent='Could not share from this browser.'}};
+   const games=S.results.map(x=>`${x.won?'W':'L'} ${x.me}–${x.opp}`).join(', ');
+   const link=typeof shareLink==='function'?shareLink():SITE;
+   const text=`⚾ ${mine} ${won?'beat':'lost to'} ${S.rival.team} ${hi}–${lo}\n${games}\n⭐ Series MVP ${short(mvp.m)}: ${mvp.ser.h} for ${mvp.ser.ab}${mvp.ser.hr?`, ${mvp.ser.hr} HR`:''}, ${mvp.ser.rbi} RBI\n${won?'Think you can beat us?':'Rematch:'} ${link}`;
+   try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({text});return}await navigator.clipboard.writeText(text);$('bgMsg').textContent='Result copied.'}catch(e){if(e?.name!=='AbortError')$('bgMsg').textContent='Could not share from this browser.'}};
   $('bgShare').focus({preventScroll:true});
  }
 
