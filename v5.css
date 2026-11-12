@@ -792,3 +792,19 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 .pk-hud small{white-space:normal!important;overflow:visible!important;line-height:1.15!important}
 .pk-hud span{grid-template-columns:24px auto minmax(0,1fr);padding:6px 8px 6px 6px;min-height:40px}
 #itemTools .candy-control{border:0!important;border-radius:14px!important;background:rgba(6,16,34,.55)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)!important}
+
+/* Main page, tighter: one Rare Candy control (the chip), smaller pack, less air */
+#draft #itemTools{display:none!important}
+.pk-hud{margin:10px 0 0!important}
+.pk-hud span,.pk-hud button{grid-template-columns:22px auto minmax(0,1fr)!important;gap:5px!important;min-height:36px!important;padding:4px 8px 4px 6px!important;border-radius:10px!important}
+.pk-hud img{width:22px!important;height:22px!important}.pk-hud img.pk{width:13px!important;height:22px!important;margin:0 4px!important}
+.pk-hud b{font-size:15px!important}.pk-hud small{font-size:9px!important}
+.pk-hud button{display:grid;align-items:center;min-width:0;border:0;background:rgba(6,16,34,.55);box-shadow:inset 0 0 0 1.500px #8f7cf0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.pk-hud button small i{display:block;font-style:normal;color:#c9befc;letter-spacing:.06em;margin-top:1px}
+@media(max-width:999px){
+  #draft.panel{padding:14px 14px 12px!important}
+  #draft .pack{width:min(168px,46vw)!important}
+  #throwBox.throw{padding:10px 6px 4px!important}
+  #throwBox .tapcue{margin-top:10px!important;padding:7px 14px!important;font-size:10.500px!important}
+  #draft #newRun.pk-start{min-height:32px!important;margin-top:8px!important;font-size:12px!important}
+}
