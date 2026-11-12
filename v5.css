@@ -533,3 +533,40 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 /* Records opens at full height so it doesn't jump while loading */
 @media(max-width:999px){#lb .sheet-in{height:min(88dvh,900px);display:flex;flex-direction:column}#lb .sheet-body{flex:1}}
 .bg-noleague{margin:0;display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;border:1px dashed #5d7bb0;font-size:14px}.bg-noleague .btn{min-height:40px;margin:0;flex:none}
+
+/* Placing on a phone: nothing above the strip, strip on one line, field and staff fit above the tray */
+#fieldFlow h3 i,#fieldFlow .btn i{font-style:normal}
+#fieldFlow .btn.danger{color:#ff9d8a!important;border-color:#7a3b34!important}
+#fieldFlow .placement-note{margin:6px 0 0;font-size:12.5px;color:#a9b8d0}
+#heldRatings{text-transform:none}#heldRatings::first-letter{text-transform:uppercase}
+@media(max-width:999px){
+  body.field-deciding header.top,body.field-deciding .stitchline{display:none!important}
+  body.field-deciding{padding-top:8px!important}
+  .field-deciding #fieldFlow.placement-strip{position:static!important;grid-template-columns:minmax(0,1fr) auto!important;gap:6px 8px!important;padding:8px 10px!important;margin:0 0 8px!important;border-radius:12px}
+  .field-deciding #fieldFlow .placement-title{grid-template-columns:36px minmax(0,1fr)!important;gap:8px!important}
+  .field-deciding #fieldFlow .placement-title .tok{width:36px!important;height:36px!important;min-width:36px!important}
+  .field-deciding #fieldFlow h3{font-size:16px!important}
+  .field-deciding #fieldFlow h3 i,.field-deciding #heldRatings i{display:none}
+  .field-deciding #fieldFlow .placement-title span:not(.tok){font-size:12.5px!important;white-space:nowrap}
+  .field-deciding #fieldFlow .placement-actions{gap:5px!important;flex-wrap:nowrap}
+  .field-deciding #fieldFlow .placement-actions .btn{flex:none!important;min-height:38px!important;padding:0 10px!important;font-size:12.5px!important;border-radius:9px!important}
+  .field-deciding #fieldFlow .placement-note{grid-column:1/-1;margin:0}
+  .field-deciding #pen{margin-top:8px!important}
+}
+@media(max-width:380px){.field-deciding #fieldFlow .placement-actions .btn{padding:0 8px!important}}
+@media(max-width:999px){
+  .field-deciding #fieldFlow.placement-strip:has(#handReleaseAsk),.field-deciding #fieldFlow.placement-strip:has(#handUndo){grid-template-columns:1fr!important}
+  .field-deciding #fieldFlow.placement-strip:has(#handReleaseAsk) .placement-actions .btn,.field-deciding #fieldFlow.placement-strip:has(#handUndo) .placement-actions .btn{flex:1!important}
+}
+.help-topic{padding:0!important}
+
+/* Tab bar: solid game icons, scoreboard lettering */
+@media(max-width:999px){
+  .tabbar{background:linear-gradient(#0d2145,#081428)!important;border-top:2px solid #e3350d!important;padding-top:5px!important}
+  .tabbar button{font:600 10.5px/1 var(--f-data,"Oswald"),sans-serif!important;letter-spacing:.09em;text-transform:uppercase;color:#8fa3c4!important;gap:4px!important}
+  .tabbar svg{width:24px!important;height:24px!important;fill:currentColor!important;stroke:none!important}
+  .tabbar button:first-child{color:#ffcb05!important}
+  body.has-results{padding-bottom:calc(74px + env(safe-area-inset-bottom))!important}
+  #season .season-actions{margin:14px 0 4px!important}
+  .sc-groups{grid-template-columns:1fr 1fr!important}
+}

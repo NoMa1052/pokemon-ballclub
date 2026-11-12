@@ -147,27 +147,11 @@
   (host.querySelector('.team-bars')||host.firstElementChild).after(p);
  }
 
- // Phones: keep the three end-of-season actions in reach until the real buttons scroll into view.
- let watch=null;
+ // One set of end-of-season actions, straight under the record.
  function actionBar(){
-  let bar=$('resBar');
-  if(!run.result||innerWidth>=1000){bar?.remove();watch?.disconnect();watch=null;return}
-  const real=document.querySelector('#season .season-actions');if(!real)return;
-  if(!bar){
-   bar=document.createElement('div');bar.id='resBar';bar.className='res-bar';
-   bar.innerHTML='<button type="button" class="btn primary" data-a="post">Post team</button><button type="button" class="btn" data-a="share">Share</button><button type="button" class="btn" data-a="again">Play again</button>';
-   bar.onclick=e=>{const a=e.target.closest('button')?.dataset.a;if(!a)return;
-    if(a==='post'){const box=$('submitBox');box?.scrollIntoView({block:'center'});box?.querySelector('input')?.focus({preventScroll:true})}
-    if(a==='board')(run.week||(typeof leagueCodes==='function'&&leagueCodes().length)?$('lgBtn'):$('lbBtn'))?.click();
-    if(a==='share')$('shareBtn')?.click();
-    if(a==='again')$('again')?.click()};
-   document.body.appendChild(bar);
-  }
-  // Once the team is posted, the first button opens the standings instead.
-  const post=bar.querySelector('[data-a=post],[data-a=board]');
-  if(post){post.dataset.a=run.submitted?'board':'post';post.textContent=run.submitted?'Standings':'Post team';post.classList.toggle('primary',!run.submitted)}
-  const box=$('submitBox');if(box&&!box._v5){box._v5=new MutationObserver(()=>actionBar());box._v5.observe(box,{childList:true})}
-  watch?.disconnect();watch=new IntersectionObserver(es=>bar.classList.toggle('away',es[0].isIntersecting));watch.observe(real);
+  document.getElementById('resBar')?.remove();
+  const a=document.querySelector('#season .season-actions'),h=document.querySelector('#season .season-head');
+  if(a&&h&&h.nextElementSibling!==a)h.after(a);
  }
 
  const prevFinish=finish;
