@@ -16,15 +16,21 @@
   return v;
  };
  // Desktop: shrink the pack's cards so the whole pack fits beside the field without scrolling.
+ let fitting=false;
  function fitCards(){
-  const c=document.querySelector('#draft .cands.cardrow');if(!c)return;
-  c.style.zoom='';if(innerWidth<1000)return;
-  const kids=[...c.querySelectorAll('.cand')],n=kids.length;if(!n)return;
-  const k=kids[0].getBoundingClientRect(),cw=k.width,ch=k.height,W=c.clientWidth,top=c.getBoundingClientRect().top+scrollY,H=innerHeight-top-34;
-  let best=0;for(let cols=2;cols<=Math.min(n,4);cols++){const rows=Math.ceil(n/cols),z=Math.min(1,(W-8*(cols-1))/(cols*cw),(H-10*(rows-1))/(rows*ch));if(z>best)best=z}
-  if(best>0&&best<1)c.style.zoom=Math.max(.5,best).toFixed(3);
+  if(fitting)return;const c=document.querySelector('#draft .cands.cardrow');if(!c)return;
+  fitting=true;
+  try{
+   c.style.removeProperty('zoom');if(innerWidth<1000)return;
+   const kids=[...c.querySelectorAll('.cand')];if(!kids.length)return;
+   const left=document.querySelector('.grid>section'),floor=()=>Math.min(innerHeight-scrollY,left?left.getBoundingClientRect().bottom:innerHeight)-22;
+   const over=()=>Math.max(...kids.map(k=>k.getBoundingClientRect().bottom))>floor();
+   // Measure the real layout at each step: card sizes follow the window, so arithmetic alone gets it wrong.
+   const z0=parseFloat(getComputedStyle(c).zoom)||1;for(let z=z0;z>=.4&&over();z-=.03)c.style.setProperty('zoom',z.toFixed(2),'important');
+  }finally{fitting=false}
  }
  const prev2=render;render=function(){const v=prev2.apply(this,arguments);try{fitCards()}catch(e){}return v};
+ new MutationObserver(()=>{try{fitCards()}catch(e){}}).observe(document.getElementById('draft'),{childList:true,subtree:true});
  addEventListener('resize',()=>{try{fitCards()}catch(e){}});
  render();
 })();
