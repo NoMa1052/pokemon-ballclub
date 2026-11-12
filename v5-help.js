@@ -48,7 +48,7 @@
    '<b>Weekly challenge</b>: everyone opens the same pack at each pick and gets one attempt.',
    'Your league is ranked on that week\'s result. A new challenge starts every Monday.']))}
   ${topic('Rival series',list([
-   'After a season, tap <b>Pick a rival</b> to play a league mate or a top club in a best of 7.',
+   'After a season, tap <b>Pick a rival</b> to play a league mate in a best of 7.',
    'You choose each game\'s starter and decide when to go to the bullpen.',
    'Watch the at-bats, open the box score, or skip ahead.',
    'Results post to your league.']))}

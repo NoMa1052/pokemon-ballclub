@@ -77,7 +77,7 @@
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
   const roster=x=>`<div class="lg-roster">${x.roster.map((id,i)=>{const m=BYID.get(id);return m?`<span><i>${lbl(FULL[i]).replace(/^SP1$/,'SP')}</i>${esc(m.name)}</span>`:''}).join('')}</div>`;
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span><span class="tm"><b>${esc(x.team)}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];
@@ -122,7 +122,7 @@
   if($('lgMake')){$('lgMake').onclick=()=>make($('lgName').value);$('lgName').onkeydown=e=>{if(e.key==='Enter')make($('lgName').value)}}
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
-  if(data&&!data.error&&typeof wireRivalSeries==='function'&&(!cur||tab==='week'))wireRivalSeries($('lgList'),data.weeks[weekKey()]||[]);
+  if(data&&!data.error&&cur&&typeof wireRivalSeries==='function'&&tab==='week')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
  async function join(raw,quiet){
