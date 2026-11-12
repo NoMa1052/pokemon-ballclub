@@ -848,3 +848,86 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 @media(max-width:999px){body:not(.draft-started) .stitchline.brand-stitch{margin-top:16px!important}}
 @media(max-width:999px){body.draft-started header.top::after{max-width:96px;white-space:normal!important;line-height:1.3!important;border-radius:12px;text-align:center}body.has-results header.top::after{display:none!important}}
 @media(max-width:999px){body.draft-started header.top::after{max-width:72px;padding:6px 9px!important;letter-spacing:.1em!important;box-sizing:content-box}}
+
+/* ===== Desktop overhaul: real nav, wide two-column pages instead of phone columns ===== */
+@media(min-width:1000px){
+  header.top .btn.lbbtn,header.top .btn.howbtn{border:0!important;background:none!important;box-shadow:none!important;font:600 13px/1 var(--f-data)!important;letter-spacing:.14em!important;text-transform:uppercase;color:#c9d5e8!important;padding:0 16px!important;min-height:40px!important;border-radius:10px!important}
+  header.top .btn.lbbtn:hover,header.top .btn.howbtn:hover{background:rgba(244,238,220,.09)!important;color:#fff!important}
+  header.top .btn.lbbtn svg,header.top .btn.lbbtn::before{display:none!important}
+  .bg .bg-in,.sr .sr-in{max-width:1120px!important;width:100%!important;padding-left:28px!important;padding-right:28px!important}
+  .bg .bg-top,.sr .sr-top{padding-top:8px}
+
+  /* League: your league on the left, standings on the right */
+  #lgBody{display:grid!important;grid-template-columns:360px minmax(0,1fr);gap:16px 32px;align-items:start;align-content:start}
+  #lgBody>*{grid-column:1}
+  #lgBody>.lg-tabs,#lgBody>.lg-h{grid-column:2;grid-row:1;margin:0!important}
+  #lgBody>.lg-panel{grid-column:2;grid-row:1/span 8;margin-top:70px!important}
+  .ch-lineup{grid-template-columns:repeat(8,1fr)!important}
+
+  /* Season: scoreboard left, moments and October right */
+  .sr .sr-in{display:grid!important;grid-template-columns:minmax(0,620px) minmax(0,1fr);grid-template-rows:auto auto auto 1fr auto;gap:14px 40px;align-content:start}
+  .sr .sr-top{grid-column:1/-1}
+  .sr #srCal{grid-column:1;grid-row:2}
+  .sr .szn2{grid-column:1;grid-row:3/5}
+  .sr #srMoh{grid-column:2;grid-row:2;align-self:end}
+  .sr #srCard{grid-column:2;grid-row:3;align-self:start}
+  .sr #srOct{grid-column:2;grid-row:3/5;align-self:start}
+  .sr #srTap{grid-column:1/-1}
+  .szn2-in{padding:18px 20px 16px}
+  .szn2-rec{margin:18px 0 8px;gap:7px}
+  .szn2-rec span{width:66px;height:92px;font-size:68px;border-radius:7px}.szn2-rec i{font-size:46px;margin:0 6px}
+  .szn2-pace{font-size:15px;margin-bottom:16px}
+  .szn2-st td{height:46px;font-size:17px}.szn2-st td.n{width:64px}.szn2-st td.n span{height:40px;line-height:40px;font-size:23px}
+  .szn2-mo div{padding:8px 0 7px;font-size:11px}.szn2-mo b{font-size:18px}
+  .szn-cal span{font-size:12px}
+  .sr-head-card{padding:14px 16px}.sr-head-card p{font-size:16px}.sr-head-card .tok{width:56px;height:56px;min-width:56px}
+
+  /* Pack: all cards in one big row */
+  .reveal .rv-top,.reveal .rv-grid{max-width:1120px!important;width:100%!important}
+  .reveal .rv-grid{display:flex!important;flex-wrap:wrap;justify-content:center;gap:18px!important}
+  .reveal .rv-grid .rv-mini{width:190px!important;flex:none}
+  .reveal .rv-opts{max-width:560px!important;width:100%!important;margin-top:10px}
+
+  /* Rival series */
+  .bg-choose .bg-rivals{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
+  .bg-pre:not(.bg-choose),#bgSeries{max-width:680px;margin-left:auto!important;margin-right:auto!important;width:100%}
+  .bg-stage:has(.bg-live)~*,.bg-in:has(.bg-live) #bgSeries{max-width:none}
+  .bg-live{display:grid!important;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:14px 36px;align-content:start;align-items:start}
+  .bg-live>*{grid-column:1}
+  .bg-live>.bg-box{grid-column:2;grid-row:1/span 8}
+
+  /* Results: record on the left, actions and awards on the right */
+  #season{max-width:1180px!important}
+  #season .panel:has(#resHero){display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px 24px;align-items:start}
+  #season .panel:has(#resHero)>*{grid-column:1/-1;min-width:0}
+  #season .panel:has(#resHero)>.res-top{display:none}
+  #season #resHero{grid-column:1;grid-row:1/span 3;margin:0;height:100%}
+  #season .panel:has(#resHero)>.season-actions{grid-column:2;grid-row:1;margin:0!important}
+  #season .panel:has(#resHero)>.rival-card{grid-column:2;grid-row:2;margin:0!important}
+  #season .panel:has(#resHero)>.season-awards{grid-column:2;grid-row:3;margin:0!important}
+  .res-hero{padding:22px 24px 20px}.rh-rec>b{font-size:96px}.rh-rec .ch-stamp{width:92px;height:92px}.rh-rec .ch-stamp b{font-size:40px}
+
+  /* Records and How to play: wider windows, two columns */
+  #lb .sheet-in{max-width:1040px!important;width:92vw!important;height:min(90vh,920px)!important;max-height:none!important}
+  #how .sheet-in{max-width:860px!important;width:92vw!important}
+  #lb .lb-rows{display:grid!important;grid-template-columns:1fr 1fr;gap:8px 12px;align-items:start}
+  #lb .lb-rows li{margin:0!important}
+  .ch{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  .ch>*{grid-column:1/-1}
+  .ch>.ch-hero{grid-column:1}
+  .ch>.ch-hero+.ch-sec{grid-column:2}
+}
+@media(min-width:1000px){
+  #season .panel:has(#resHero)>#resHero{grid-column:1;grid-row:1/span 3;margin:0;height:100%}
+  #season .panel:has(#resHero)>.season-actions{grid-column:2;grid-row:1}
+  #season .panel:has(#resHero)>.rival-card{grid-column:2;grid-row:2}
+  #season .panel:has(#resHero)>.season-awards{grid-column:2;grid-row:3}
+  .sr .szn2{align-self:start}
+  header.top #lbBtn>*:not(:last-child),header.top #lbBtn i,header.top #lbBtn .ico{display:none!important}
+}
+@media(min-width:1000px){
+  header.top #lbBtn .pen-ic{display:none!important}
+  #draft .cands.cardrow{gap:8px 6px!important;justify-content:center!important;align-content:flex-start!important;padding:4px 0!important}
+  #draft .cands.cardrow>.cand{margin:0!important}
+}
+@media(min-width:1000px){.bg-pre .bg-go{margin-top:18px!important}.bg-pre:not(.bg-choose){flex:none!important}}

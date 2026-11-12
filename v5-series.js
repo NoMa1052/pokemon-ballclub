@@ -120,7 +120,7 @@
     <table class="bx"><thead><tr><th scope="col">Pitching</th><th scope="col">IP</th><th scope="col">H</th><th scope="col">R</th><th scope="col">BB</th><th scope="col">K</th></tr></thead><tbody>${f.used.map(p=>`<tr><th scope="row">${esc(p.m.id?short(p.m):'Middle relief')}</th><td>${ip(p.g.outs)}</td><td>${p.g.h}</td><td>${p.g.r}</td><td>${p.g.bb}</td><td class="${p.g.k>=6?'hi':''}">${p.g.k}</td></tr>`).join('')}</tbody></table></div>`};
   return side(S.side)+side(1-S.side);
  }
- const boxBlock=open=>`<details class="bg-box" id="bgBox"${open?' open':''}><summary>Box score</summary><div id="bgBoxIn">${open?boxHTML():''}</div></details>`;
+ const boxBlock=open=>`<details class="bg-box" id="bgBox"${innerWidth>=1000?' open':''}${open?' open':''}><summary>Box score</summary><div id="bgBoxIn">${open?boxHTML():''}</div></details>`;
  function wireBox(){const d=$('bgBox');if(d)d.ontoggle=()=>{S.boxOpen=d.open;if(d.open)$('bgBoxIn').innerHTML=boxHTML()}}
 
  // ---------- the game ----------
