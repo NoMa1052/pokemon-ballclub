@@ -826,3 +826,5 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 .pk-hud .ico{width:48px;height:48px}.pk-hud .ico img{width:42px!important;height:42px!important}
 .pk-hud small{white-space:nowrap!important;font-size:10.500px!important;line-height:1.2!important}
 .pk-hud button small i{font-size:9px;margin-top:2px}
+/* Card reveal: the stage is refocused for every card, so no focus ring flashing around it */
+.reveal .rv-stage,.reveal .rv-stage:focus,.reveal .rv-stage:focus-visible{outline:0!important;box-shadow:none!important;border-color:transparent!important}
