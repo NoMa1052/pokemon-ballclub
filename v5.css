@@ -846,3 +846,5 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
   .stitchline.brand-stitch{visibility:visible!important;height:3px!important;border-radius:3px;background:linear-gradient(90deg,transparent,#e3350d 20%,#e3350d 80%,transparent)!important;margin:6px 0 14px!important}
 }
 @media(max-width:999px){body:not(.draft-started) .stitchline.brand-stitch{margin-top:16px!important}}
+@media(max-width:999px){body.draft-started header.top::after{max-width:96px;white-space:normal!important;line-height:1.3!important;border-radius:12px;text-align:center}body.has-results header.top::after{display:none!important}}
+@media(max-width:999px){body.draft-started header.top::after{max-width:72px;padding:6px 9px!important;letter-spacing:.1em!important;box-sizing:content-box}}
