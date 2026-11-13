@@ -454,18 +454,18 @@ function wireSubmit(){
     const row={team,size:run.size,wins:res.wins,grade:res.grade,rs:Math.round(res.runs.rs),ra:Math.round(res.runs.ra),roster:list.map(s=>run.slots[s]?run.slots[s].id:0),device:deviceId().slice(0,16),mode:isPack()?"pack":"spin",week:run.week||null,leagues:typeof leagueCodes==="function"?leagueCodes():[]};
     try{
       const r=await fetch(LB_URL,{method:"POST",headers:lbHead({"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
-      if(!r.ok)throw new Error(r.status);
+      if(!r.ok){let m="";try{m=(await r.json()).message||""}catch(e){}throw Object.assign(new Error(m),{why:/too fast/i.test(m)?"Slow down a moment, then try again.":/already posted/i.test(m)?"This team is already on the leaderboard.":""})}
       store.set("pbc2-team",team);
       let rank=null;
       try{const c=await fetch(`${LB_URL}?select=id&mode=eq.${row.mode}&size=eq.${run.size}&wins=gt.${res.wins}`,{method:"HEAD",headers:lbHead({Prefer:"count=exact"})});const cr=c.headers.get("content-range");
         if(cr){rank=+cr.split("/")[1]+1;
           // Same wins: count the tied teams that rank above this one.
-          const t=await fetch(`${LB_URL}?select=roster,rs,ra,created_at&mode=eq.${row.mode}&size=eq.${run.size}&wins=eq.${res.wins}`,{headers:lbHead()});
+          const t=await fetch(`${LB_URL}?select=roster,rs,ra,created_at&mode=eq.${row.mode}&size=eq.${run.size}&wins=eq.${res.wins}&limit=1000`,{headers:lbHead()});
           if(t.ok){const sl=slotList(),mine={wins:res.wins,ovr:rosterOvr(row.roster,sl),rs:row.rs,ra:row.ra,created_at:new Date().toISOString()};
             const tied=await t.json(),self=tied.findIndex(x=>x.rs===row.rs&&x.ra===row.ra&&String(x.roster)===String(row.roster));if(self>=0)tied.splice(self,1);
             rank+=tied.map(x=>({...x,wins:res.wins,ovr:rosterOvr(x.roster,sl)})).filter(x=>lbRank(x,mine)<0).length;}}}catch(e){}
       run.submitted={team,rank,week:row.week,leagues:row.leagues};saveRun();try{Clubhouse.name(run,team)}catch(e){}box.innerHTML=submitHTML();wireSubmit();
-    }catch(e){btn.disabled=false;msg.textContent="Couldn't reach the leaderboard. Try again."}
+    }catch(e){btn.disabled=false;msg.textContent=e.why||"Couldn't reach the leaderboard. Try again."}
   };
   btn.onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()};
 }

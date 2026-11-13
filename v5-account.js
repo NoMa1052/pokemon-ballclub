@@ -19,7 +19,7 @@
   if(!r.ok)throw Object.assign(new Error(body?.msg||body?.error_description||body?.message||'Something went wrong. Try again.'),{status:r.status,code:body?.error_code||body?.code});
   return body;
  }
- const adopt=b=>{session={access_token:b.access_token,refresh_token:b.refresh_token,expires_at:Date.now()+(b.expires_in||3600)*1000,user:{id:b.user.id,email:b.user.email}};save()};
+ const adopt=b=>{session={access_token:b.access_token,refresh_token:b.refresh_token,expires_at:Date.now()+(b.expires_in||3600)*1000,user:{id:b.user.id,email:b.user.email,name:session?.user?.id===b.user.id?session.user.name:null,want:session?.user?.id===b.user.id&&session.user.taken?null:b.user.user_metadata?.screen_name||null,taken:session?.user?.id===b.user.id&&session.user.taken}};save()};
  async function token(){
   if(!session)return null;
   if(Date.now()<session.expires_at-60000)return session.access_token;
@@ -46,7 +46,8 @@
  async function sync(){
   const t=await token();if(!t)return false;
   const rows=await call(`${PROFILES}?select=*&user_id=eq.${session.user.id}`,{},t),remote=rows[0]||{},mine=local();
-  const merged={user_id:session.user.id,devices:uniq([...(remote.devices||[]),...devices,dev()]).slice(-40),team:mine.team||remote.team||null,
+  const want=remote.screen_name||session.user.name||session.user.want||undefined;
+  const merged={user_id:session.user.id,...(want?{screen_name:want}:{}),devices:uniq([...(remote.devices||[]),...devices,dev()]).slice(-40),team:mine.team||remote.team||null,
    clubhouse:mergeClub(mine.clubhouse,remote.clubhouse),dex:mergeDex(mine.dex,remote.dex),rivals:mergeRivals(mine.rivals,remote.rivals),leagues:mergeLeagues(mine.leagues,remote.leagues),updated_at:new Date().toISOString()};
   applying=true;
   try{
@@ -56,7 +57,11 @@
    if(merged.team&&!mine.team)store.set('pbc2-team',merged.team);
   }finally{applying=false}
   devices=merged.devices;save();
-  await call(PROFILES+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(merged)},t);
+  const put=body=>call(PROFILES+'?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)},t);
+  try{await put(merged);if(want){session.user.name=want;save()}}
+  catch(e){if(e.code!=='23505')throw e;
+   // The screen name chosen at sign-up was claimed first: save everything else and ask for another.
+   delete merged.screen_name;session.user.name=null;session.user.want=null;session.user.taken=true;save();await put(merged);return 'taken'}
   return true;
  }
  const later=()=>{if(!session||applying)return;clearTimeout(pushTimer);pushTimer=setTimeout(()=>sync().catch(()=>{}),2500)};
@@ -64,60 +69,72 @@
  const set0=store.set;store.set=function(k,v){set0.call(store,k,v);if(SYNCED.includes(k))later()};
 
  // ---- actions ----
- const DOM='@players.pokemon-ballclub.vercel.app';
- // A username is stored as a private sign-in address; no email is ever sent to it.
- const toLogin=u=>u.includes('@')?u:u+DOM;
- const shown=e=>(e||'').endsWith(DOM)?e.slice(0,-DOM.length):e;
- const friendly=e=>e.code==='invalid_credentials'||/invalid login/i.test(e.message)?'That username and password don\'t match.':e.code==='user_already_exists'||/already registered/i.test(e.message)?'That username is taken. Try another, or sign in if it is yours.':e.code==='weak_password'||/password should/i.test(e.message)?'Use at least 6 characters for the password.':e.code==='email_not_confirmed'||/not confirmed/i.test(e.message)?'Confirm your email first. Check your inbox for the link.':e.status===429?'Too many tries. Wait a minute and try again.':e.message;
- async function finishSignIn(b){adopt(b);await sync();status='Signed in. This browser is linked to your profile.';close();refresh()}
+const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
+ const NAME_RE=/^[A-Za-z0-9][A-Za-z0-9 _.-]{1,18}[A-Za-z0-9]$/,cleanName=v=>(v||'').replace(/\s+/g,' ').trim();
+ const nameFree=async n=>!!(await call(RPC,{method:'POST',body:JSON.stringify({n})}));
+ const friendly=e=>e.code==='invalid_credentials'||/invalid login/i.test(e.message)?'That email and password don\'t match.':e.code==='user_already_exists'||/already registered/i.test(e.message)?'That email already has an account. Sign in instead.':e.code==='weak_password'||/password should/i.test(e.message)?'Use at least 6 characters for the password.':e.code==='email_not_confirmed'||/not confirmed/i.test(e.message)?'Confirm your email first. Check your inbox for the link.':e.code==='23505'?'That screen name is taken. Try another.':e.code==='email_address_invalid'||/email address .* invalid/i.test(e.message)?'That email address doesn\'t look right.':e.status===429?'Too many tries. Wait a minute and try again.':e.message;
+ async function finishSignIn(b,note){adopt(b);const named=(await sync())!=='taken';
+  status=named?(note||'Signed in. This browser is linked to your profile.'):'Signed in. That screen name was just taken, so pick another.';close();refresh();if(!named)open('name')}
  async function signIn(email,password){await finishSignIn(await call(AUTH+'/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})}))}
- async function signUp(email,password){
-  const b=await call(AUTH+'/signup',{method:'POST',body:JSON.stringify({email,password,data:{username:shown(email)}})});
-  if(b?.access_token)return finishSignIn(b);
+ async function signUp(email,password,name){
+  const b=await call(AUTH+'/signup',{method:'POST',body:JSON.stringify({email,password,data:{screen_name:name}})});
+  if(b?.access_token)return finishSignIn(b,'Account created. Welcome to the club, '+name+'.');
   return 'confirm';
  }
+ async function setName(name){const t=await token();if(!t)throw new Error('Sign in again first.');
+  await call(`${PROFILES}?user_id=eq.${session.user.id}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({screen_name:name})},t);
+  session.user.name=name;save()}
  async function signOut(){const t=session?.access_token;session=null;devices=[];save();status='Signed out. Your saved history stays on this browser.';refresh();if(t)call(AUTH+'/logout',{method:'POST'},t).catch(()=>{})}
  const recover=email=>call(AUTH+'/recover',{method:'POST',body:JSON.stringify({email})});
 
  // ---- UI ----
  function cardHTML(){
-  return session?`<section class="acct on"><div><small>Signed in</small><b>${esc(shown(session.user.email))}</b><span>${esc(status||'Your teams, leagues and Clubhouse follow you to any browser you sign in on.')}</span></div><button type="button" class="btn" data-acct="out">Sign out</button></section>`
-   :`<section class="acct"><div><small>Optional</small><b>Save across devices</b><span>${esc(status||'Sign in to keep your teams, leagues and Clubhouse on any phone or computer.')}</span></div><button type="button" class="btn primary" data-acct="open">Sign in</button></section>`;
+  if(session){const n=session.user.name;
+   return `<section class="acct on"><div><small>Signed in</small><b>${esc(n||session.user.email)}</b><span>${esc(status||(n?'Your teams, leagues and Clubhouse follow you to any browser you sign in on.':'Pick a screen name to finish your profile.'))}</span></div><div class="acct-btns">${n?'':'<button type="button" class="btn primary" data-acct="name">Screen name</button>'}<button type="button" class="btn" data-acct="out">Sign out</button></div></section>`}
+  return `<section class="acct"><div><small>Optional</small><b>Save across devices</b><span>${esc(status||'Sign in to keep your teams, leagues and Clubhouse on any phone or computer.')}</span></div><button type="button" class="btn primary" data-acct="open">Sign in</button></section>`;
  }
  const base=window.clubhouseHTML;
  if(typeof base==='function')window.clubhouseHTML=()=>cardHTML()+base();
  function refresh(){const c=document.querySelector('#lb .records-clubhouse');if(c&&typeof clubhouseHTML==='function')c.innerHTML=clubhouseHTML()}
  function close(){$('acct')?.remove()}
+ const F={
+  name:'<label>Screen name<input id="acctName" type="text" autocomplete="nickname" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" required></label>',
+  email:'<label>Email<input id="acctEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required></label>',
+  pass:n=>`<label>${n?'New password':'Password'}<input id="acctPass" type="password" autocomplete="${n?'new-password':'current-password'}" minlength="6" required></label>`};
+ const MODES={
+  in:{title:'Sign in',fields:F.email+F.pass(),submit:'in',btns:'<button class="btn primary" type="submit">Sign in</button><button class="acct-link" type="button" data-do="forgot">Forgot password?</button>',
+   foot:'New here? <button class="acct-link" type="button" data-mode="up">Create an account</button>'},
+  up:{title:'Create account',fields:F.name+F.email+F.pass(true),submit:'up',btns:'<button class="btn primary" type="submit">Create account</button>',
+   foot:'Have an account? <button class="acct-link" type="button" data-mode="in">Sign in</button>',fine:'Your screen name is your profile name. Team names stay separate, so post any name you like each run. Your email is only for signing in and password resets.'},
+  name:{title:'Pick a screen name',fields:F.name,submit:'name',btns:'<button class="btn primary" type="submit">Save</button>',fine:'3 to 20 letters or numbers. Spaces, dots, dashes and underscores are fine in the middle.'},
+  reset:{title:'Set a new password',fields:F.pass(true),submit:'newpass',btns:'<button class="btn primary" type="submit">Save password</button>'}};
  function open(mode='in',note=''){
-  close();
-  const reset=mode==='reset',el=document.createElement('div');el.id='acct';el.className='sheet acct-sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acctTitle');
-  el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">${reset?'Set a new password':'Sign in'}</h2><button class="btn" id="acctClose">Close</button></div><div class="sheet-body">
-   <form id="acctForm" novalidate>
-    ${reset?'':`<label>Username<input id="acctEmail" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" required></label>`}
-    <label>${reset?'New password':'Password'}<input id="acctPass" type="password" autocomplete="${reset?'new-password':'current-password'}" minlength="6" required></label>
-    <p class="acct-msg" id="acctMsg" role="status">${esc(note)}</p>
-    ${reset?`<button class="btn primary" type="submit" data-do="newpass">Save password</button>`:`<button class="btn primary" type="submit" data-do="in">Sign in</button><button class="btn" type="button" data-do="up">Create account</button>`}
-   </form>
-   <p class="acct-fine">${reset?'':'Signing in is optional. Pick a password you will remember, since there is no email reset.'}</p></div></div>`;
+  close();const M=MODES[mode]||MODES.in,el=document.createElement('div');el.id='acct';el.className='sheet acct-sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acctTitle');
+  el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">${M.title}</h2><button class="btn" id="acctClose">Close</button></div><div class="sheet-body">
+   <form id="acctForm" novalidate>${M.fields}<p class="acct-msg" id="acctMsg" role="status">${esc(note)}</p>${M.btns}</form>
+   ${M.foot?`<p class="acct-switch">${M.foot}</p>`:''}${M.fine?`<p class="acct-fine">${M.fine}</p>`:''}</div></div>`;
   document.body.appendChild(el);$('acctClose').onclick=close;
   const msg=t=>{$('acctMsg').textContent=t},run=async what=>{
-   if(busy)return;const email=$('acctEmail')?.value.trim().toLowerCase(),pass=$('acctPass').value;
-   if(what!=='newpass'&&!/^\S+@\S+\.\S+$/.test(email||'')&&!/^[a-z0-9_.-]{3,20}$/.test(email||''))return msg('Usernames are 3 to 20 letters, numbers, dots, dashes or underscores.');
-   if(what!=='forgot'&&pass.length<6)return msg('Use at least 6 characters for the password.');
+   if(busy)return;const email=$('acctEmail')?.value.trim().toLowerCase(),pass=$('acctPass')?.value||'',name=cleanName($('acctName')?.value);
+   if($('acctName')&&!NAME_RE.test(name))return msg(name.length<3||name.length>20?'Screen names are 3 to 20 characters.':'Use letters and numbers. Spaces, dots, dashes and underscores only go in the middle.');
+   if($('acctEmail')&&!/^\S+@\S+\.\S+$/.test(email||''))return msg('Enter your email address.');
+   if(what!=='forgot'&&what!=='name'&&pass.length<6)return msg('Use at least 6 characters for the password.');
    busy=true;msg('Working…');
    try{
-    if(what==='in')await signIn(toLogin(email),pass);
-    else if(what==='up'){if(await signUp(toLogin(email),pass)==='confirm')msg('Account created. Tap Sign in.')}
+    if(what==='in')await signIn(email,pass);
+    else if(what==='up'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');if(await signUp(email,pass,name)==='confirm')msg('Check your email for a confirmation link, then come back and sign in.')}
     else if(what==='forgot'){await recover(email);msg('If that email has an account, a reset link is on its way.')}
+    else if(what==='name'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');await setName(name);status='Screen name saved.';close();refresh()}
     else if(what==='newpass'){const t=await token();await call(AUTH+'/user',{method:'PUT',body:JSON.stringify({password:pass})},t);await sync();status='Password updated. You are signed in.';close();refresh()}
    }catch(e){msg(friendly(e))}finally{busy=false}
   };
-  $('acctForm').onsubmit=e=>{e.preventDefault();run(reset?'newpass':'in')};
-  el.querySelectorAll('[data-do]').forEach(b=>{if(b.type!=='submit')b.onclick=()=>run(b.dataset.do)});
+  $('acctForm').onsubmit=e=>{e.preventDefault();run(M.submit)};
+  el.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>run(b.dataset.do));
+  el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const v=$('acctEmail')?.value;open(b.dataset.mode);if(v&&$('acctEmail'))$('acctEmail').value=v});
   el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();close()}});
   (el.querySelector('input')||$('acctClose')).focus();
  }
- document.addEventListener('click',e=>{const b=e.target.closest?.('[data-acct]');if(!b)return;if(b.dataset.acct==='open')open();else signOut()});
+ document.addEventListener('click',e=>{const b=e.target.closest?.('[data-acct]');if(!b)return;if(b.dataset.acct==='open')open();else if(b.dataset.acct==='name')open('name');else signOut()});
 
  // A password-reset email link returns here with a short-lived session in the address.
  (function fromEmail(){

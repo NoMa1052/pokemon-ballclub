@@ -969,3 +969,7 @@ body.rv-open>.wrap{visibility:visible!important}
    Position label top centre, rating bottom right, spark bonus bottom left, shiny mark right edge. */
 .tag .tok .spark-pip{left:-7px;top:auto;bottom:-3px;min-width:0;padding:1px 5px;font-size:10.5px;line-height:1.35;border:2px solid #10254a;box-shadow:none}
 .tag .tok.shiny::after{top:auto;bottom:34%;left:auto;right:-9px;font-size:11px}
+.acct-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.acct-switch{margin:14px 0 0;text-align:center;font-size:13.500px;color:#a9b8d0}
+.acct-switch .acct-link{min-height:0;padding:6px 2px;color:#ffcb05;font-weight:600}
+#acctForm .acct-link{justify-self:center}
