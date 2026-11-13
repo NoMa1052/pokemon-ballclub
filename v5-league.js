@@ -77,7 +77,7 @@
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
   const roster=x=>typeof lineupHTML==='function'?lineupHTML(x.roster):'';
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${x.device===me()?'<i class="you">You</i>':''}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];

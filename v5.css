@@ -942,3 +942,7 @@ body.rv-open>.wrap{visibility:visible!important}
 
 .tc-evo-pill em{font-style:normal;opacity:.8}
 .tc-evo-pill u{text-decoration:none;opacity:.6;margin:0 3px}
+
+/* Your own team on a board */
+.lg-rows li.me{border-color:#ffcb05!important;box-shadow:inset 3px 0 0 #ffcb05;background:linear-gradient(90deg,rgba(255,203,5,.14),rgba(255,203,5,0) 60%),#142c55!important}
+.lg-rows .you{display:inline-block;margin-left:8px;padding:3px 6px;border-radius:4px;background:#ffcb05;color:#12233f;font:700 9.500px/1 var(--f-data);letter-spacing:.12em;text-transform:uppercase;font-style:normal;vertical-align:2px}
