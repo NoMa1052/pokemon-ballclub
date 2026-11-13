@@ -946,3 +946,21 @@ body.rv-open>.wrap{visibility:visible!important}
 /* Your own team on a board */
 .lg-rows li.me{border-color:#ffcb05!important;box-shadow:inset 3px 0 0 #ffcb05;background:linear-gradient(90deg,rgba(255,203,5,.14),rgba(255,203,5,0) 60%),#142c55!important}
 .lg-rows .you{display:inline-block;margin-left:8px;padding:3px 6px;border-radius:4px;background:#ffcb05;color:#12233f;font:700 9.500px/1 var(--f-data);letter-spacing:.12em;text-transform:uppercase;font-style:normal;vertical-align:2px}
+
+/* Optional sign-in */
+.acct{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin:0 0 18px;padding:12px 14px;border-radius:14px;background:#0f2346;border:1px dashed #3a5380}
+.acct.on{border-style:solid;border-color:#2c4470}
+.acct small{display:block;font:600 10px/1 var(--f-data);letter-spacing:.16em;text-transform:uppercase;color:#ffcb05}
+.acct b{display:block;margin:4px 0 2px;font:600 16px/1.2 var(--f-data);letter-spacing:.03em;overflow:hidden;text-overflow:ellipsis}
+.acct span{display:block;font-size:12.500px;line-height:1.35;color:#a9b8d0}
+.acct .btn{min-height:44px;white-space:nowrap}
+.ch>.acct,.records-clubhouse>.acct{grid-column:1/-1}
+.acct-sheet{z-index:120}
+.acct-sheet .sheet-in{max-width:420px!important;width:calc(100vw - 28px)!important;height:auto!important;max-height:90dvh!important;border-radius:18px!important;margin:auto!important}
+#acctForm{display:grid;gap:12px}
+#acctForm label{display:grid;gap:6px;font:600 11px/1 var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:#a9b8d0}
+#acctForm input{height:50px;border-radius:12px;border:1px solid #3a5380;background:#0b1b38;color:#f4eedc;padding:0 14px;font:500 16px "Barlow",sans-serif}
+#acctForm .btn{min-height:48px}
+.acct-msg{margin:0;min-height:18px;font-size:13.500px;color:#ffcb05}
+.acct-link{background:none;border:0;color:#c9d5e8;font:inherit;font-size:13.500px;text-decoration:underline;min-height:44px;cursor:pointer}
+.acct-fine{margin:10px 0 0;font-size:12px;line-height:1.4;color:#7f93b5}

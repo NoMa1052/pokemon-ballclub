@@ -48,6 +48,7 @@
  $('lgBtn').onclick=open;
  const labelBtn=()=>{const b=$('lgBtn');if(b)b.textContent='League';const t=document.querySelector('#tabbar [data-tab=league]');if(t)t.classList.toggle('due',!weeklyState().done)};
  const prevRender=render;render=function(){const v=prevRender.apply(this,arguments);labelBtn();return v};labelBtn();
+ const isMine=d=>typeof isMyDevice==='function'?isMyDevice(d):d===deviceId().slice(0,16);
  const me=()=>deviceId().slice(0,16),wkNo=w=>+String(w).slice(-2);
  const SERIES=LB_URL.replace(/ballclub_scores$/,'ballclub_series');
 
@@ -77,12 +78,12 @@
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
   const roster=x=>typeof lineupHTML==='function'?lineupHTML(x.roster):'';
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${x.device===me()?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${x.device===me()?'<i class="you">You</i>':''}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];
   if(!rows.length)return `<p class="lg-empty">${scope==='all'?'Nobody has posted this week\'s challenge yet. Be the first.':'Nobody in this league has posted this week yet. Play the challenge above, then post your team.'}</p>`;
-  const lead=rows[0],mineRow=rows.find(x=>x.device===me()),gap=mineRow&&mineRow!==lead?lead.wins-mineRow.wins:0;
+  const lead=rows[0],mineRow=rows.find(x=>isMine(x.device)),gap=mineRow&&mineRow!==lead?lead.wins-mineRow.wins:0;
   return (mineRow?`<p class="lg-lead">${mineRow===lead?(rows.length>1?`You lead the week by ${lead.wins-rows[1].wins} win${lead.wins-rows[1].wins===1?'':'s'}.`:'You are the only one on the board. Invite your friends.'):`You are ${gap} win${gap===1?'':'s'} behind ${esc(lead.team)}.`}</p>`:'')+weekRows(rows)+'<p class="hint">Tap a team for its roster and to play it in a best of 7.</p>';
  }
  function tabSeason(){
@@ -91,7 +92,7 @@
   const rows=Object.values(table).sort((a,b)=>b.pts-a.pts||b.best-a.best);
   if(!rows.length)return '<p class="lg-empty">The season table fills in as weeks are played.</p>';
   const past=wks.filter(w=>w!==weekKey()).reverse().slice(0,8);
-  return `<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Pts</th><th>Weeks won</th><th>Played</th><th>Best</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${t.device===me()?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.pts}</td><td>${t.won}</td><td>${t.played}</td><td>${t.best}–${162-t.best}</td></tr>`).join('')}</tbody></table>
+  return `<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Pts</th><th>Weeks won</th><th>Played</th><th>Best</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.pts}</td><td>${t.won}</td><td>${t.played}</td><td>${t.best}–${162-t.best}</td></tr>`).join('')}</tbody></table>
    <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. A week counts as won once it ends.</p>
    ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><small>Week ${wkNo(w)}</small><b>${esc(c.team)}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
@@ -101,8 +102,8 @@
   const rows=Object.values(rec).sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
   const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   return `<button type="button" class="btn primary lg-pick" onclick="pickRival()">Play a rival series</button>`+
-   (rows.length?`<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Series won</th><th>Lost</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${t.device===me()?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.w}</td><td>${t.l}</td></tr>`).join('')}</tbody></table>
-   <h3 class="lg-h">Latest results</h3><ul class="lg-series">${s.slice(0,15).map(x=>{const won=x.w>x.l;return `<li class="${x.device===me()?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`
+   (rows.length?`<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Series won</th><th>Lost</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.w}</td><td>${t.l}</td></tr>`).join('')}</tbody></table>
+   <h3 class="lg-h">Latest results</h3><ul class="lg-series">${s.slice(0,15).map(x=>{const won=x.w>x.l;return `<li class="${isMine(x.device)?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`
    :'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
  }
  function draw(){
