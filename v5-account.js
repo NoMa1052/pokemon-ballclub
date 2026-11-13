@@ -89,12 +89,12 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
 
  // ---- UI ----
  function cardHTML(){
-  if(session){const n=session.user.name;
-   return `<section class="acct on"><div><small>Signed in</small><b>${esc(n||session.user.email)}</b><span>${esc(status||(n?'Your teams, leagues and Clubhouse follow you to any browser you sign in on.':'Pick a screen name to finish your profile.'))}</span></div><div class="acct-btns">${n?'':'<button type="button" class="btn primary" data-acct="name">Screen name</button>'}<button type="button" class="btn" data-acct="out">Sign out</button></div></section>`}
-  return `<section class="acct"><div><small>Optional</small><b>Save across devices</b><span>${esc(status||'Sign in to keep your teams, leagues and Clubhouse on any phone or computer.')}</span></div><button type="button" class="btn primary" data-acct="open">Sign in</button></section>`;
+  if(session){const n=session.user.name,label=n||session.user.email,ini=esc((label||'?').trim().charAt(0).toUpperCase());
+   return `<section class="acct on"><span class="acct-av" aria-hidden="true">${ini}</span><div class="acct-txt"><small>Signed in</small><b>${esc(label)}</b><span>${esc(status||(n?'Synced on every device you sign in on.':'Pick a screen name to finish your profile.'))}</span></div><div class="acct-btns">${n?'':'<button type="button" class="btn primary sm" data-acct="name">Add name</button>'}<button type="button" class="btn sm" data-acct="out">Sign out</button></div></section>`}
+  return `<section class="acct"><span class="acct-av off" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4.4 0-8 2.2-8 5v1.5h16V19c0-2.8-3.6-5-8-5Z"/></svg></span><div class="acct-txt"><small>Optional</small><b>Save across devices</b><span>${esc(status||'Keep your teams, leagues and Clubhouse on any phone or computer.')}</span></div><div class="acct-btns"><button type="button" class="btn primary sm" data-acct="open">Sign in</button></div></section>`;
  }
  const base=window.clubhouseHTML;
- if(typeof base==='function')window.clubhouseHTML=()=>cardHTML()+base();
+ if(typeof base==='function')window.clubhouseHTML=()=>{const h=cardHTML();status='';return h+base()};
  function refresh(){const c=document.querySelector('#lb .records-clubhouse');if(c&&typeof clubhouseHTML==='function')c.innerHTML=clubhouseHTML()}
  function close(){$('acct')?.remove()}
  const F={
