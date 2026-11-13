@@ -64,11 +64,15 @@
  const set0=store.set;store.set=function(k,v){set0.call(store,k,v);if(SYNCED.includes(k))later()};
 
  // ---- actions ----
- const friendly=e=>e.code==='invalid_credentials'||/invalid login/i.test(e.message)?'That email and password don\'t match.':e.code==='user_already_exists'||/already registered/i.test(e.message)?'That email already has an account. Sign in instead.':e.code==='weak_password'||/password should/i.test(e.message)?'Use at least 6 characters for the password.':e.code==='email_not_confirmed'||/not confirmed/i.test(e.message)?'Confirm your email first. Check your inbox for the link.':e.status===429?'Too many tries. Wait a minute and try again.':e.message;
+ const DOM='@players.pokemon-ballclub.vercel.app';
+ // A username is stored as a private sign-in address; no email is ever sent to it.
+ const toLogin=u=>u.includes('@')?u:u+DOM;
+ const shown=e=>(e||'').endsWith(DOM)?e.slice(0,-DOM.length):e;
+ const friendly=e=>e.code==='invalid_credentials'||/invalid login/i.test(e.message)?'That username and password don\'t match.':e.code==='user_already_exists'||/already registered/i.test(e.message)?'That username is taken. Try another, or sign in if it is yours.':e.code==='weak_password'||/password should/i.test(e.message)?'Use at least 6 characters for the password.':e.code==='email_not_confirmed'||/not confirmed/i.test(e.message)?'Confirm your email first. Check your inbox for the link.':e.status===429?'Too many tries. Wait a minute and try again.':e.message;
  async function finishSignIn(b){adopt(b);await sync();status='Signed in. This browser is linked to your profile.';close();refresh()}
  async function signIn(email,password){await finishSignIn(await call(AUTH+'/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})}))}
  async function signUp(email,password){
-  const b=await call(AUTH+'/signup',{method:'POST',body:JSON.stringify({email,password})});
+  const b=await call(AUTH+'/signup',{method:'POST',body:JSON.stringify({email,password,data:{username:shown(email)}})});
   if(b?.access_token)return finishSignIn(b);
   return 'confirm';
  }
@@ -77,7 +81,7 @@
 
  // ---- UI ----
  function cardHTML(){
-  return session?`<section class="acct on"><div><small>Signed in</small><b>${esc(session.user.email)}</b><span>${esc(status||'Your teams, leagues and Clubhouse follow you to any browser you sign in on.')}</span></div><button type="button" class="btn" data-acct="out">Sign out</button></section>`
+  return session?`<section class="acct on"><div><small>Signed in</small><b>${esc(shown(session.user.email))}</b><span>${esc(status||'Your teams, leagues and Clubhouse follow you to any browser you sign in on.')}</span></div><button type="button" class="btn" data-acct="out">Sign out</button></section>`
    :`<section class="acct"><div><small>Optional</small><b>Save across devices</b><span>${esc(status||'Sign in to keep your teams, leagues and Clubhouse on any phone or computer.')}</span></div><button type="button" class="btn primary" data-acct="open">Sign in</button></section>`;
  }
  const base=window.clubhouseHTML;
@@ -89,21 +93,21 @@
   const reset=mode==='reset',el=document.createElement('div');el.id='acct';el.className='sheet acct-sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acctTitle');
   el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">${reset?'Set a new password':'Sign in'}</h2><button class="btn" id="acctClose">Close</button></div><div class="sheet-body">
    <form id="acctForm" novalidate>
-    ${reset?'':`<label>Email<input id="acctEmail" type="email" autocomplete="email" inputmode="email" required></label>`}
+    ${reset?'':`<label>Username<input id="acctEmail" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="20" required></label>`}
     <label>${reset?'New password':'Password'}<input id="acctPass" type="password" autocomplete="${reset?'new-password':'current-password'}" minlength="6" required></label>
     <p class="acct-msg" id="acctMsg" role="status">${esc(note)}</p>
-    ${reset?`<button class="btn primary" type="submit" data-do="newpass">Save password</button>`:`<button class="btn primary" type="submit" data-do="in">Sign in</button><button class="btn" type="button" data-do="up">Create account</button><button class="acct-link" type="button" data-do="forgot">Forgot password?</button>`}
+    ${reset?`<button class="btn primary" type="submit" data-do="newpass">Save password</button>`:`<button class="btn primary" type="submit" data-do="in">Sign in</button><button class="btn" type="button" data-do="up">Create account</button>`}
    </form>
-   <p class="acct-fine">${reset?'':'Signing in is optional. Your email is used only to sign you in and reset your password.'}</p></div></div>`;
+   <p class="acct-fine">${reset?'':'Signing in is optional. Pick a password you will remember, since there is no email reset.'}</p></div></div>`;
   document.body.appendChild(el);$('acctClose').onclick=close;
   const msg=t=>{$('acctMsg').textContent=t},run=async what=>{
    if(busy)return;const email=$('acctEmail')?.value.trim().toLowerCase(),pass=$('acctPass').value;
-   if(what!=='newpass'&&!/^\S+@\S+\.\S+$/.test(email||''))return msg('Enter your email address.');
+   if(what!=='newpass'&&!/^\S+@\S+\.\S+$/.test(email||'')&&!/^[a-z0-9_.-]{3,20}$/.test(email||''))return msg('Usernames are 3 to 20 letters, numbers, dots, dashes or underscores.');
    if(what!=='forgot'&&pass.length<6)return msg('Use at least 6 characters for the password.');
    busy=true;msg('Working…');
    try{
-    if(what==='in')await signIn(email,pass);
-    else if(what==='up'){if(await signUp(email,pass)==='confirm')msg('Check your email for a confirmation link, then come back and sign in.')}
+    if(what==='in')await signIn(toLogin(email),pass);
+    else if(what==='up'){if(await signUp(toLogin(email),pass)==='confirm')msg('Account created. Tap Sign in.')}
     else if(what==='forgot'){await recover(email);msg('If that email has an account, a reset link is on its way.')}
     else if(what==='newpass'){const t=await token();await call(AUTH+'/user',{method:'PUT',body:JSON.stringify({password:pass})},t);await sync();status='Password updated. You are signed in.';close();refresh()}
    }catch(e){msg(friendly(e))}finally{busy=false}
