@@ -37,8 +37,7 @@
   if(document.body.classList.contains('field-deciding')){
    const id=+c.dataset.id;if(id===run.selected)return;
    e.preventDefault();e.stopImmediatePropagation();
-   if(run.hand?.kind!=='draft')return;
-   run.hand.held=id;run.hand.draftId=id;run.selected=id;saveRun();render();
+   if(handSwitch(id))render();
    return;
   }
   const row=c.closest('.cardrow'),rr=row.getBoundingClientRect(),cr=c.getBoundingClientRect();

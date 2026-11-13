@@ -15,8 +15,7 @@
    const best=open.reduce((a,s)=>!a||posOvr(m,s)>posOvr(m,a)?s:a,null),held=m.id===run.hand.held;
    return `<button type="button" data-id="${m.id}" aria-pressed="${held}">${tok(m)}<b>${esc(m.name.replace(/^Shiny /,''))}</b><em>${best?posOvr(m,best):''}<small>${best?lbl(best):''}</small></em></button>`}).join('');
   el.querySelectorAll('button').forEach(b=>b.onclick=()=>{
-   const id=+b.dataset.id;if(id===run.hand.held||run.hand?.kind!=='draft')return;
-   run.hand.held=id;run.hand.draftId=id;run.selected=id;saveRun();render();
+   if(handSwitch(+b.dataset.id))render();
   });
  }
  const prev=render;render=function(){const v=prev.apply(this,arguments);tray();return v};

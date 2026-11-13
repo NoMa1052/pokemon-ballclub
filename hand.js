@@ -22,3 +22,8 @@ function handPlace(s){
 function handUndoAction(){if(!run.handUndo||run.locked||run.result)return false;const x=run.handUndo;handRestore(x);run.handUndo=null;run.handFeedback=null;saveRun();return true}
 function handCancel(){if(!run.hand)return false;const x=run.hand.base;handRestore(x);run.hand=null;run.selected=null;run.moving=null;run.handUndo=null;run.handFeedback=null;saveRun();return true}
 function handRelease(){if(run.hand?.kind!=='move'||!run.releases||run.second||run.locked||run.result)return false;run.picks=run.picks.filter(id=>id!==run.hand.held);run.releases=0;run.hand=null;run.selected=null;run.moving=null;run.handUndo=null;run.handFeedback=null;sortStaff();saveRun();return true}
+
+// Switch which pack card is in hand. Only allowed while the pack card itself is still held:
+// once it has been dropped on a teammate, the hand holds that teammate, and swapping in
+// another pack card here would put two cards from one pack on the team.
+function handSwitch(id){const h=run.hand;if(!h||h.kind!=='draft'||h.held!==h.draftId||id===h.held||run.locked||run.result)return false;if(!run.spin?.ids?.includes(id)||(run.spin.usedIds||[]).includes(id))return false;h.held=id;h.draftId=id;run.selected=id;saveRun();return true}
