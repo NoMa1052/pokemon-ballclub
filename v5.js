@@ -45,7 +45,7 @@ if(mode!=='pack'||run.size!==16)setMode('pack');
    if(!on)return;
    const gain=ovr99(baseRuns(m,s)+sp.each)-ovr99(baseRuns(m,s));
    const pip=document.createElement('i');pip.className='spark-pip';pip.textContent=gain>0?'+'+gain:'+';
-   t.appendChild(pip);t.setAttribute('aria-label',(t.getAttribute('aria-label')||'')+', shiny spark'+(gain>0?' plus '+gain:''));
+   (t.querySelector('.tok')||t).appendChild(pip);t.setAttribute('aria-label',(t.getAttribute('aria-label')||'')+', shiny spark'+(gain>0?' plus '+gain:''));
   });
   let line=document.getElementById('sparkLine');const sh=shinies();
   if(!sh.length||run.result){line?.remove();return}

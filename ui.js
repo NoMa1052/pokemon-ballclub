@@ -429,7 +429,7 @@ function finish(scroll){
 
 // ---------- leaderboard ----------
 // Scores live in a Supabase table that anyone can read and add to, but nobody can edit or delete.
-const LB_URL="https://etxzgstfaosrxxusbfwx.supabase.co/rest/v1/ballclub_scores",LB_KEY="sb_publishable_pGOS2OlzIyD-neTlknxr1w_TDLCX73f";
+const LB_URL="https://ekolftpwdtrfgwqfdsep.supabase.co/rest/v1/ballclub_scores",LB_KEY="sb_publishable_Dlcuju9gLL987-_ywG6kSA_p5CHX8Kc";
 const lbHead=(extra={})=>({apikey:LB_KEY,Authorization:"Bearer "+LB_KEY,...extra});
 let lbSize=null,lbMode=null;
 // Team grade from a saved roster: the same number as the in-game scoreboard. It breaks ties in wins,

@@ -1,6 +1,10 @@
 /* v5: optional sign-in. The game works without it. Signing in links this browser to a profile
    so posted teams, leagues, Clubhouse history, collection and series records follow you. */
 (() => {
+ // Hidden until it has been tested on the real login service: only test links, or ?signin=1 once on this browser.
+ try{if(/[?&]signin=1/.test(location.search))localStorage.setItem('pbc6-signin','1')}catch(e){}
+ const on=/-git-|localhost|127\.0\.0\.1/.test(location.hostname)||(()=>{try{return localStorage.getItem('pbc6-signin')==='1'}catch(e){return false}})();
+ if(!on){window.isMyDevice=d=>!!d&&d===deviceId().slice(0,16);return}
  const BASE_URL=LB_URL.replace(/\/rest\/v1\/.*$/,''),AUTH=BASE_URL+'/auth/v1',PROFILES=BASE_URL+'/rest/v1/ballclub_profiles';
  const SKEY='pbc6-session',DKEY='pbc6-devices',SYNCED=['pbc3-clubhouse-v1','pbc5-dex','pbc5-rivals','pbc5-leagues','pbc2-team'];
  const $=id=>document.getElementById(id),dev=()=>deviceId().slice(0,16);
