@@ -34,7 +34,8 @@ function developmentOptions(card){
       if(ancestor===card.num){earlier=true;break;}
     }
     if(!same&&!evolve&&!earlier)return [];
-    // Evolution duplicates are allowed when raised from a teammate.
+    // No second copy: a teammate can't evolve into a Pokémon that is already on the team.
+    if(evolve&&Object.values(run.slots).some(x=>x&&x!==owned&&x.num===card.num))return [];
     const steps=Math.min(2,(owned.evolutionSteps||0)+(evolve?1:0));
     const amount=evolve?((owned.evolutionSteps||0)?3:5):same?2:1;
     const bonus=Math.min(10,(owned.friendship||0)+amount);
@@ -58,3 +59,6 @@ function applyDevelopment(cardId,slot){
   run.handFeedback={name:next.name,spot:lbl(slot),old:posOvr(owned,slot),rating:posOvr(next,slot),before,after:teamOvr(),development:kind};
   sortStaff();saveRun();return true;
 }
+
+// A pack card that is an earlier form of a teammate (Abra when you have Kadabra or Alakazam) can only train that teammate.
+function earlierFormOfTeammate(card){return Object.values(run.slots).some(o=>{let a=EVOLUTION_PARENT[o.num];for(let i=0;i<4&&a;i++,a=EVOLUTION_PARENT[a])if(a===card.num)return true;return false})}

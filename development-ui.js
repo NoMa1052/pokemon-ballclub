@@ -22,7 +22,7 @@
   const card=BYID.get(id),opts=developmentOptions(card),chains=chainOptions(card);if(!opts.length&&!chains.length)return;
   choice=id;$('developmentChoice')?.remove();
   const el=document.createElement('div');el.id='developmentChoice';el.className='sheet growth-sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','growthTitle');
-  const canDraft=!takenNums().includes(card.num),teamBefore=teamOvr();
+  const canDraft=!takenNums().includes(card.num)&&!earlierFormOfTeammate(card),teamBefore=teamOvr();
   const single=opts.length===1&&!chains.length?opts[0]:null;
   const title=canDraft?'Use this card':single?(single.kind==='evolve'?'Evolve ':'Train ')+single.owned.name:'Choose an upgrade';
   el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="growthTitle">${esc(title)}</h2><button class="btn" id="growthClose">Back</button></div><div class="sheet-body"><p class="growth-cost">${canDraft?'Add a new teammate or upgrade one you already have.':single?.kind==='evolve'?'Evolve your teammate with this card.':'Use this duplicate to strengthen a teammate.'}</p>${opts.map(o=>{

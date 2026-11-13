@@ -6,7 +6,7 @@ function candyOptions(){
  return Object.entries(run.slots).flatMap(([slot,owned])=>{
   const children=Object.entries(EVOLUTION_PARENT).filter(([n,parent])=>parent===owned.num&&BYID.get(+n)).map(([n])=>+n);
   const forms=children.length?children:[owned.num];
-  return forms.map(num=>{const evolve=num!==owned.num,steps=Math.min(2,(owned.evolutionSteps||0)+(evolve?1:0)),bonus=Math.min(10,(owned.friendship||0)+(evolve?((owned.evolutionSteps||0)?3:5):5)),next=developedCard(num+(owned.shiny?SHINY_ID:0),bonus,steps);return {slot,owned,next,evolve}}).filter(o=>o.next.id!==owned.id);
+  return forms.map(num=>{const evolve=num!==owned.num,steps=Math.min(2,(owned.evolutionSteps||0)+(evolve?1:0)),bonus=Math.min(10,(owned.friendship||0)+(evolve?((owned.evolutionSteps||0)?3:5):5)),next=developedCard(num+(owned.shiny?SHINY_ID:0),bonus,steps);return {slot,owned,next,evolve}}).filter(o=>o.next.id!==owned.id&&!(o.evolve&&Object.values(run.slots).some(x=>x&&x!==owned&&x.num===o.next.num)));
  });
 }
 function candyGroups(options){
