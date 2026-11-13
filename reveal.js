@@ -19,12 +19,28 @@ function tcardHTML(m,mini){
 }
 let revealEl=null,revealScroll=null;
 function unlockRevealScroll(){
+  document.querySelector('.wrap')?.removeAttribute('inert');
   document.body.classList.remove('rv-open');document.documentElement.classList.remove('rv-root');document.body.style.removeProperty('--reveal-scroll');
   if(revealScroll!==null){const y=revealScroll;revealScroll=null;window.scrollTo(0,y)}
 }
 function closeReveal(){if(revealEl){revealEl.remove();revealEl=null}unlockRevealScroll()}
 // Rebuild the pack row when leaving the reveal. This refreshes card artwork as well as
 // the options UI, instead of uncovering potentially stale card elements underneath.
+// iPhone Safari can leave card pictures blank when they were created while the page behind the pack
+// was hidden. Once the page is showing again, give every card a brand-new image that is decoded
+// before it is put on the page, then nudge the row so Safari draws it.
+function repaintCardArt(){
+  const swap=()=>document.querySelectorAll(".cardrow img, #cands img").forEach(old=>{
+    const src=old.currentSrc||old.src;if(!src)return;
+    const fresh=new Image();fresh.decoding="sync";fresh.alt=old.alt||"";fresh.className=old.className;
+    if(old.getAttribute("onerror"))fresh.setAttribute("onerror",old.getAttribute("onerror"));
+    if(old.getAttribute("onload"))fresh.setAttribute("onload",old.getAttribute("onload"));
+    const put=()=>{if(old.isConnected)old.replaceWith(fresh)};
+    fresh.src=src;(fresh.decode?fresh.decode():Promise.resolve()).then(put,put);
+  });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{swap();
+    const row=document.querySelector(".cardrow");if(row){row.style.transform="translateZ(0)";void row.offsetHeight;requestAnimationFrame(()=>row.style.removeProperty("transform"))}}));
+}
 function returnToField(){
   const row=document.querySelector(".cardrow"),scrollLeft=row?.scrollLeft||0;
   if(run.doubleArmed){run.doubleArmed=false;saveRun();renderBoard()}
@@ -33,6 +49,7 @@ function returnToField(){
     packPoolUI();
     const refreshed=document.querySelector(".cardrow");
     if(refreshed)refreshed.scrollLeft=scrollLeft;
+    repaintCardArt();
   }
 }
 
@@ -45,7 +62,7 @@ function openReveal(sp,chooseAll=false){
   ms.forEach(setOverall);
   if(!ms.length)return;
   const el=revealEl=document.createElement("div");el.className="reveal";el.setAttribute("role","dialog");el.setAttribute("aria-label","Pack opening");
-  revealScroll=window.scrollY;document.body.style.setProperty('--reveal-scroll',-revealScroll+'px');document.documentElement.classList.add('rv-root');document.body.classList.add('rv-open');document.body.appendChild(el);
+  revealScroll=window.scrollY;document.body.style.setProperty('--reveal-scroll',-revealScroll+'px');document.querySelector('.wrap')?.setAttribute('inert','');document.documentElement.classList.add('rv-root');document.body.classList.add('rv-open');document.body.appendChild(el);
   let i=0,busy=false,selected=[];
   const pick=id=>{closeReveal();run.selected=id;render();const pl=document.getElementById("place");if(pl)pl.scrollIntoView({behavior:"smooth",block:"center"})};
   const spread=()=>{

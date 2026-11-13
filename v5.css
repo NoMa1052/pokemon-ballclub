@@ -935,3 +935,10 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 @media(min-width:1000px){#draft .cands.cardrow{flex-wrap:wrap!important;overflow:visible!important}body.field-deciding #draft{overflow:visible!important;height:auto!important;max-height:none!important}}
 
 .ch-season .r em{display:block;font:600 12px/1.2 var(--f-data);letter-spacing:.1em;text-transform:uppercase;font-style:normal;color:#ffcb05;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* The page behind an open pack is covered by the pack screen, so it no longer needs hiding.
+   Hiding it made iPhone Safari drop the card pictures when you came back. */
+body.rv-open>.wrap{visibility:visible!important}
+
+.tc-evo-pill em{font-style:normal;opacity:.8}
+.tc-evo-pill u{text-decoration:none;opacity:.6;margin:0 3px}

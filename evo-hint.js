@@ -4,13 +4,15 @@
  const best=m=>Math.max(...STD.map(s=>posOvr(m,s)));
  const kids=n=>Object.entries(EVOLUTION_PARENT).filter(([c,p])=>p===n&&BYID.get(+c)).map(([c])=>+c);
  // Follow the strongest branch to the last form, applying the same boosts Rare Candy and pack evolutions use.
+ let path=[];
+ // path holds each form along the way, so a two-stage line can show both ratings.
  function evolved(m){
-  let num=m.num,f=m.friendship||0,steps=m.evolutionSteps||0,out=null;
+  let num=m.num,f=m.friendship||0,steps=m.evolutionSteps||0,out=null;path=[];
   while(steps<2){const k=kids(num);if(!k.length)break;
    f=Math.min(10,f+(steps?3:5));steps++;
    const shiny=m.shiny?SHINY_ID:0;
    out=k.map(c=>developedCard(c+shiny,f,steps)).filter(Boolean).sort((a,b)=>best(b)-best(a))[0];
-   if(!out)break;num=out.num}
+   if(!out)break;path.push(out);num=out.num}
   return out;
  }
  window.pbcEvolvedForm=evolved;
@@ -21,7 +23,9 @@
   if(mini||!m||!(run?.mode==='pack'||run?.candies))return html;
   const e=evolved(m);if(!e)return html;
   const r=best(e);if(r<=best(m))return html;
-  const pill=`<span class="tc-evo-pill" title="Evolves into ${esc(e.name)}, rated ${r}" aria-label="Evolves into ${esc(e.name)}, rated ${r}"><img src="${SPRITE_URL(e.num,e.shiny)}" alt=""><i aria-hidden="true">▲</i>${r}</span>`;
+  const mid=path.length>1?path[0]:null,mr=mid?best(mid):0;
+  const say=mid?`Evolves into ${esc(mid.name)}, rated ${mr}, then ${esc(e.name)}, rated ${r}`:`Evolves into ${esc(e.name)}, rated ${r}`;
+  const pill=`<span class="tc-evo-pill${mid?' two':''}" title="${say}" aria-label="${say}"><img src="${SPRITE_URL(e.num,e.shiny)}" alt=""><i aria-hidden="true">▲</i>${mid?`<em>${mr}</em><u aria-hidden="true">›</u>`:''}${r}</span>`;
   return html.replace(/(<div class="tc-art">[\s\S]*?)(<\/div>)/,`$1${pill}$2`);
  };
  if(typeof render==='function')render();
