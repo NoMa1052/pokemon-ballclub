@@ -9,6 +9,19 @@
  // Shared by Clubhouse, Leaderboard and League: a posted roster as a grid of tappable players.
  window.lineupHTML=roster=>`<div class="ch-lineup">${FULL.map((s,i)=>{const m=BYID.get(roster[i]);return m?`<button type="button" data-history-mon="${m.id}" aria-label="Inspect ${esc(m.name)} card">${tok(m)}<i>${lbl(s)}</i><em>${posOvr(m,s)}</em></button>`:''}).join('')}</div>`;
  window.starTok=roster=>{let best=null,bv=-1;FULL.forEach((s,i)=>{const m=BYID.get(roster[i]);if(m){const v=posOvr(m,s);if(v>bv){bv=v;best=m}}});return best?`<span class="star">${tok(best)}</span>`:'<span class="star"></span>'};
+ // Seasons posted before names were kept: look up this device's posts once and match them by record and roster.
+ let filled=false;
+ window.clubhouseBackfill=async()=>{
+  if(filled)return false;filled=true;
+  try{
+   if(!Clubhouse.read().history.some(h=>!h.team))return false;
+   const r=await fetch(`${LB_URL}?select=team,wins,roster&device=eq.${deviceId()}&order=created_at.desc&limit=200`,{headers:lbHead()});if(!r.ok)return false;
+   const rows=await r.json(),key=x=>x.wins+'|'+[...x.roster].sort((a,b)=>a-b).join(',');let hit=false;
+   const byKey=new Map();rows.forEach(x=>{if(x.team&&Array.isArray(x.roster)&&!byKey.has(key(x)))byKey.set(key(x),x.team)});
+   byKey.forEach((team,k)=>{if(Clubhouse.setTeam(h=>key({wins:h.wins,roster:h.roster.filter(Boolean)})===k,team))hit=true});
+   return hit;
+  }catch(e){return false}
+ };
  window.clubhouseHTML=()=>{
   const b=Clubhouse.read(),hist=b.history.filter(h=>h.board==='pack-16'),bd=b.boards['pack-16'];
   if(!bd)return `<div class="ch"><section class="ch-hero ch-empty"><small>My Clubhouse</small><b>No banners yet</b><p>Finish a season to hang your first one. Your best seasons, trophies and collection live here.</p></section>${typeof collectionHTML==='function'?`<section class="ch-sec"><h3>Collection</h3>${collectionHTML()}</section>`:''}</div>`;
@@ -16,9 +29,9 @@
   const earned=new Set(b.unlocked),ach=Clubhouse.achievements;
   const badge=([k,name,desc])=>`<div class="ch-badge${earned.has(k)?' on':''}"><span class="medal">${TEXT[k]?`<b>${TEXT[k]}</b>`:`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]||ICON.first}</svg>`}</span><p><b>${name}</b><small>${desc}</small></p></div>`;
   const lineup=h=>FULL.map((s,i)=>{const m=BYID.get(h.roster[i]);return m?`<button type="button" data-history-mon="${m.id}" aria-label="Inspect ${esc(m.name)} card">${tok(m)}<i>${lbl(s)}</i><em>${posOvr(m,s)}</em></button>`:''}).join('');
-  const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r"><b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary><p class="ch-mvp">${h.mvp?`MVP ${esc(h.mvp.name)}: ${h.mvp.hr} HR, ${h.mvp.ops.toFixed(3).replace(/^0/,'')} OPS${h.rs?` · ${h.rs} runs scored, ${h.ra} allowed`:''}`:''}</p>${lineupHTML(h.roster)}</details>`};
+  const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r">${h.team?`<em>${esc(h.team)}</em>`:''}<b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary><p class="ch-mvp">${h.mvp?`MVP ${esc(h.mvp.name)}: ${h.mvp.hr} HR, ${h.mvp.ops.toFixed(3).replace(/^0/,'')} OPS${h.rs?` · ${h.rs} runs scored, ${h.ra} allowed`:''}`:''}</p>${lineupHTML(h.roster)}</details>`};
   return `<div class="ch">
-   <section class="ch-hero"><div class="ch-hero-top"><small>Best season</small><div class="ch-rec"><b>${best.wins}–${162-best.wins}</b>${best.grade?`<span class="ch-stamp"><b>${best.grade}</b><small>GRADE</small></span>`:''}</div></div>
+   <section class="ch-hero"><div class="ch-hero-top"><small>Best season${best.team?' · '+esc(best.team):''}</small><div class="ch-rec"><b>${best.wins}–${162-best.wins}</b>${best.grade?`<span class="ch-stamp"><b>${best.grade}</b><small>GRADE</small></span>`:''}</div></div>
     <div class="ch-stats"><div>Seasons<b>${bd.seasons}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${bd.championships||0}</b></div></div></section>
    <section class="ch-sec"><h3>Trophy case<em>${ach.filter(a=>earned.has(a[0])).length} of ${ach.length}</em></h3><div class="ch-badges">${ach.map(badge).join('')}</div></section>
    <details class="ch-sec ch-log"><summary><h3>Season log<em>${hist.length} season${hist.length===1?'':'s'}</em></h3></summary>${hist.map(season).join('')}</details>

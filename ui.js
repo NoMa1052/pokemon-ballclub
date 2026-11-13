@@ -464,7 +464,7 @@ function wireSubmit(){
           if(t.ok){const sl=slotList(),mine={wins:res.wins,ovr:rosterOvr(row.roster,sl),rs:row.rs,ra:row.ra,created_at:new Date().toISOString()};
             const tied=await t.json(),self=tied.findIndex(x=>x.rs===row.rs&&x.ra===row.ra&&String(x.roster)===String(row.roster));if(self>=0)tied.splice(self,1);
             rank+=tied.map(x=>({...x,wins:res.wins,ovr:rosterOvr(x.roster,sl)})).filter(x=>lbRank(x,mine)<0).length;}}}catch(e){}
-      run.submitted={team,rank,week:row.week,leagues:row.leagues};saveRun();box.innerHTML=submitHTML();wireSubmit();
+      run.submitted={team,rank,week:row.week,leagues:row.leagues};saveRun();try{Clubhouse.name(run,team)}catch(e){}box.innerHTML=submitHTML();wireSubmit();
     }catch(e){btn.disabled=false;msg.textContent="Couldn't reach the leaderboard. Try again."}
   };
   btn.onclick=go;inp.onkeydown=e=>{if(e.key==="Enter")go()};

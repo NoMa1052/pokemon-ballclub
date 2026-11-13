@@ -933,3 +933,5 @@ img.help-ico.pack{image-rendering:auto;height:52px;width:auto;border-radius:3px}
 @media(min-width:1000px){.bg-pre .bg-go{margin-top:18px!important}.bg-pre:not(.bg-choose){flex:none!important}}
 
 @media(min-width:1000px){#draft .cands.cardrow{flex-wrap:wrap!important;overflow:visible!important}body.field-deciding #draft{overflow:visible!important;height:auto!important;max-height:none!important}}
+
+.ch-season .r em{display:block;font:600 12px/1.2 var(--f-data);letter-spacing:.1em;text-transform:uppercase;font-style:normal;color:#ffcb05;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

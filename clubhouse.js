@@ -34,5 +34,13 @@ const Clubhouse = (() => {
     b.unlocked.push(...unlocks);store.set(KEY,JSON.stringify(b));
     return {fresh:true,unlocks,previous,newBest:previous==null||snap.wins>previous};
   }
-  return {read,record,boardKey,boardName,identity,achievements};
+  // Team names are chosen when a team is posted, after the season is already in the log.
+  function setTeam(match,team){
+    if(!team)return false;const b=read();let hit=false;
+    const tag=h=>{if(h&&!h.team&&match(h)){h.team=team;hit=true}};
+    b.history.forEach(tag);Object.values(b.boards).forEach(v=>tag(v.best));
+    if(hit)store.set(KEY,JSON.stringify(b));return hit;
+  }
+  const name=(r,team)=>{const id=identity(r);return setTeam(h=>h.id===id,team)};
+  return {read,record,boardKey,boardName,identity,achievements,name,setTeam};
 })();
