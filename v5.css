@@ -1042,3 +1042,5 @@ body.rv-open>.wrap{visibility:visible!important}
 .pack .pk-cut path{stroke:#d8d4c7;stroke-width:.22;opacity:.72;filter:none}
 .pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.25,.6,.35,1),opacity .26s ease-in!important;transform:translate3d(calc(var(--tear-dir,1)*18px),-38px,0) rotate(calc(var(--tear-dir,1)*14deg))!important;opacity:0!important}
 @media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
+
+.sr-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.sr-controls .btn{min-height:44px}.sr-controls #srSpeed[aria-pressed=true]{background:#f4eedc;color:#10254a}

@@ -37,9 +37,11 @@ const INTRO={
  const n=bulbs.length,plan=[...Array(n).keys()].sort(()=>Math.random()-.5).map((bi,k)=>({bi,on:(k+Math.random()*.8)/n*.86*INTRO.bulbs,blink:Math.random()<INTRO.blink}));
  const lit=(p,t)=>{const d=t-p.on;if(d<0)return 0;let v=Math.min(1,d/INTRO.warm);if(p.blink&&d>90&&d<170)v=.25+.75*Math.abs(d-130)/40;return v};
  const set=(el,k,v)=>el.setAttribute(k,v);
- let raf=0,t0=0,flight=null,done=false,header=null;
+ let raf=0,t0=0,flight=null,done=false,header=null,animationComplete=false,ready=!!window.__pbcReady;
  const finish=()=>{if(done)return;done=true;cancelAnimationFrame(raf);root.classList.remove('intro-on','intro-hide');o.remove()};
- o.addEventListener('click',finish);
+ const waitReady=()=>{animationComplete=true;cancelAnimationFrame(raf);if(ready){finish();return}badge.style.opacity='1';badge.style.transform='';bg.style.opacity='1';img.style.filter='none';let note=o.querySelector('.in-loading');if(!note){note=document.createElement('p');note.className='in-loading';note.setAttribute('role','status');note.innerHTML='Getting the ballpark ready<span aria-hidden="true" class="in-dots"></span>';o.append(note)}};
+ window.addEventListener('pbc-ready',()=>{ready=true;if(animationComplete)finish()},{once:true});
+ o.addEventListener('click',()=>{if(ready)finish()});
  function frame(ms){
   if(done)return;const t=ms-t0,a=INTRO.fadeIn,b=INTRO.bulbs,c=INTRO.allOn,d=INTRO.handoff,e1=a,e2=a+b,e3=e2+c,e4=e3+d;
   badge.style.opacity=eIn(Math.min(1,t/a));
@@ -55,14 +57,14 @@ const INTRO={
    badge.style.transform=`translate(${flight.dx*p}px,${flight.dy*p}px) scale(${1+(flight.k-1)*p})`;
    if(!flight.k||flight.k===1)badge.style.opacity=1-p}
   img.style.filter=bright>=.999?'none':`brightness(${bright.toFixed(3)}) saturate(${(.15+.85*bright).toFixed(3)})`;
-  if(t<e4)raf=requestAnimationFrame(frame);else finish();
+  if(t<e4)raf=requestAnimationFrame(frame);else waitReady();
  }
  const start=()=>{
   header=document.querySelector('.mark.logo img');const src=header?.currentSrc||header?.src||'logo.webp';
   img.src=src;svg.style.webkitMaskImage=svg.style.maskImage=`url("${src}")`;
   const go=()=>{if(done)return;scrollTo(0,0);raf=requestAnimationFrame(ms=>{t0=ms;frame(ms)})};
   (img.decode?img.decode():Promise.resolve()).then(go,go);
-  setTimeout(finish,INTRO.fadeIn+INTRO.bulbs+INTRO.allOn+INTRO.handoff+2500); // safety net
+  setTimeout(()=>{if(!done)waitReady()},INTRO.fadeIn+INTRO.bulbs+INTRO.allOn+INTRO.handoff+2500); // safety net
  };
- document.readyState==='loading'?document.addEventListener('DOMContentLoaded',start,{once:true}):start();
+ const boot=()=>{if(document.querySelector('.mark.logo img')){observer?.disconnect();start();return true}return false};const observer=new MutationObserver(boot);if(!boot())observer.observe(document.body,{childList:true,subtree:true});
 })();

@@ -54,7 +54,7 @@
   const top=Math.max(...clubs.map(c=>c[3][161]));
   const el=document.createElement('div');el.id='seasonReveal';el.className='sr';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Season in progress');
   el.innerHTML=`<div class="sr-in">
-   <div class="sr-top"><span>The season</span><button type="button" class="btn" id="srSkip">Skip</button></div>
+   <div class="sr-top"><span>The season</span><div class="sr-controls"><button type="button" class="btn" id="srSpeed" aria-pressed="false">Speed: Normal</button><button type="button" class="btn" id="srSkip">Skip to results</button></div></div>
    <div class="szn-cal" id="srCal">${SHORT.map(m=>`<span>${m}</span>`).join('')}<span class="po">OCT</span></div>
    <div class="szn2"><div class="szn2-in">
     <div class="szn2-head"><span>Kanto East</span><b id="srGame">Opening day</b></div>
@@ -66,7 +66,6 @@
    <div class="sr-card" id="srCard" aria-live="polite"></div>
    <div class="sr-oct" id="srOct" hidden></div>
    <button type="button" class="btn primary sr-done" id="srDone" hidden>See your season</button>
-   <p class="sr-tap" id="srTap">Tap anywhere to speed up</p>
   </div>`;
   document.body.appendChild(el);document.body.classList.add('sr-open');
   let timer=0,raf=0,closed=false,hurry=false,month=0,shown=0;
@@ -91,11 +90,11 @@
   const calMark=k=>[...$('srCal').children].forEach((sp,i)=>{sp.classList.toggle('done',i<k);sp.classList.toggle('now',i===k)});
   function playMonth(){
    if(closed)return;
-   const from=ENDS[month-1]||0,to=ENDS[month],t0=performance.now(),per=hurry?4:30;
+   const from=ENDS[month-1]||0,to=ENDS[month];let lastTick=null,elapsedGames=0;
    calMark(month);
    const frame=t=>{
     if(closed)return;
-    const n=Math.min(to,from+1+Math.floor((t-t0)/per));
+    if(lastTick!==null)elapsedGames+=Math.min(100,t-lastTick)/(hurry?4:30);lastTick=t;const n=Math.min(to,from+1+Math.floor(elapsedGames));
     if(n!==shown){shown=n;paint(n)}
     if(n<to){raf=requestAnimationFrame(frame);return}
     const mw=monthW[month],cell=$('srM'+month);cell.querySelector('b').textContent=`${mw[0]}-${mw[1]}`;cell.className=mw[0]>mw[1]?'hot in':mw[0]<mw[1]?'cold in':'in';
@@ -106,15 +105,15 @@
     if(h){$('srMoh').hidden=false;card.insertAdjacentHTML('afterbegin',`<div class="sr-head-card">${tok(h.m)}<p><small>${h.tag} · ${MONTHS[month][1]}</small><b>${esc(nm(h.m))}</b> ${h.text}.</p></div>`)}
     if(extra)card.insertAdjacentHTML('afterbegin',`<p class="sr-note ${extra[2]}">${extra[1]}</p>`);
     month++;
-    wait(h?1700:900,()=>{hurry=false;month<6?playMonth():october()});
+    wait(h?1700:900,()=>{month<6?playMonth():october()});
    };
    raf=requestAnimationFrame(frame);
   }
   function october(){
    if(closed)return;
-   $('srTap').hidden=true;calMark(6);$('srMoh').hidden=true;
+   calMark(6);$('srMoh').hidden=true;
    const post=res.post,box=$('srOct'),names=['Division Series','Championship Series','World Series'];
-   $('srCard').innerHTML='';box.hidden=false;$('srSkip').textContent='Skip';
+   $('srCard').innerHTML='';box.hidden=false;$('srSkip').textContent='Skip to results';
    if(!post.made){box.innerHTML=`<p class="sr-out"><small>October</small>${esc(post.text)}</p>`;$('srDone').hidden=false;$('srDone').focus({preventScroll:true});return}
    let k=0;
    const series=()=>{
@@ -134,9 +133,8 @@
    };
    series();
   }
-  $('srSkip').onclick=close;$('srDone').onclick=close;
+  $('srSkip').onclick=close;$('srDone').onclick=close;$('srSpeed').onclick=()=>{hurry=!hurry;$('srSpeed').setAttribute('aria-pressed',String(hurry));$('srSpeed').textContent=hurry?'Speed: Fast':'Speed: Normal'};
   el.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
-  el.addEventListener('click',e=>{if(!e.target.closest('button'))hurry=true});
   race(0);$('srSkip').focus({preventScroll:true});wait(700,playMonth);
  }
 
