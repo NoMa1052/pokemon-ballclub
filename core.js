@@ -1,5 +1,5 @@
 const TYPE_COLORS={normal:"#8a8a68",fire:"#d9622b",water:"#4a78d6",electric:"#c9a218",grass:"#4f9a3a",ice:"#4aa8a8",fighting:"#a8322b",poison:"#8a3f8a",ground:"#b08a3a",flying:"#7c6fc7",psychic:"#d9467a",bug:"#829a1a",rock:"#968233",ghost:"#5b4a85",dragon:"#5a3ad9",dark:"#5a4a3f",steel:"#7f7f99",fairy:"#c96f9a"};
-const REGIONS={1:"Kanto",2:"Johto",3:"Hoenn",4:"Sinnoh"};
+const REGIONS={1:"Kanto",2:"Johto",3:"Hoenn",4:"Sinnoh",5:"Unova",6:"Kalos",7:"Alola",8:"Galar"};
 const FIELD_SLOTS=["C","1B","2B","3B","SS","LF","CF","RF","DH"];
 const STD=[...FIELD_SLOTS,"SP1","RP1"];
 const FULL=[...FIELD_SLOTS,"SP1","SP2","SP3","SP4","SP5","RP1","RP2"];
@@ -12,6 +12,8 @@ const DEF_IMP={C:1.2,"1B":.5,"2B":1,"3B":.9,SS:1.3,LF:.7,CF:1.2,RF:.8};
 const MONS=RAW.map(r=>({id:r[0],name:r[1],gen:r[2],types:r[3].split("/"),hp:r[4],atk:r[5],def:r[6],spa:r[7],spd:r[8],spe:r[9],shape:r[10],ht:r[11],wt:r[12],leg:!!r[13]}));
 const BYID=new Map(MONS.map(m=>[m.id,m]));
 const BASE=MONS.filter(m=>!m.leg);
+// Every rating is measured against the Gen 1-4 pool, so adding newer Pokémon never moves an existing rating.
+const REF=BASE.filter(m=>m.gen<=4);
 const LEGENDS=MONS.filter(m=>m.leg);
 // Shiny Pokémon: a rarer-than-legendary variant of every non-legendary, with every base stat boosted.
 // A shiny gets its own id (Pokédex number + SHINY_ID) so it saves, shares and posts like any other pick.
@@ -77,7 +79,7 @@ for(const m of MONS){
 }
 // Rank every tool against all non-legendary Pokémon onto the 20-80 scouting scale.
 function rankInto(get,set){
-  const vals=BASE.map(get).sort((a,b)=>a-b),N=vals.length;
+  const vals=REF.map(get).sort((a,b)=>a-b),N=vals.length;
   const lo=v=>{let a=0,b=N;while(a<b){const c=(a+b)>>1;vals[c]<v?a=c+1:b=c}return a};
   const hi=v=>{let a=0,b=N;while(a<b){const c=(a+b)>>1;vals[c]<=v?a=c+1:b=c}return a};
   for(const m of MONS){const v=get(m);set(m,20+60*((lo(v)+hi(v))/2/N))}
@@ -86,7 +88,7 @@ function rankInto(get,set){
 // Real 20-80 scouting grades measure standard deviations: 50 is average and every 10 points is one SD.
 // Ranking by percentile instead would flatten the top, so a 5-SD defender would grade the same as the 20th best.
 function zInto(get,set){
-  const v=BASE.map(get),n=v.length,mu=v.reduce((a,b)=>a+b,0)/n,sd=Math.sqrt(v.reduce((a,b)=>a+(b-mu)**2,0)/n)||1;
+  const v=REF.map(get),n=v.length,mu=v.reduce((a,b)=>a+b,0)/n,sd=Math.sqrt(v.reduce((a,b)=>a+(b-mu)**2,0)/n)||1;
   // Very long tails (Shuckle's Defense, Blissey's HP) are compressed past 2.5 SD so one stat can't break the game.
   for(const m of MONS){let z=(get(m)-mu)/sd;if(z>TAIL_AT)z=TAIL_AT+Math.log1p((z-TAIL_AT)*TAIL)/TAIL;if(z<-2.5)z=-2.5;set(m,z)}
 }
@@ -208,7 +210,7 @@ function slotRuns(m,slot){
 // A Pokémon's natural spot is where it stands out most compared with everyone else at that spot,
 // the way a scout would label a prospect, rather than where it happens to swing the most runs.
 const SPOT_SD={};
-for(const s of [...FIELD_SLOTS,"SP1","RP1","RP2"]){const v=BASE.map(m=>slotRuns(m,s)),mu=v.reduce((a,b)=>a+b,0)/v.length;SPOT_SD[s]=[mu,Math.sqrt(v.reduce((a,b)=>a+(b-mu)**2,0)/v.length)||1]}
+for(const s of [...FIELD_SLOTS,"SP1","RP1","RP2"]){const v=REF.map(m=>slotRuns(m,s)),mu=v.reduce((a,b)=>a+b,0)/v.length;SPOT_SD[s]=[mu,Math.sqrt(v.reduce((a,b)=>a+(b-mu)**2,0)/v.length)||1]}
 const standing=(m,s)=>(slotRuns(m,s)-SPOT_SD[s][0])/SPOT_SD[s][1];
 // DH is the fallback anyone can fill, so it's only a natural spot for Pokémon that can't field anywhere.
 function naturalSpot(m,spots){
@@ -224,7 +226,7 @@ function glove(m,pos){return m.pd[pos]??50}
 // Display ratings: each category ranked across non-legendary Pokémon onto 40-99,
 // curved so most Pokémon sit in the 55-80 range like a sports video game.
 function rank99(get,set){
-  const vals=BASE.map(get).sort((a,b)=>a-b),N=vals.length;
+  const vals=REF.map(get).sort((a,b)=>a-b),N=vals.length;
   const lo=v=>{let a=0,b=N;while(a<b){const c=(a+b)>>1;vals[c]<v?a=c+1:b=c}return a};
   const hi=v=>{let a=0,b=N;while(a<b){const c=(a+b)>>1;vals[c]<=v?a=c+1:b=c}return a};
   for(const m of MONS){const v=get(m);const p=(lo(v)+hi(v))/2/N;set(m,Math.round(Math.min(99,40+59*Math.pow(p,.85)+(v>vals[N-1]?3:0))))}
@@ -593,7 +595,7 @@ function postseason(w,r){
   return{made:true,champ:true,sweep:games.every(g=>g[1]===0),games,text:`Won the World Series ${games[2][0]}–${games[2][1]}.`};
 }
 let refCache=null;
-function refTeams(){if(refCache)return refCache;const r=rngFrom(4242);return refCache=[0,1,2,3,4,5].map(i=>assign(shuffle(BASE.slice(),r).slice(0,24+i*4),FULL))}
+function refTeams(){if(refCache)return refCache;const r=rngFrom(4242);return refCache=[0,1,2,3,4,5].map(i=>assign(shuffle(REF.slice(),r).slice(0,24+i*4),FULL))}
 function playSeason(run){
   const list=run.size===16?FULL:STD;
   const R=rating(run.slots,list)-(run.size===16?0:SMALL_ROSTER),wins=winsFor(R),runs=teamRuns(run.slots,list);

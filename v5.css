@@ -1036,3 +1036,21 @@ body.rv-open>.wrap{visibility:visible!important}
 .pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.3,.6,.4,1),opacity .26s ease-in!important;transform:translate3d(30px,-70px,0) rotate(38deg)!important;opacity:0!important}
 .pk-tear-tip{width:6px!important;height:6px!important;box-shadow:0 0 7px 2px #fff5dc77!important}
 @media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
+/* New Era: pack chooser and test banner */
+.era-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 4px}
+.era-opt{display:flex;align-items:center;gap:10px;min-height:58px;padding:6px 10px;border-radius:14px;border:2px solid transparent;background:#0f2248;color:#a9b8d0;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.era-opt img{width:26px;height:48px;object-fit:contain;opacity:.6;flex:none}
+.era-opt b{display:block;font:600 14.500px/1.1 "Oswald",var(--f-data),sans-serif;letter-spacing:.04em;text-transform:uppercase;color:inherit}
+.era-opt small{display:block;margin-top:3px;font-size:12px;color:#8fa6cc}
+.era-opt.on{border-color:#ffcb05;background:linear-gradient(135deg,#1d3b70,#142c57);color:#f4eedc}
+.era-opt.on img{opacity:1}
+.era-opt[data-era=new].on{border-color:#9fd8ff;box-shadow:0 0 14px rgba(140,120,255,.35)}
+.era-opt:disabled{opacity:.4;cursor:default}
+.era-opt:focus-visible{outline:2px solid #ffcb05;outline-offset:2px}
+.era-note{margin:4px 0 0;text-align:center;font-size:12.500px;color:#a9b8d0}
+.era-banner{position:fixed;left:50%;top:6px;transform:translateX(-50%);z-index:99990;display:flex;gap:8px;align-items:center;max-width:calc(100% - 16px);padding:5px 12px;border-radius:999px;background:#2a1d5c;border:1px solid #8c78ff;color:#e9e4ff;font-size:11.500px;white-space:nowrap;pointer-events:none;opacity:.94}
+.era-banner b{font:600 11px/1 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#c9bcff}
+@media (max-width:480px){.era-banner span{display:none}}
+.era-banner{top:auto!important;bottom:calc(86px + env(safe-area-inset-bottom));padding:4px 10px!important;opacity:.85!important}
+body:has(.sheet:not([hidden])) .era-banner,body.rv-open .era-banner{display:none}
+body:has(#scout) .era-banner,body:has(#how:not([hidden])) .era-banner,body:has(#lb:not([hidden])) .era-banner{display:none}

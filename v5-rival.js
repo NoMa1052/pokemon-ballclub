@@ -2,7 +2,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  // ---------- collection ----------
- const DEX='pbc5-dex',REGIONS=['Kanto','Johto','Hoenn','Sinnoh'];
+ const DEX='pbc5-dex',REGIONS=['Kanto','Johto','Hoenn','Sinnoh','Unova','Kalos','Alola','Galar'];
  function dex(){
   let d;try{d=JSON.parse(store.get(DEX)||'null')}catch(e){}
   if(!d||!Array.isArray(d.nums))d={nums:[],shiny:[]};
@@ -23,7 +23,7 @@
   const region=g=>{const list=all.filter(m=>m.gen===g),n=list.filter(m=>own.has(m.num)).length;
    return `<details class="dex-region"><summary><b>${REGIONS[g-1]}</b><span>${n} of ${list.length}</span><div class="dex-bar"><i style="width:${(100*n/list.length).toFixed(1)}%"></i></div></summary><div class="dex-grid">${list.map(m=>own.has(m.num)?`<span class="got${shiny.has(m.num)?' sh':''}${m.leg?' lg':''}" title="${esc(m.name)}">${tok(m)}<i>${esc(m.name)}</i></span>`:`<span><b></b><i>#${m.num}</i></span>`).join('')}</div></details>`};
   const pct=Math.round(100*got/all.length);
-  return `<div class="dex-top"><div class="dex-ring" style="--p:${pct}"><b>${got}</b><small>of ${all.length}</small></div><div><span>Pokémon rostered in a finished season</span><div class="dex-chips"><em>${gotLegs}/${legs.length} legendaries</em><em>${shiny.size} shin${shiny.size===1?'y':'ies'}</em></div></div></div>${[1,2,3,4].map(region).join('')}`;
+  return `<div class="dex-top"><div class="dex-ring" style="--p:${pct}"><b>${got}</b><small>of ${all.length}</small></div><div><span>Pokémon rostered in a finished season</span><div class="dex-chips"><em>${gotLegs}/${legs.length} legendaries</em><em>${shiny.size} shin${shiny.size===1?'y':'ies'}</em></div></div></div>${[...new Set(all.map(m=>m.gen))].sort((a,b)=>a-b).map(region).join('')}`;
  };
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);record();return v};
  if(run?.result)record();

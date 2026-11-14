@@ -10,8 +10,12 @@ const BODY="M9 35 C2 80 0 118 0 148 C0 182 2 222 9 261 H191 C198 222 200 182 200
 const wrinkles=(y,dir)=>{let d1="",d2="";for(let i=0;i<44;i++){const x=6+i*4.4+((i*53)%7)/3,len=2.5+((i*37)%7)*.8,lean=(x-100)/100*3+((i*29)%5-2)*.4;
   const seg=`M${x.toFixed(1)} ${y} l${lean} ${len*dir} `;if(i%2)d1+=seg;else d2+=seg}return `<path d="${d1}" stroke="#fff" stroke-opacity=".09" stroke-width="1.4" stroke-linecap="round"/><path d="${d2}" stroke="#000" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>`};
 let tornPackSource=null;
+// Two packs: Classic Series draws Gen 1-4, New Era draws Gen 5-8. Each pick you choose which one to open.
+const ERA_ON=typeof NEW_ERA!=='undefined'&&NEW_ERA;
+const packEra=()=>ERA_ON&&typeof run!=='undefined'&&run&&run.packEra==='new'?'new':'classic';
+const inEra=m=>!ERA_ON||(packEra()==='new'?m.gen>=5:m.gen<=4);
 function packArt(opened=false){
- return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="pack-foil-v4.webp" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
+ return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="'+(packEra()==='new'?'pack-new-era.webp':'pack-foil-v4.webp')+'" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
 }
 
 // Tilt: the pack leans toward your finger or cursor and a glare follows it.
@@ -74,7 +78,14 @@ function wireRip(pk){
  pk.addEventListener('click',e=>{e.stopPropagation();if(suppressClick){suppressClick=false;return;}direction=1;open();});
  paint(0);
 }
-const decoratePack=()=>{const pk=document.getElementById('spinBtn');if(!pk||!pk.classList.contains('pack'))return;
+function eraSwitch(pk){
+ if(!ERA_ON||!isPack()||document.getElementById('eraSwitch'))return;
+ const box=document.getElementById('throwBox');if(!box)return;const era=packEra(),lock=!!run.eraLock;
+ const opt=(k,name,gens,img)=>`<button type="button" role="radio" aria-checked="${era===k}" data-era="${k}" class="era-opt${era===k?' on':''}"${lock&&era!==k?' disabled':''}><img src="${img}" alt=""><span><b>${name}</b><small>${gens}</small></span></button>`;
+ box.insertAdjacentHTML('beforebegin',`<div class="era-switch" id="eraSwitch" role="radiogroup" aria-label="Choose a pack">${opt('classic','Classic Series','Gen 1–4','pack-foil-v4.webp')}${opt('new','New Era','Gen 5–8','pack-new-era.webp')}</div>${lock?'<p class="era-note">Super Rod casts into the same pack.</p>':''}`);
+ document.getElementById('eraSwitch').addEventListener('click',e=>{const b=e.target.closest('[data-era]');if(!b||b.disabled||run.spin||b.dataset.era===packEra())return;run.packEra=b.dataset.era;saveRun();render()});
+}
+const decoratePack=()=>{const pk=document.getElementById('spinBtn');if(!pk||!pk.classList.contains('pack'))return;eraSwitch(pk);
  if(!pk.querySelector('.pk-art'))pk.insertAdjacentHTML('afterbegin',packArt());if(!reduce())addTilt(pk);wireRip(pk)};
 {const base=render;render=function(){base();decoratePack()}}
 
@@ -162,7 +173,7 @@ document.addEventListener("click",e=>{
   const b=e.target.closest("#rvRerip,#rerollBtn");if(!b||!isPack()||!run.spin||!run.spin.pack)return;
   e.stopImmediatePropagation();e.preventDefault();
   if(b.disabled||!run.rerolls||run.second)return;
-  run.rerolls--;run.spin=null;run.selected=null;run.doubleArmed=false;run.justRipped=false;saveRun();
+  if(ERA_ON){run.packEra=run.spin.era||packEra();run.eraLock=true}run.rerolls--;run.spin=null;run.selected=null;run.doubleArmed=false;run.justRipped=false;saveRun();
   // A fast second click (or a mouse double-click) could land on whatever renders under the cursor; ignore clicks briefly.
   window.__rerippedAt=performance.now();
   closeReveal();render();
@@ -177,20 +188,20 @@ const SHINY_PER_CARD=.0008,LEGEND_PER_PACK=.015;
 const rollPack=function(run,taken){
   const t=taken||[],free=m=>!t.includes(m.num);
   const pick=(arr,n)=>{const a=arr.slice(),out=[];while(out.length<n&&a.length)out.push(a.splice(Math.floor(rand(run)*a.length),1)[0]);return out};
-  run.packs=(run.packs||0)+1;
+  run.packs=(run.packs||0)+1;delete run.eraLock;
   if(rand(run)<rollPack.godOdds){
     const good=m=>{setOverall(m);return m.ovr>=90&&free(m)};
-    const legs=LEGENDS.filter(good),shin=BASE.map(m=>BYID.get(m.id+SHINY_ID)).filter(Boolean).filter(good);
+    const legs=LEGENDS.filter(inEra).filter(good),shin=BASE.filter(inEra).map(m=>BYID.get(m.id+SHINY_ID)).filter(Boolean).filter(good);
     if(legs.length&&shin.length&&legs.length+shin.length>=PACK_SIZE){
       const first=[...pick(legs,1),...pick(shin,1)],ids=[...first,...pick([...legs,...shin].filter(m=>!first.includes(m)),PACK_SIZE-2)].map(m=>m.id);
       for(let i=ids.length-1;i>0;i--){const j=Math.floor(rand(run)*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
-      return{pack:true,legend:false,god:true,shiny:true,shinies:ids.filter(id=>id>=SHINY_ID).length,bonus:null,bonuses:0,n:run.packs,ids};
+      return{pack:true,era:packEra(),legend:false,god:true,shiny:true,shinies:ids.filter(id=>id>=SHINY_ID).length,bonus:null,bonuses:0,n:run.packs,ids};
     }
   }
-  const ids=pick(BASE,PACK_SIZE).map(m=>rand(run)<SHINY_PER_CARD?m.id+SHINY_ID:m.id);
-  const shinies=ids.filter(id=>id>=SHINY_ID).length,legPool=LEGENDS.filter(free),bonus=[];
+  const ids=pick(ERA_ON?BASE.filter(inEra):BASE,PACK_SIZE).map(m=>rand(run)<SHINY_PER_CARD?m.id+SHINY_ID:m.id);
+  const shinies=ids.filter(id=>id>=SHINY_ID).length,legPool=LEGENDS.filter(inEra).filter(free),bonus=[];
   while(legPool.length&&rand(run)<LEGEND_PER_PACK)bonus.push(legPool.splice(Math.floor(rand(run)*legPool.length),1)[0].id);
-  return{pack:true,legend:false,shiny:shinies>0,shinies,bonus:bonus[0]||null,bonuses:bonus.length,n:run.packs,ids:shuffle([...ids,...bonus],()=>rand(run))};
+  return{pack:true,era:packEra(),legend:false,shiny:shinies>0,shinies,bonus:bonus[0]||null,bonuses:bonus.length,n:run.packs,ids:shuffle([...ids,...bonus],()=>rand(run))};
 };
 rollPack.godOdds=1/750;packSpin=rollPack;
 // Pool screen notes: count multiples, and a god pack needs no note at all.

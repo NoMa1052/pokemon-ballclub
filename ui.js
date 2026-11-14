@@ -454,7 +454,7 @@ function wireSubmit(){
     const row={team,size:run.size,wins:res.wins,grade:res.grade,rs:Math.round(res.runs.rs),ra:Math.round(res.runs.ra),roster:list.map(s=>run.slots[s]?run.slots[s].id:0),device:deviceId().slice(0,16),mode:isPack()?"pack":"spin",week:run.week||null,leagues:typeof leagueCodes==="function"?leagueCodes():[]};
     try{
       const r=await fetch(LB_URL,{method:"POST",headers:lbHead({"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
-      if(!r.ok){let m="";try{m=(await r.json()).message||""}catch(e){}throw Object.assign(new Error(m),{why:/too fast/i.test(m)?"Slow down a moment, then try again.":/already posted/i.test(m)?"This team is already on the leaderboard.":""})}
+      if(!r.ok){let m="";try{m=(await r.json()).message||""}catch(e){}throw Object.assign(new Error(m),{why:/New Era test/.test(m)?"New Era test: posting to the leaderboard is off.":/too fast/i.test(m)?"Slow down a moment, then try again.":/already posted/i.test(m)?"This team is already on the leaderboard.":""})}
       store.set("pbc2-team",team);
       let rank=null;
       try{const c=await fetch(`${LB_URL}?select=id&mode=eq.${row.mode}&size=eq.${run.size}&wins=gt.${res.wins}`,{method:"HEAD",headers:lbHead({Prefer:"count=exact"})});const cr=c.headers.get("content-range");
