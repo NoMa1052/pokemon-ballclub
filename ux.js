@@ -202,7 +202,7 @@
   }
   function decorateControls() {
     const lab=$('spinLabel');if(lab&&!spinning){lab.textContent=isPack()?'Open Pack':'Spin your next pick';lab.nextElementSibling.textContent=`Pick ${Math.min(run.picks.length+1,run.size)} of ${run.size}`;}
-    const cue=$('draft').querySelector('.tapcue');if(cue&&isPack())cue.textContent='Swipe to rip · tap to open';
+    const cue=$('draft').querySelector('.tapcue');if(cue&&isPack())cue.textContent='OPEN PACK · swipe to rip or tap';
     const rb=$('rerollBtn');if(rb){rb.innerHTML=isPack()?`Super Rod <small>${run.rerolls} remaining</small>`:`Respin both <small>${run.rerolls} left</small>`;rb.title=isPack()?'Replace these five cards':'Get a new type and region';}
     const db=$('doubleBtn');if(db)db.innerHTML=`${run.doubleArmed?'Master Ball ready':'Master Ball'} <small>${run.doubles} left</small>`;
     for(const [id,kind,key] of [['keepType','type','type'],['keepGen','region','gen']]){
@@ -211,7 +211,7 @@
     }
     $('draft').querySelectorAll('.spinctl + .hint').forEach(h=>h.hidden=true);
     document.querySelectorAll('.dc-grade small').forEach(l=>l.textContent='Roster rating');
-    const dc=$('dcPlay');if(dc)dc.textContent='Simulate season';
+    const dc=$('dcPlay');if(dc)dc.textContent='Play season';
     $('draft').querySelectorAll('.dchip[data-slot]').forEach(b=>b.title=posName(b.dataset.slot));
   }
   const baseRender=render;
@@ -227,7 +227,7 @@
   const focusables=e=>[...e.querySelectorAll('button:not([disabled]),[href],input,select,textarea,summary,[tabindex="0"]')].filter(x=>x.getClientRects().length);
   function syncDialogs(){
     document.querySelectorAll('.dc-grade small').forEach(l=>{if(l.textContent!=='Roster rating')l.textContent='Roster rating';});
-    const dc=$('dcPlay');if(dc&&dc.textContent!=='Simulate season')dc.textContent='Simulate season';
+    const dc=$('dcPlay');if(dc&&dc.textContent!=='Play season')dc.textContent='Play season';
     const ds=dialogs(),active=ds.at(-1)||null;
     [...document.querySelector('.wrap').children].forEach(c=>c.inert=!!active&&!c.contains(active));
     ds.forEach(d=>{d.setAttribute('aria-modal','true');d.inert=d!==active;});

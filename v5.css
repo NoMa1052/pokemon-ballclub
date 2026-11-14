@@ -1036,3 +1036,16 @@ body.rv-open>.wrap{visibility:visible!important}
 .pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.3,.6,.4,1),opacity .26s ease-in!important;transform:translate3d(30px,-70px,0) rotate(38deg)!important;opacity:0!important}
 .pk-tear-tip{width:6px!important;height:6px!important;box-shadow:0 0 7px 2px #fff5dc77!important}
 @media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
+
+/* Review refinements */
+#throwBox .tapcue{font:700 13px/1.35 var(--f-body)!important;letter-spacing:.02em;text-transform:none;color:#f4eedc!important;opacity:1!important}
+.dc-row{min-height:33px}.dc-row span{font:600 14px/1.2 var(--f-body);white-space:normal;overflow-wrap:anywhere}.dc-row i{font-size:12px}.dc-row em{font-size:15px}.dc-col h4{font-size:12px}
+.sr-controls{display:flex;gap:8px;align-items:center}.sr-controls .btn{min-height:44px}.sr-controls #srSpeed[aria-pressed=true]{background:#f4eedc;color:#10254a}.sr-tap{font-size:14px;color:#b9c9df}
+@media(min-width:821px){.sr .sr-in{grid-template-columns:minmax(0,720px)!important;justify-content:center!important}.sr .sr-top,.sr .szn-cal,.sr .szn2,.sr .sr-moh,.sr .sr-card,.sr .sr-oct,.sr .sr-done,.sr .sr-tap{grid-column:1!important;grid-row:auto!important}.sr .sr-in{grid-template-rows:auto!important}}
+.weekly-confirm{position:fixed;inset:0;z-index:12000;background:#040d1be8;display:grid;place-items:center;padding:20px}.weekly-confirm-panel{width:min(100%,460px);border:1px solid #6a83a5;border-radius:14px;background:#10254a;padding:22px;color:#f4eedc}.weekly-confirm h2{margin:0 0 12px;font-size:23px}.weekly-confirm p{font-size:15px;line-height:1.45;color:#d7e2ef}.weekly-confirm-panel>div{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}.weekly-confirm .btn{min-height:44px}
+.release-toast{position:fixed;z-index:10040;top:18%;left:50%;transform:translateX(-50%);border:1px solid #f4eedc77;border-radius:12px;background:#10254a;color:#f4eedc;padding:12px 18px;box-shadow:0 8px 30px #0008;animation:release-note 1.8s ease both;white-space:nowrap;max-width:90vw}@keyframes release-note{0%{opacity:0;transform:translate(-50%,12px)}15%,70%{opacity:1;transform:translate(-50%,0)}100%{opacity:0;transform:translate(-50%,-12px)}}
+
+/* Controls remain accessible during the opening animation. */
+.reveal .rv-top{position:relative;z-index:72}.direct-opening{z-index:70}.direct-rays{background:repeating-conic-gradient(from 0deg,var(--c1) 0deg 3deg,transparent 3deg 18deg);opacity:.4}.direct-opening.tier-shiny .direct-aura{background:radial-gradient(circle at 50% 45%,#ffc3f166,transparent 58%),radial-gradient(circle at 65% 38%,#9ee6ff55,transparent 50%)}.direct-opening.tier-leg .direct-aura{background:radial-gradient(circle at 50% 45%,#b890ff88,transparent 60%)}
+
+.reveal.intro-running .rv-top{visibility:visible;pointer-events:auto}

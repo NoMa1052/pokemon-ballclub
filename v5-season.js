@@ -54,7 +54,7 @@
   const top=Math.max(...clubs.map(c=>c[3][161]));
   const el=document.createElement('div');el.id='seasonReveal';el.className='sr';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Season in progress');
   el.innerHTML=`<div class="sr-in">
-   <div class="sr-top"><span>The season</span><button type="button" class="btn" id="srSkip">Skip</button></div>
+   <div class="sr-top"><span>The season</span><div class="sr-controls"><button type="button" class="btn" id="srSpeed" aria-pressed="false">Speed up</button><button type="button" class="btn" id="srSkip">Skip to results</button></div></div>
    <div class="szn-cal" id="srCal">${SHORT.map(m=>`<span>${m}</span>`).join('')}<span class="po">OCT</span></div>
    <div class="szn2"><div class="szn2-in">
     <div class="szn2-head"><span>Kanto East</span><b id="srGame">Opening day</b></div>
@@ -66,7 +66,7 @@
    <div class="sr-card" id="srCard" aria-live="polite"></div>
    <div class="sr-oct" id="srOct" hidden></div>
    <button type="button" class="btn primary sr-done" id="srDone" hidden>See your season</button>
-   <p class="sr-tap" id="srTap">Tap anywhere to speed up</p>
+   <p class="sr-tap" id="srTap">Tap anywhere or use Speed up</p>
   </div>`;
   document.body.appendChild(el);document.body.classList.add('sr-open');
   let timer=0,raf=0,closed=false,hurry=false,month=0,shown=0;
@@ -106,7 +106,7 @@
     if(h){$('srMoh').hidden=false;card.insertAdjacentHTML('afterbegin',`<div class="sr-head-card">${tok(h.m)}<p><small>${h.tag} · ${MONTHS[month][1]}</small><b>${esc(nm(h.m))}</b> ${h.text}.</p></div>`)}
     if(extra)card.insertAdjacentHTML('afterbegin',`<p class="sr-note ${extra[2]}">${extra[1]}</p>`);
     month++;
-    wait(h?1700:900,()=>{hurry=false;month<6?playMonth():october()});
+    wait(h?1700:900,()=>{month<6?playMonth():october()});
    };
    raf=requestAnimationFrame(frame);
   }
@@ -114,7 +114,7 @@
    if(closed)return;
    $('srTap').hidden=true;calMark(6);$('srMoh').hidden=true;
    const post=res.post,box=$('srOct'),names=['Division Series','Championship Series','World Series'];
-   $('srCard').innerHTML='';box.hidden=false;$('srSkip').textContent='Skip';
+   $('srCard').innerHTML='';box.hidden=false;$('srSkip').textContent='Skip to results';$('srSpeed').hidden=true;
    if(!post.made){box.innerHTML=`<p class="sr-out"><small>October</small>${esc(post.text)}</p>`;$('srDone').hidden=false;$('srDone').focus({preventScroll:true});return}
    let k=0;
    const series=()=>{
@@ -134,7 +134,7 @@
    };
    series();
   }
-  $('srSkip').onclick=close;$('srDone').onclick=close;
+  $('srSkip').onclick=close;$('srDone').onclick=close;$('srSpeed').onclick=()=>{hurry=!hurry;$('srSpeed').setAttribute('aria-pressed',String(hurry));$('srSpeed').textContent=hurry?'Speeding up':'Speed up'};
   el.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
   el.addEventListener('click',e=>{if(!e.target.closest('button'))hurry=true});
   race(0);$('srSkip').focus({preventScroll:true});wait(700,playMonth);
@@ -153,7 +153,7 @@
   host.querySelector('.weak-link')?.remove();
   const w=weakLink();if(!w)return;
   const p=document.createElement('p');p.className='weak-link';
-  p.innerHTML=w.gain>=1?`<b>Weak link: ${esc(w.m.name)}, ${lbl(w.s)} ${posOvr(w.m,w.s)}.</b> A solid regular (an 85) there was worth about ${w.gain} more win${w.gain===1?'':'s'}.`:`<b>No weak link.</b> Every spot was at least as good as a solid regular.`;
+  p.innerHTML=w.gain>=1?`<b>Biggest opportunity: ${esc(w.m.name)}, ${lbl(w.s)} ${posOvr(w.m,w.s)}.</b> Replacing this player with an 85-rated regular is estimated to add about ${w.gain} win${w.gain===1?'':'s'}. This measures the impact of the spot, not just the lowest rating.`:`<b>No clear weak link.</b> Replacing a player with an 85-rated regular was not estimated to add a full win.`;
   (host.querySelector('.team-bars')||host.firstElementChild).after(p);
  }
 

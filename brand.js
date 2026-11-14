@@ -109,7 +109,7 @@ function openDC(){
     <div class="dc-card">
       <div class="dc-band"><b>Your Ballclub</b><span class="dc-grade"><small>Grade</small>${tilesHTML(g??"--")}</span></div>
       <div class="stitchline" aria-hidden="true"></div>
-      <div class="dc-cols"><div class="dc-col"><h4>Lineup</h4>${field.map(row).join("")}</div><div class="dc-col"><h4>Pitching</h4>${staff.map(row).join("")}</div></div>
+      <div class="dc-cols"><div class="dc-col"><h4>Lineup · by position</h4>${field.map(row).join("")}</div><div class="dc-col"><h4>Pitching</h4>${staff.map(row).join("")}</div></div>
     </div>
     <div class="dc-stars">${stars.map(([t,s],k)=>{const m=run.slots[s];return `<div class="dc-star" style="--i:${k}"><small>${t}</small>${img(m)}<b>${esc(m.name)}</b><em>${posOvr(m,s)}</em></div>`}).join("")}</div>
     <div class="dc-mark">pokemon-ballclub.vercel.app</div>
