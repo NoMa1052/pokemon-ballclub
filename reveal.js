@@ -104,17 +104,19 @@ function openReveal(sp,chooseAll=false){
     }
     const advance=(step=1,dir=-1)=>{
       if(el.classList.contains('intro-running'))return;if(busy){pendingAdvance={step,dir};return}
-      if(i+step>=ms.length){pendingAdvance=null;spread();return}
       if(i+step<0){card.style.transition='transform 160ms ease,opacity 160ms ease';card.style.transform='';card.style.opacity='';return}
       busy=true;
-      const next=()=>{if(revealEl!==el||!card.isConnected)return;busy=false;i+=step;show(dir)};
+      let finished=false;
+      const next=()=>{if(finished||revealEl!==el||!card.isConnected)return;finished=true;busy=false;i+=step;if(i>=ms.length)pendingAdvance=null;show(dir)};
       if(reduced){next();return}
       const current=getComputedStyle(card);
       const departure=card.animate([
         {transform:current.transform,opacity:current.opacity},
         {transform:`translate3d(${dir*Math.max(card.clientWidth*1.4,innerWidth*.75)}px,0,0) rotate(${dir*12}deg)`,opacity:0}
       ],{duration:250,easing:'cubic-bezier(.3,0,.7,.4)',fill:'forwards'});
-      departure.finished.then(next).catch(()=>{busy=false});
+      departure.finished.then(next).catch(next);
+      // Keep the reveal moving even if a browser interrupts the animation.
+      setTimeout(next,500);
     };
     stage.onclick=()=>{if(suppressClick){suppressClick=false;return}advance()};
     stage.addEventListener('pointerdown',e=>{if(e.button!==0||busy||el.classList.contains('intro-running'))return;gesture={x:e.clientX,y:e.clientY,dx:0,dragging:false};suppressClick=false;card.style.transition='none'});
