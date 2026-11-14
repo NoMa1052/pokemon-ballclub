@@ -1036,3 +1036,9 @@ body.rv-open>.wrap{visibility:visible!important}
 .pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.3,.6,.4,1),opacity .26s ease-in!important;transform:translate3d(30px,-70px,0) rotate(38deg)!important;opacity:0!important}
 .pk-tear-tip{width:6px!important;height:6px!important;box-shadow:0 0 7px 2px #fff5dc77!important}
 @media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
+
+/* A restrained foil edge keeps attention on the finger-driven tear. */
+.pack .pk-tear-tip{display:none}
+.pack .pk-cut path{stroke:#d8d4c7;stroke-width:.22;opacity:.72;filter:none}
+.pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.25,.6,.35,1),opacity .26s ease-in!important;transform:translate3d(calc(var(--tear-dir,1)*18px),-38px,0) rotate(calc(var(--tear-dir,1)*14deg))!important;opacity:0!important}
+@media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
