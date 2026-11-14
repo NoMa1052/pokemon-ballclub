@@ -32,7 +32,7 @@
   uniq([...Object.keys(a.boards),...Object.keys(b.boards)]).forEach(k=>{const x=a.boards[k],y=b.boards[k];if(!x||!y){boards[k]=x||y;return}
    const best=!x.best?y.best:!y.best?x.best:(y.best.wins>x.best.wins||(y.best.wins===x.best.wins&&y.best.rating>x.best.rating))?y.best:x.best;
    boards[k]={seasons:Math.max(x.seasons,y.seasons),bestWins:Math.max(x.bestWins,y.bestWins),bestRating:Math.max(x.bestRating,y.bestRating),championships:Math.max(x.championships||0,y.championships||0),best}});
-  return {version:1,seen,history,boards,unlocked:uniq([...a.unlocked,...b.unlocked]),seasons:Math.max(a.seasons||0,b.seasons||0,seen.length)};
+  return {version:1,seen,history,boards,unlocked:uniq([...a.unlocked,...b.unlocked]),seasons:Math.max(a.seasons||0,b.seasons||0,seen.length),...(a.weekWin||b.weekWin?{weekWin:a.weekWin||b.weekWin}:{})};
  }
  const mergeDex=(a,b)=>!a?b||null:!b?a:{...a,...b,v:Math.max(a.v||0,b.v||0),nums:uniq([...(a.nums||[]),...(b.nums||[])]),shiny:uniq([...(a.shiny||[]),...(b.shiny||[])])};
  function mergeRivals(a,b){const o={...(b||{})};Object.entries(a||{}).forEach(([k,v])=>{const w=o[k];if(!w||(v.w||0)+(v.l||0)>(w.w||0)+(w.l||0))o[k]=v});return o}

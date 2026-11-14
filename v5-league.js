@@ -52,6 +52,25 @@
  const me=()=>deviceId().slice(0,16),wkNo=w=>+String(w).slice(-2);
  const SERIES=LB_URL.replace(/ballclub_scores$/,'ballclub_series');
 
+ // Week winner trophy: you topped a finished week in one of your leagues (2+ players that week).
+ function checkWeekWin(weeks){
+  const now=weekKey();
+  for(const w in weeks){if(w<now&&weeks[w].length>=2&&isMine(weeks[w][0].device)){try{if(!Clubhouse.read().weekWin)Clubhouse.sweep({weekWin:w})}catch(e){}return}}
+ }
+ setTimeout(async()=>{
+  try{
+   if(Clubhouse.read().weekWin||!mine().length)return;
+   const day=new Date().toISOString().slice(0,10);if(store.get('pbc6-weekchk')===day)return;store.set('pbc6-weekchk',day);
+   for(const code of mine().map(x=>x.code)){
+    const r=await fetch(`${LB_URL}?select=team,wins,rs,ra,roster,device,week,created_at&mode=eq.pack&size=eq.16&week=lt.${weekKey()}&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});
+    if(!r.ok)continue;const weeks={};
+    for(const x of await r.json())(weeks[x.week]=weeks[x.week]||[]).push({...x,ovr:rosterOvr(x.roster,FULL)});
+    for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(x.device)&&seen.add(x.device))}
+    checkWeekWin(weeks);if(Clubhouse.read().weekWin)return;
+   }
+  }catch(e){}
+ },4000);
+
  async function load(){
   const my=++token;data=null;draw();
   const league=scope!=='all'?'&leagues=cs.%7B'+scope+'%7D':'&week=eq.'+weekKey();
@@ -67,6 +86,7 @@
    for(const x of scores){(weeks[x.week]=weeks[x.week]||[]).push(x);if(!names[x.device])names[x.device]=x.team}
    for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(x.device)&&seen.add(x.device))}
    data={weeks,names,series};
+   if(scope!=='all')checkWeekWin(weeks);
   }catch(e){if(my!==token)return;data={error:true}}
   draw();
  }
