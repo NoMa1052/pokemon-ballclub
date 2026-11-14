@@ -43,7 +43,7 @@ async function renderCanvas(s){
  else txt('Draft complete',CW/2,222,font(400,64,DISPLAY),cream);
  const outcome=s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON';
  txt(outcome+'  ·  '+s.ovr+' OVR',CW/2,292,font(600,30,DATA),s.champ?'#ffe08a':cream);
- txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),CW/2,334,font(500,24,BODY),'#9fb0c6','center',900);
+ txt(s.team,CW/2,334,font(500,24,BODY),'#9fb0c6','center',900);
  // Field
  const F={x:40,y:372,w:1000,h:700},hx=F.x+F.w/2,hy=F.y+F.h*.95,R=F.h*.9,d=F.h*.2;
  c.save();c.beginPath();c.roundRect?c.roundRect(F.x,F.y,F.w,F.h,22):c.rect(F.x,F.y,F.w,F.h);c.clip();
@@ -121,7 +121,7 @@ async function renderFull(s){
   const rx=48+lw+36,rw=W-48-rx,cx=rx+rw/2;
   T(s.record||'Draft complete',cx,90,'400 '+(s.record?104:56)+'px "Graduate",Georgia,serif',s.champ?gold:cream,'center',0,rw);
   T(s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON',cx,160,'600 27px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':cream,'center',2,rw);
-  T(s.ovr+' OVR  ·  '+s.team+'  ·  '+s.mode,cx,198,'500 22px "Barlow",Arial,sans-serif',muted,'center',0,rw);
+  T(s.ovr+' OVR  ·  '+s.team,cx,198,'500 22px "Barlow",Arial,sans-serif',muted,'center',0,rw);
   const fh=H-FOOT-HEAD-SH-34,fw=fh*fc.width/fc.height;c.drawImage(fc,(W-fw)/2,HEAD,fw,fh);
   // Staff strip: a one-row version of the app's pitching card.
   const sx=40,sy=HEAD+fh+22,sw=W-80,n=tc.length,rot=tags.filter(t=>/^SP/.test(t.dataset.slot||'')).length;
@@ -187,8 +187,28 @@ async function open(){
   setStatus((out.fallback?'Simple image (screen capture failed: '+(window.PBCShareError||'unknown')+'). ':'')+(native?'Image ready. Tap Share Team to send it.':'Image ready. Save it, then send it in your chat.'));
  }catch(e){if(modal===overlay){overlay.querySelector('#pb-share-spinner').textContent='The roster image could not be generated.';setStatus(e.message||'Image export error.')}}
 }
+// Prepare the image while the roster or results are on screen, so the share sheet
+// can open directly from a tap (iOS requires an active user gesture).
+let preparedKey=null,preparedFile=null,preparingKey=null,prewarmTimer=null;
+const shareKey=s=>JSON.stringify([s.players,s.record,s.ovr,s.team,s.champ,s.outcome,s.mvp]);
+function prepare(s){
+ const key=shareKey(s);if(key===preparedKey||key===preparingKey)return;
+ preparingKey=key;renderFull(s).then(out=>{URL.revokeObjectURL(out.url);if(preparingKey!==key)return;preparedKey=key;preparedFile=new File([out.blob],out.name,{type:'image/png'});preparingKey=null}).catch(()=>{if(preparingKey===key)preparingKey=null});
+}
+function prewarm(){clearTimeout(prewarmTimer);prewarmTimer=setTimeout(()=>{try{if(!run||run.hand||run.picks.length<run.size)return;prepare(snapshot())}catch(_){}},350)}
+function directShare(){
+ let s;try{s=snapshot()}catch(e){alert(e.message);return}
+ const key=shareKey(s);
+ if(key===preparedKey&&preparedFile&&canShare(preparedFile)){
+  try{navigator.share({files:[preparedFile],text:text(s)}).catch(e=>{if(e?.name!=='AbortError')open()})}catch(_){open()}
+  return;
+ }
+ // The native sheet must be launched by a fresh tap if the image is not ready yet.
+ open();
+}
+new MutationObserver(prewarm).observe(document.body,{childList:true,subtree:true});prewarm();
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal){e.preventDefault();e.stopImmediatePropagation();close()}},true);
-document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn||modal)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();open()},true);
+document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn||modal)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();directShare()},true);
 function labels(){const a=document.querySelector('#dcSave'),b=document.querySelector('#shareBtn');if(a&&a.textContent!=='Share Team')a.textContent='Share Team';if(b&&b.textContent!=='Share Team')b.textContent='Share Team'}
 new MutationObserver(labels).observe(document.body,{childList:true,subtree:true});labels();
 window.PBCShare={open,render,snapshot,text};
