@@ -187,8 +187,28 @@ async function open(){
   setStatus((out.fallback?'Simple image (screen capture failed: '+(window.PBCShareError||'unknown')+'). ':'')+(native?'Image ready. Tap Share Team to send it.':'Image ready. Save it, then send it in your chat.'));
  }catch(e){if(modal===overlay){overlay.querySelector('#pb-share-spinner').textContent='The roster image could not be generated.';setStatus(e.message||'Image export error.')}}
 }
+// Prepare the image while the roster or results are on screen, so the share sheet
+// can open directly from a tap (iOS requires an active user gesture).
+let preparedKey=null,preparedFile=null,preparingKey=null,prewarmTimer=null;
+const shareKey=s=>JSON.stringify([s.players,s.record,s.ovr,s.team,s.mode,s.size,s.champ]);
+function prepare(s){
+ const key=shareKey(s);if(key===preparedKey||key===preparingKey)return;
+ preparingKey=key;renderCanvas(s).then(out=>{URL.revokeObjectURL(out.url);if(preparingKey!==key)return;preparedKey=key;preparedFile=new File([out.blob],out.name,{type:'image/png'});preparingKey=null}).catch(()=>{if(preparingKey===key)preparingKey=null});
+}
+function prewarm(){clearTimeout(prewarmTimer);prewarmTimer=setTimeout(()=>{try{if(!run||run.hand||run.picks.length<run.size)return;prepare(snapshot())}catch(_){}},350)}
+function directShare(){
+ let s;try{s=snapshot()}catch(e){alert(e.message);return}
+ const key=shareKey(s);
+ if(key===preparedKey&&preparedFile&&canShare(preparedFile)){
+  try{navigator.share({files:[preparedFile],text:text(s)}).catch(e=>{if(e?.name!=='AbortError')open()})}catch(_){open()}
+  return;
+ }
+ // The native sheet must be launched by a fresh tap if the image is not ready yet.
+ open();
+}
+new MutationObserver(prewarm).observe(document.body,{childList:true,subtree:true});prewarm();
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal){e.preventDefault();e.stopImmediatePropagation();close()}},true);
-document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn||modal)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();open()},true);
+document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn||modal)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();directShare()},true);
 function labels(){const a=document.querySelector('#dcSave'),b=document.querySelector('#shareBtn');if(a&&a.textContent!=='Share Team')a.textContent='Share Team';if(b&&b.textContent!=='Share Team')b.textContent='Share Team'}
 new MutationObserver(labels).observe(document.body,{childList:true,subtree:true});labels();
 window.PBCShare={open,render,snapshot,text};
