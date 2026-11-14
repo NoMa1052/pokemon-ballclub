@@ -32,7 +32,7 @@ function wireRip(pk){
  strip.classList.replace('pk-art','pk-loose');strip.setAttribute('aria-hidden','true');pk.appendChild(strip);
  pk.insertAdjacentHTML('beforeend','<span class="pk-mouth" aria-hidden="true"></span><span class="pk-tracer" aria-hidden="true"><i></i></span><svg class="pk-cut" viewBox="0 0 100 185" aria-hidden="true"><path fill="none"/></svg>');
  const cut=pk.querySelector('.pk-cut path');
- const pieces=Array.from({length:18},(_,i)=>{const piece=art.cloneNode(true);piece.classList.replace('pk-art','pk-foil-piece');piece.setAttribute('aria-hidden','true');pk.appendChild(piece);return piece});
+ const pieces=Array.from({length:0},(_,i)=>{const piece=art.cloneNode(true);piece.classList.replace('pk-art','pk-foil-piece');piece.setAttribute('aria-hidden','true');pk.appendChild(piece);return piece});
  const tip=document.createElement('span');tip.className='pk-tear-tip';pk.appendChild(tip);
 
  let start=null,r=0,direction=1,moved=false,opening=false,frame=0,dragFrame=0,pendingRip=0,lastPulse=0,suppressClick=false;
@@ -44,15 +44,14 @@ function wireRip(pk){
   for(let x=Math.ceil(lo/2.6)*2.6;x<hi;x+=2.6)jag.push([x,seam+((Math.round(x/2.6)%3)-1)*.28]);jag.push([hi,seam]);
   const pts=ps=>ps.map(([x,y])=>x.toFixed(2)+'% '+y.toFixed(2)+'%').join(',');
   art.style.clipPath=direction===1?'polygon('+pts([[0,seam],...jag,[edge,0],[100,0],[100,100],[0,100]])+')':'polygon('+pts([[0,0],[edge,0],...jag,[100,100],[0,100]])+')';
-  strip.style.opacity='0';
-  pieces.forEach((piece,i)=>{const left=i*100/18,right=(i+1)*100/18,from=Math.max(left,lo),to=Math.min(right,hi);if(to<=from){piece.style.opacity='0';return;}
-    const center=(from+to)/2,trail=Math.abs(edge-center)/100,curl=Math.sin(Math.min(1,trail*1.35)*Math.PI/2);
-    piece.style.opacity='1';piece.style.clipPath=`polygon(${from}% 0,${to+.15}% 0,${to+.15}% ${seam}%,${from}% ${seam}%)`;
-    piece.style.transformOrigin=`${center}% ${seam}%`;
-    piece.style.transform=`translate3d(${direction*curl*12}px,${-curl*38}px,0) skewY(${direction*curl*9}deg) rotateX(${curl*48}deg)`;
-  });
+  // The torn part is one continuous strip that lifts away, hinged where the tear currently is.
+  const e=1-(1-p)**2,lift=4+12*e,jagUp=jag.map(([x,y])=>[x,y+.05]);
+  strip.style.opacity='1';
+  strip.style.clipPath=direction===1?'polygon('+pts([[0,0],[edge,0],...jagUp.slice().reverse(),[0,seam]])+')':'polygon('+pts([[edge,0],[100,0],[100,seam],...jagUp.slice().reverse()])+')';
+  strip.style.transformOrigin=`${edge}% ${seam}%`;
+  strip.style.transform=`rotate(${direction*lift}deg)`;
   tip.style.left=edge+'%';tip.style.top=seam+'%';tip.style.opacity=p<.99?'1':'0';
-  cut.setAttribute('d',jag.map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
+  cut.setAttribute('d',jag.filter(([x])=>x>=3.5&&x<=96.5).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
  };
  const open=()=>{
   if(opening||spinning)return;cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.classList.add('rip-complete');pk.classList.remove('dragging');

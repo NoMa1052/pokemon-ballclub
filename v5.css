@@ -1031,3 +1031,8 @@ body.rv-open>.wrap{visibility:visible!important}
 .opening-back-ball{display:none!important}
 .pki-cards i{background:url(card-logo.webp) center/74% auto no-repeat,repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 1.5px,transparent 1.5px 9px),radial-gradient(120% 80% at 50% 42%,#1c3d74,#0b1b38 75%)!important}
 .pki-cards i::before,.pki-cards i::after{display:none!important}
+/* Pack tear: one smooth strip, with a soft shadow on the pack under it */
+.pk-loose{filter:drop-shadow(0 4px 5px rgba(0,0,0,.45))!important;backface-visibility:hidden}
+.pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.3,.6,.4,1),opacity .26s ease-in!important;transform:translate3d(30px,-70px,0) rotate(38deg)!important;opacity:0!important}
+.pk-tear-tip{width:6px!important;height:6px!important;box-shadow:0 0 7px 2px #fff5dc77!important}
+@media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
