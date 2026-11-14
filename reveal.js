@@ -100,10 +100,11 @@ function openReveal(sp,chooseAll=false){
         {transform:`translate3d(${-entryDirection*70}px,0,0) rotate(${-entryDirection*3}deg)`,opacity:.3},
         {transform:'translate3d(0,0,0) rotate(0deg)',opacity:1}
       ],{duration:230,easing:'cubic-bezier(.16,1,.3,1)'});
-      arrival.finished.then(()=>{busy=false;const next=pendingAdvance;pendingAdvance=null;if(next)next()}).catch(()=>{busy=false;pendingAdvance=null});
+      arrival.finished.then(()=>{busy=false;const next=pendingAdvance;pendingAdvance=null;if(next&&revealEl===el)advance(next.step,next.dir)}).catch(()=>{busy=false;pendingAdvance=null});
     }
     const advance=(step=1,dir=-1)=>{
-      if(el.classList.contains('intro-running'))return;if(busy){pendingAdvance=()=>advance(step,dir);return}
+      if(el.classList.contains('intro-running'))return;if(busy){pendingAdvance={step,dir};return}
+      if(i+step>=ms.length){pendingAdvance=null;spread();return}
       if(i+step<0){card.style.transition='transform 160ms ease,opacity 160ms ease';card.style.transform='';card.style.opacity='';return}
       busy=true;
       const next=()=>{if(revealEl!==el||!card.isConnected)return;busy=false;i+=step;show(dir)};

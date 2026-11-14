@@ -56,7 +56,7 @@ function wireRip(pk){
  const open=()=>{
   if(opening||spinning)return;cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.classList.add('rip-complete');pk.classList.remove('dragging');
   const origin=r,begin=performance.now(),duration=reduce()?0:(origin>.98?100:650);
-  const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**3));if(t<1){frame=requestAnimationFrame(finish);return;}pk.classList.add('strip-off');try{navigator.vibrate?.([10,12,22])}catch(_){};setTimeout(()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:pieces.map(piece=>piece.outerHTML).join(''),rect:pk.getBoundingClientRect()};doSpin()}},0);};
+  const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**3));if(t<1){frame=requestAnimationFrame(finish);return;}pk.classList.add('strip-off');try{navigator.vibrate?.([10,12,22])}catch(_){};setTimeout(()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:pieces.map(piece=>piece.outerHTML).join(''),rect:pk.getBoundingClientRect()};doSpin()}},reduce()?0:180);};
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
  };
  const reset=()=>{pk.classList.remove('dragging');pk.classList.add('rip-reset');const begin=performance.now(),origin=r;const tick=now=>{const t=reduce()?1:Math.min(1,(now-begin)/170);paint(origin*(1-t));if(t<1)frame=requestAnimationFrame(tick);else pk.classList.remove('rip-reset');};cancelAnimationFrame(frame);frame=requestAnimationFrame(tick);};
@@ -64,7 +64,7 @@ function wireRip(pk){
  pk.addEventListener('pointermove',e=>{
   if(!start||opening)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;
   if(!moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){start=null;suppressClick=true;reset();return;}
-  if(!moved&&Math.abs(dx)>6){direction=start.x-start.rect.left<start.rect.width/2?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
+  if(!moved&&Math.abs(dx)>6){direction=dx>0?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
   if(!moved)return;e.preventDefault();const p=Math.max(0,Math.min(1,direction*dx/(start.rect.width*.72)));pendingRip=p;if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!opening)paint(pendingRip)});
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
