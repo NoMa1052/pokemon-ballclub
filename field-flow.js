@@ -5,6 +5,13 @@
  positionPickerHTML=()=>'';
  const oldDC=openDC;openDC=function(){if(!run.hand)oldDC()};
  const oldSpin=doSpin;doSpin=function(...args){if(run.hand)return;run.handUndo=null;run.handFeedback=null;return oldSpin(...args)};
+
+ function releaseAnimation(m,done){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){done();return}
+  const el=document.createElement('div');el.className='release-scene';el.setAttribute('role','status');el.setAttribute('aria-label',m.name+' released');
+  el.innerHTML=`<div class="release-glow"></div><div class="release-player"><img src="${SPRITE_URL(m.num,m.shiny)}" alt=""><strong>${esc(m.name)}</strong><small>Released</small></div><div class="release-ball"><i></i></div>`;document.body.append(el);
+  let finished=false;const finish=()=>{if(finished)return;finished=true;el.remove();done()};setTimeout(finish,1700);
+ }
  let rosterJustFilled=false;
  const basePlace=handPlace;handPlace=function(s){const before=run.picks.length,done=basePlace(s);if(done&&!run.hand&&before<run.size&&run.picks.length===run.size)rosterJustFilled=true;return done};
  function rosterStamp(){document.querySelector('.roster-stamp')?.remove();const el=document.createElement('div');el.className='roster-stamp';el.setAttribute('role','status');
@@ -57,7 +64,7 @@
   if(lastHand===null)requestAnimationFrame(()=>scrollTo(0,0));lastHand=m.id;
   if($('handUndo'))$('handUndo').onclick=()=>{handUndoAction();render()};$('handCancel').onclick=()=>{handCancel();render()};
   $('heldRatings').onclick=()=>showRatings(m);
-  if($('handReleaseAsk'))$('handReleaseAsk').onclick=()=>dialog(`Release ${esc(m.name)}?`,`<p class="review-note">They leave your team. You’ll get a replacement pick. One release per run.</p><div class="move-confirm-actions"><button class="btn" data-close>Keep Pokémon</button><button class="btn primary" id="releaseHeld">Release</button></div>`,(el,close)=>{el.querySelector('#releaseHeld').onclick=()=>{close();handRelease();render()}});
+  if($('handReleaseAsk'))$('handReleaseAsk').onclick=()=>dialog(`Release ${esc(m.name)}?`,`<p class="review-note">They leave your team. You’ll get a replacement pick. One release per run.</p><div class="move-confirm-actions"><button class="btn" data-close>Keep Pokémon</button><button class="btn primary" id="releaseHeld">Release</button></div>`,(el,close)=>{el.querySelector('#releaseHeld').onclick=()=>{if(!handRelease())return;close();releaseAnimation(m,render)}});
   document.querySelectorAll('#field .tag,#staff .tag,#bullpen .tag').forEach(tag=>{
    const s=tag.dataset.slot,other=run.slots[s],v=posOvr(m,s),fresh=tag.cloneNode(true);tag.replaceWith(fresh);fresh.removeAttribute('disabled');fresh.onclick=()=>tapSlot(s);
    fresh.classList.remove('moving','open','flow-source','flow-target','flow-occupied','flow-open');
