@@ -10,17 +10,16 @@ function snapshot(){
  if(!run||!run.slots||!slotList().some(s=>run.slots[s]))throw Error('Complete your roster before sharing.');
  const players=slotList().filter(s=>run.slots[s]).map(s=>{const m=run.slots[s];return {slot:s,num:m.num||m.id,shiny:!!m.shiny,name:m.name,rating:posOvr(m,s)}});
  const res=run.result,win=Number(res?.wins),done=res&&Number.isFinite(win);
- let team=run.submitted?.team||'';try{team=team||store.get('pbc5-last16-name')||''}catch(_){}
+ let team=(document.getElementById('teamName')?.value||'').trim()||run.submitted?.team||'';
  let mvp=null;try{const h=Clubhouse.read().history[0];if(done&&h&&h.wins===win&&h.mvp)mvp=h.mvp}catch(_){}
  const post=res?.post||{};
  return {players,ovr:teamOvr(),mode:'Packs',size:run.size,team:team||'My Ballclub',record:done?String(win)+'–'+String(162-win):null,wins:win,grade:done?res.grade:'',champ:!!post.champ,made:!!post.made,outcome:done?String(post.text||(post.made?'Made the playoffs':'Missed the playoffs')).replace(/\.$/,''):'',mvp};
 }
 function text(s){
- const l=[];
- if(s.record){l.push('⚾ '+s.team+' went '+s.record+(s.grade?' ('+s.grade+')':''));l.push(s.champ?'🏆 World Series champions':s.outcome);
-  if(s.mvp)l.push('⭐ MVP '+s.mvp.name+': '+s.mvp.hr+' HR, '+Number(s.mvp.ops).toFixed(3).replace(/^0/,'')+' OPS');l.push('Beat it: '+shareLink())}
- else{l.push('⚾ '+s.team+' is drafted: '+s.ovr+' OVR');l.push('Build a better one: '+shareLink())}
- return l.join('\n');
+ const l=['⚾ POKÉMON BALLCLUB','',s.team];
+ if(s.record){l.push('Record: '+s.record+(s.grade?' · Grade '+s.grade:''));if(s.champ)l.push('🏆 World Series champions');else if(s.made)l.push('Made the playoffs');else l.push('Missed the playoffs');if(s.mvp)l.push('MVP: '+s.mvp.name+' · '+s.mvp.hr+' HR · '+Number(s.mvp.ops).toFixed(3).replace(/^0/,'')+' OPS')}
+ else l.push('Team rating: '+s.ovr+' OVR');
+ l.push('','Think you can beat my team?','https://'+shareLink());return l.join('\n');
 }
 function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillStyle=fill;let size=sz;ctx.font='700 '+size+'px "Barlow",Arial,sans-serif';while(max&&ctx.measureText(String(str)).width>max&&size>16){ctx.font='700 '+(--size)+'px "Barlow",Arial,sans-serif'}ctx.fillText(String(str),px,py)}
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
@@ -43,7 +42,7 @@ async function renderCanvas(s){
  else txt('Draft complete',CW/2,222,font(400,64,DISPLAY),cream);
  const outcome=s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON';
  txt(outcome+'  ·  '+s.ovr+' OVR',CW/2,292,font(600,30,DATA),s.champ?'#ffe08a':cream);
- txt(s.team+'  ·  '+s.mode+'  ·  '+(s.size===11?'Quick':'Standard'),CW/2,334,font(500,24,BODY),'#9fb0c6','center',900);
+ txt(s.team,CW/2,334,font(500,24,BODY),'#9fb0c6','center',900);
  // Field
  const F={x:40,y:372,w:1000,h:700},hx=F.x+F.w/2,hy=F.y+F.h*.95,R=F.h*.9,d=F.h*.2;
  c.save();c.beginPath();c.roundRect?c.roundRect(F.x,F.y,F.w,F.h,22):c.rect(F.x,F.y,F.w,F.h);c.clip();
@@ -108,7 +107,7 @@ async function renderFull(s){
   const tags=[...pen.querySelectorAll('.tag')],tc=[];let pc;
   try{fc=clean(await shot(field),'field');pc=clean(await shot(pen),'staff');
    const pr=pen.getBoundingClientRect();
-   for(let i=0;i<tags.length;i++){const one=clean(await shot(pen,i),'staff'),r=tags[i].getBoundingClientRect(),px=11,py=8,k=one.width/pr.width;
+   for(let i=0;i<tags.length;i++){const one=pc,r=tags[i].getBoundingClientRect(),px=11,py=8,k=one.width/pr.width;
     const x=(r.left-pr.left-px)*k,y=(r.top-pr.top-py)*k,w=(r.width+2*px)*k,h=(r.height+2*py)*k,cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(one,x,y,w,h,0,0,w,h);tc.push(cv)}}
   finally{swaps.forEach(([i,src,set,local])=>{i.onload=i.onerror=null;if(set)i.setAttribute('srcset',set);i.setAttribute('src',src);URL.revokeObjectURL(local)})}
   const logo=await image(document.querySelector('.mark.logo img')?.currentSrc||'logo.webp');
@@ -121,7 +120,7 @@ async function renderFull(s){
   const rx=48+lw+36,rw=W-48-rx,cx=rx+rw/2;
   T(s.record||'Draft complete',cx,90,'400 '+(s.record?104:56)+'px "Graduate",Georgia,serif',s.champ?gold:cream,'center',0,rw);
   T(s.champ?'WORLD SERIES CHAMPIONS':s.record?'FINAL RECORD':'READY FOR THE SEASON',cx,160,'600 27px "Oswald","Arial Narrow",sans-serif',s.champ?'#ffe08a':cream,'center',2,rw);
-  T(s.ovr+' OVR  ·  '+s.team+'  ·  '+s.mode,cx,198,'500 22px "Barlow",Arial,sans-serif',muted,'center',0,rw);
+  T(s.ovr+' OVR  ·  '+s.team,cx,198,'500 22px "Barlow",Arial,sans-serif',muted,'center',0,rw);
   const fh=H-FOOT-HEAD-SH-34,fw=fh*fc.width/fc.height;c.drawImage(fc,(W-fw)/2,HEAD,fw,fh);
   // Staff strip: a one-row version of the app's pitching card.
   const sx=40,sy=HEAD+fh+22,sw=W-80,n=tc.length,rot=tags.filter(t=>/^SP/.test(t.dataset.slot||'')).length;
@@ -187,9 +186,21 @@ async function open(){
   setStatus((out.fallback?'Simple image (screen capture failed: '+(window.PBCShareError||'unknown')+'). ':'')+(native?'Image ready. Tap Share Team to send it.':'Image ready. Save it, then send it in your chat.'));
  }catch(e){if(modal===overlay){overlay.querySelector('#pb-share-spinner').textContent='The roster image could not be generated.';setStatus(e.message||'Image export error.')}}
 }
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal){e.preventDefault();e.stopImmediatePropagation();close()}},true);
-document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn||modal)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();open()},true);
-function labels(){const a=document.querySelector('#dcSave'),b=document.querySelector('#shareBtn');if(a&&a.textContent!=='Share Team')a.textContent='Share Team';if(b&&b.textContent!=='Share Team')b.textContent='Share Team'}
-new MutationObserver(labels).observe(document.body,{childList:true,subtree:true});labels();
+// iOS requires navigator.share to run directly inside the user's tap. Prepare the
+// exact image first and keep the share button on screen while it is being made.
+let readyKey=null,readyFile=null,buildingKey=null,failedKey=null,prepareTimer=null;
+const keyOf=s=>JSON.stringify([s.players,s.record,s.ovr,s.team,s.champ,s.outcome,s.mvp]);
+function shareButtons(){return [...document.querySelectorAll('#dcSave,#shareBtn,.pb-share-launch')]}
+function buttonState(label,disabled){shareButtons().forEach(b=>{if(b.textContent!==label)b.textContent=label;b.disabled=disabled})}
+function schedule(){clearTimeout(prepareTimer);prepareTimer=setTimeout(prep,250)}
+function prep(){
+ if(!shareButtons().length)return;let s;try{s=snapshot()}catch(_){return}
+ const key=keyOf(s);if(key===readyKey&&readyFile){buttonState('Share Team',false);return}if(buildingKey||key===failedKey)return;
+ buildingKey=key;buttonState('Preparing image…',true);
+ renderFull(s).then(out=>{URL.revokeObjectURL(out.url);if(key!==buildingKey)return;buildingKey=null;if(out.fallback)throw Error('Image could not be prepared');readyFile=new File([out.blob],out.name,{type:'image/png'});readyKey=key;let current;try{current=keyOf(snapshot())}catch(_){}if(current!==key){schedule();return}buttonState('Share Team',false)}).catch(()=>{if(buildingKey===key)buildingKey=null;readyKey=null;readyFile=null;failedKey=key;buttonState('Retry image',false)});
+}
+document.addEventListener('input',e=>{if(e.target?.id==='teamName')schedule()},true);
+document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();let s;try{s=snapshot()}catch(_){return}if(keyOf(s)!==readyKey||!readyFile){failedKey=null;prep();return}if(!canShare(readyFile)){open();return}try{navigator.share({files:[readyFile],text:text(s)}).catch(err=>{if(err?.name!=='AbortError')alert('Unable to open sharing. Please try again.')})}catch(_){alert('Unable to open sharing. Please try again.')}},true);
+new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});schedule();
 window.PBCShare={open,render,snapshot,text};
 })();
