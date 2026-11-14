@@ -98,10 +98,10 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   email:'<label>Email<input id="acctEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="none" required></label>',
   pass:n=>`<label>${n?'New password':'Password'}<input id="acctPass" type="password" autocomplete="${n?'new-password':'current-password'}" minlength="6" required></label>`};
  const MODES={
-  in:{title:'Sign in',fields:F.email+F.pass(),submit:'in',btns:'<button class="btn primary" type="submit">Sign in</button><button class="acct-link" type="button" data-do="forgot">Forgot password?</button>',
+  in:{title:'Sign in',fields:F.email+F.pass(),submit:'in',btns:'<button class="btn primary" type="submit">Sign in</button>',
    foot:'New here? <button class="acct-link" type="button" data-mode="up">Create an account</button>'},
   up:{title:'Create account',fields:F.name+F.email+F.pass(true),submit:'up',btns:'<button class="btn primary" type="submit">Create account</button>',
-   foot:'Have an account? <button class="acct-link" type="button" data-mode="in">Sign in</button>',fine:'Your screen name is your profile name. Team names stay separate, so post any name you like each run. Your email is only for signing in and password resets.'},
+   foot:'Have an account? <button class="acct-link" type="button" data-mode="in">Sign in</button>',fine:'Your screen name is your profile name. Team names stay separate, so post any name you like each run. Your email is only for signing in.'},
   name:{title:'Pick a screen name',fields:F.name,submit:'name',btns:'<button class="btn primary" type="submit">Save</button>',fine:'3 to 20 letters or numbers. Spaces, dots, dashes and underscores are fine in the middle.'},
   reset:{title:'Set a new password',fields:F.pass(true),submit:'newpass',btns:'<button class="btn primary" type="submit">Save password</button>'}};
  function open(mode='in',note=''){
