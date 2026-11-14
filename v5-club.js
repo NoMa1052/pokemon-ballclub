@@ -7,6 +7,39 @@
   fullevo:'<path d="M12 2l7.500 7.500H14.500V12h-5V9.500H4.500zM12 11l7.500 7.500H14.500V22h-5v-3.500H4.500z"/>',
   rivals:'<path d="M13.500 2 4 14h7l-1.500 8L20 10h-7z"/>',
   week:'<path d="M5 2h2.200v20H5zM8.500 3.200 21 8.500 8.500 13.800z"/>'};
+
+ // Original faceted badges, one shape and color per trophy.
+ const BADGE={first:['oct','#e2493b','#8e1d16'],hundred:['hex','#e58a3a','#8a4510'],elite:['rhombus','#9fc3e8','#3f6d9c'],champ:['star8','#ffd23f','#a2730a'],
+  legend:['shield','#a77be0','#4f2a8a'],shiny:['star4','#ff9ecf','#b0306f'],dynasty:['crest','#f2c14e','#7d5a12'],perfect:['round','#f1f4f8','#8c99ab'],
+  allgens:['quad',null,null],leglineup:['tri','#7f6ff0','#33268f'],fullevo:['drop','#5fd38a','#1d7a43'],ironman:['hex','#b9c2cf','#55606f'],
+  rivals:['star6','#ff7a45','#a2300c'],week:['pennant','#4fa3ff','#164f9c'],shinyhunt:['gem','#e05cc8','#7d1a6b']};
+ const pts=(n,r,rot=0,cx=50,cy=50)=>Array.from({length:n},(_,i)=>{const a=rot+i*2*Math.PI/n;return [cx+r*Math.sin(a),cy-r*Math.cos(a)]});
+ const star=(n,ro,ri,rot=0)=>Array.from({length:n*2},(_,i)=>{const a=rot+i*Math.PI/n,r=i%2?ri:ro;return [50+r*Math.sin(a),50-r*Math.cos(a)]});
+ const SHAPES={oct:()=>pts(8,44,Math.PI/8),hex:()=>pts(6,45),rhombus:()=>[[50,4],[90,50],[50,96],[10,50]],star8:()=>star(8,46,30),
+  shield:()=>[[50,5],[88,18],[84,58],[50,95],[16,58],[12,18]],star4:()=>star(4,47,19),crest:()=>[[50,6],[90,24],[78,82],[50,95],[22,82],[10,24]],
+  round:()=>pts(12,45),quad:()=>[[50,4],[96,50],[50,96],[4,50]],tri:()=>[[50,6],[94,86],[6,86]],drop:()=>[[50,4],[78,46],[82,64],[70,86],[50,95],[30,86],[18,64],[22,46]],
+  star6:()=>star(6,46,26),pennant:()=>[[16,8],[84,8],[84,62],[50,94],[16,62]],gem:()=>[[30,8],[70,8],[92,34],[50,94],[8,34]]};
+ const mix=(a,b,t)=>{const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)),A=h(a),B=h(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('')};
+ function badgeSVG(k){
+  const [shape,lite,dark]=BADGE[k]||BADGE.first,P=SHAPES[shape](),n=P.length,f=p=>p.map(q=>q.map(v=>v.toFixed(1)).join(',')).join(' ');
+  const cols=shape==='quad'?['#d6453b','#e9b53c','#3aa86a','#b9d6f2']:null;
+  let facets='';
+  for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n],c=cols?cols[i]:mix(lite,dark,[0,.35,.7,.45,.15,.55][i%6]);facets+=`<polygon points="${f([[50,50],a,b])}" fill="${c}"/>`}
+  const inner=P.map(([x,y])=>[50+(x-50)*.42,50+(y-50)*.42]);
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="${f(P)}" fill="#0b1b38" transform="translate(0 3)" opacity=".5"/>${facets}<polygon points="${f(inner)}" fill="${cols?'#f4eedc':mix(lite,'#ffffff',.45)}" opacity=".9"/><polygon points="${f(inner)}" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/><polygon points="${f(P)}" fill="none" stroke="${cols?'#2a1d05':mix(dark,'#000000',.35)}" stroke-width="3" stroke-linejoin="round"/><path d="M28 30 Q40 18 56 16" stroke="rgba(255,255,255,.55)" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+ }
+ let caseOpen=false,caseSel=null;
+ function caseHTML(ach,earned){
+  const n=ach.filter(a=>earned.has(a[0])).length,got=ach.filter(a=>earned.has(a[0]));
+  const sel=ach.find(a=>a[0]===caseSel)||got[got.length-1]||ach[0];
+  return `<details class="ch-sec ch-log ch-case"${caseOpen?' open':''}><summary><h3>Badge case<em>${n} of ${ach.length}</em></h3><span class="case-mini">${got.map(a=>`<i>${badgeSVG(a[0])}</i>`).join('')||'<small>No badges yet. Finish a season to earn your first.</small>'}</span></summary>
+   <div class="case-tray">${ach.map(([k,name])=>`<button type="button" class="bdg${earned.has(k)?' on':''}${k===sel[0]?' sel':''}" data-badge="${k}" aria-pressed="${k===sel[0]}" aria-label="${esc(name)}${earned.has(k)?'':', locked'}"><span class="bdg-art">${badgeSVG(k)}</span><span class="bdg-n">${name}</span></button>`).join('')}</div>
+   <p class="case-cap"><b>${sel[1]}</b>${earned.has(sel[0])?'<em>Earned</em>':'<em class="lk">Locked</em>'}<span>${sel[2]}</span></p></details>`;
+ }
+ document.addEventListener('toggle',e=>{if(e.target.classList?.contains('ch-case'))caseOpen=e.target.open},true);
+ document.addEventListener('click',e=>{const b=e.target.closest?.('[data-badge]');if(!b)return;caseSel=b.dataset.badge;const box=b.closest('.ch-case'),a=Clubhouse.achievements.find(x=>x[0]===caseSel),on=b.classList.contains('on');
+  box.querySelectorAll('.bdg').forEach(x=>{x.classList.toggle('sel',x===b);x.setAttribute('aria-pressed',x===b)});
+  box.querySelector('.case-cap').innerHTML=`<b>${a[1]}</b>${on?'<em>Earned</em>':'<em class="lk">Locked</em>'}<span>${a[2]}</span>`});
  const TEXT={hundred:'100',elite:'150',perfect:'162',allgens:'1–4',leglineup:'×3',ironman:'50',shinyhunt:'10'};
  const day=t=>{try{return new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric'})}catch(e){return ''}};
  // Shared by Clubhouse, Leaderboard and League: a posted roster as a grid of tappable players.
@@ -37,7 +70,7 @@
   return `<div class="ch">
    <section class="ch-hero"><div class="ch-hero-top"><small>Best season${best.team?' · '+esc(best.team):''}</small><div class="ch-rec"><b>${best.wins}–${162-best.wins}</b>${best.grade?`<span class="ch-stamp"><b>${best.grade}</b><small>GRADE</small></span>`:''}</div></div>
     <div class="ch-stats"><div>Seasons<b>${bd.seasons}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${bd.championships||0}</b></div></div></section>
-   <section class="ch-sec"><h3>Trophy case<em>${ach.filter(a=>earned.has(a[0])).length} of ${ach.length}</em></h3><div class="ch-badges">${ach.map(badge).join('')}</div></section>
+   ${caseHTML(ach,earned)}
    <details class="ch-sec ch-log"><summary><h3>Season log<em>${hist.length} season${hist.length===1?'':'s'}</em></h3></summary>${hist.map(season).join('')}</details>
    ${typeof rivalriesHTML==='function'?`<div class="ch-sec ch-riv">${rivalriesHTML()}</div>`:''}
    ${typeof collectionHTML==='function'?`<section class="ch-sec"><h3>Collection</h3>${collectionHTML()}</section>`:''}
