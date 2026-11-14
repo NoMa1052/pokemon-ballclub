@@ -1037,6 +1037,12 @@ body.rv-open>.wrap{visibility:visible!important}
 .pk-tear-tip{width:6px!important;height:6px!important;box-shadow:0 0 7px 2px #fff5dc77!important}
 @media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
 
+/* A restrained foil edge keeps attention on the finger-driven tear. */
+.pack .pk-tear-tip{display:none}
+.pack .pk-cut path{stroke:#d8d4c7;stroke-width:.22;opacity:.72;filter:none}
+.pack.strip-off .pk-loose{transition:transform .26s cubic-bezier(.25,.6,.35,1),opacity .26s ease-in!important;transform:translate3d(calc(var(--tear-dir,1)*18px),-38px,0) rotate(calc(var(--tear-dir,1)*14deg))!important;opacity:0!important}
+@media(prefers-reduced-motion:reduce){.pack.strip-off .pk-loose{transition:none!important}}
+
 /* Review refinements */
 #throwBox .tapcue{font:700 13px/1.35 var(--f-body)!important;letter-spacing:.02em;text-transform:none;color:#f4eedc!important;opacity:1!important}
 .dc-row{min-height:33px}.dc-row span{font:600 14px/1.2 var(--f-body);white-space:normal;overflow-wrap:anywhere}.dc-row i{font-size:12px}.dc-row em{font-size:15px}.dc-col h4{font-size:12px}

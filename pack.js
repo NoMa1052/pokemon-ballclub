@@ -39,24 +39,24 @@ function wireRip(pk){
  const paint=p=>{
   r=p;pk.style.setProperty('--rip',p);const seam=12.8;
   if(p<=0){art.style.clipPath='';strip.style.opacity='0';pieces.forEach(piece=>piece.style.opacity='0');tip.style.opacity='0';cut.setAttribute('d','');return;}
-  const edge=direction===1?3+97*p:97-97*p,jag=[];
+  const edge=direction===1?100*p:100*(1-p),jag=[];
   const lo=direction===1?0:edge,hi=direction===1?edge:100;
   for(let x=Math.ceil(lo/2.6)*2.6;x<hi;x+=2.6)jag.push([x,seam+((Math.round(x/2.6)%3)-1)*.28]);jag.push([hi,seam]);
   const pts=ps=>ps.map(([x,y])=>x.toFixed(2)+'% '+y.toFixed(2)+'%').join(',');
   art.style.clipPath=direction===1?'polygon('+pts([[0,seam],...jag,[edge,0],[100,0],[100,100],[0,100]])+')':'polygon('+pts([[0,0],[edge,0],...jag,[100,100],[0,100]])+')';
   // The torn part is one continuous strip that lifts away, hinged where the tear currently is.
-  const e=1-(1-p)**2,lift=4+12*e,jagUp=jag.map(([x,y])=>[x,y+.05]);
+  const e=1-(1-p)**2,lift=2+5*e,jagUp=jag.map(([x,y])=>[x,y+.05]);
   strip.style.opacity='1';
   strip.style.clipPath=direction===1?'polygon('+pts([[0,0],[edge,0],...jagUp.slice().reverse(),[0,seam]])+')':'polygon('+pts([[edge,0],[100,0],[100,seam],...jagUp.slice().reverse()])+')';
   strip.style.transformOrigin=`${edge}% ${seam}%`;
-  strip.style.transform=`rotate(${direction*lift}deg)`;
+  strip.style.transform=`translate3d(0,${-2*e}px,0) rotate(${direction*lift}deg)`;
   tip.style.left=edge+'%';tip.style.top=seam+'%';tip.style.opacity=p<.99?'1':'0';
   cut.setAttribute('d',jag.filter(([x])=>x>=3.5&&x<=96.5).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
  };
  const open=()=>{
-  if(opening||spinning)return;cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.classList.add('rip-complete');pk.classList.remove('dragging');
-  const origin=r,begin=performance.now(),duration=reduce()?0:(origin>.98?100:650);
-  const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**3));if(t<1){frame=requestAnimationFrame(finish);return;}pk.classList.add('strip-off');try{navigator.vibrate?.([10,12,22])}catch(_){};setTimeout(()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:pieces.map(piece=>piece.outerHTML).join(''),rect:pk.getBoundingClientRect()};doSpin()}},reduce()?0:180);};
+  if(opening||spinning)return;cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
+  const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(90,Math.round((1-origin)*450));
+  const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}pk.classList.add('strip-off');try{navigator.vibrate?.([10,12,22])}catch(_){};setTimeout(()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:pieces.map(piece=>piece.outerHTML).join(''),rect:pk.getBoundingClientRect()};doSpin()}},reduce()?0:280);};
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
  };
  const reset=()=>{pk.classList.remove('dragging');pk.classList.add('rip-reset');const begin=performance.now(),origin=r;const tick=now=>{const t=reduce()?1:Math.min(1,(now-begin)/170);paint(origin*(1-t));if(t<1)frame=requestAnimationFrame(tick);else pk.classList.remove('rip-reset');};cancelAnimationFrame(frame);frame=requestAnimationFrame(tick);};
@@ -65,7 +65,7 @@ function wireRip(pk){
   if(!start||opening)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;
   if(!moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){start=null;suppressClick=true;reset();return;}
   if(!moved&&Math.abs(dx)>6){direction=dx>0?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
-  if(!moved)return;e.preventDefault();const p=Math.max(0,Math.min(1,direction*dx/(start.rect.width*.72)));pendingRip=p;if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!opening)paint(pendingRip)});
+  if(!moved)return;e.preventDefault();const p=Math.max(0,Math.min(1,direction*dx/(start.rect.width*.9)));pendingRip=p;if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!opening)paint(pendingRip)});
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
  },{passive:false});
