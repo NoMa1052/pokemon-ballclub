@@ -1008,3 +1008,20 @@ body.rv-open>.wrap{visibility:visible!important}
 .case-cap em.lk{background:#2c4470;color:#a9b8d0}
 .case-cap span{grid-column:1/-1;font-size:13.500px;color:#a9b8d0;line-height:1.35}
 @media (min-width:900px){.case-tray{grid-template-columns:repeat(5,minmax(0,1fr))}.bdg-art{width:66px;height:66px}.bdg-art svg{width:60px;height:60px}}
+.bdg.sel .bdg-art{box-shadow:none}
+.bdg:active .bdg-art svg{transform:scale(.94)}
+.bdg-art{background:radial-gradient(circle,rgba(0,0,0,.5),rgba(0,0,0,.18) 68%,transparent 70%)!important}
+.bdg:not(.on) .bdg-art svg{filter:grayscale(1) brightness(.3) contrast(1.1)!important;opacity:.8}
+.case-hint{margin:10px 2px 0;font-size:12.500px;color:#a9b8d0;text-align:center}
+#bdgPop{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:24px;background:rgba(5,12,28,.72);backdrop-filter:blur(3px);animation:bdgIn .16s ease-out}
+.bdg-card{width:min(320px,100%);padding:26px 22px 20px;border-radius:22px;text-align:center;background:linear-gradient(180deg,#1a3566,#10254a);border:1px solid #33507f;box-shadow:0 24px 60px rgba(0,0,0,.6);display:grid;justify-items:center;gap:8px}
+.bdg-big{width:132px;height:132px;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle,#4a1824,#2a0d15 68%,transparent 70%);margin-bottom:6px}
+.bdg-big svg{width:108px;height:108px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+.bdg-card:not(.on) .bdg-big svg{filter:grayscale(1) brightness(.35)}
+.bdg-card em{font:600 11px/1 var(--f-data);letter-spacing:.16em;text-transform:uppercase;font-style:normal;color:#10254a;background:#ffcb05;padding:5px 9px;border-radius:999px}
+.bdg-card em.lk{background:#2c4470;color:#a9b8d0}
+.bdg-card h3{margin:4px 0 0;font:600 24px/1.1 "Oswald",var(--f-data),sans-serif;letter-spacing:.02em;color:#f4eedc;text-transform:none}
+.bdg-card p{margin:0 0 10px;font-size:15px;line-height:1.4;color:#c5d0e2}
+.bdg-card .btn{min-width:120px}
+@keyframes bdgIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){#bdgPop{animation:none}}
