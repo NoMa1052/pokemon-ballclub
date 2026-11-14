@@ -119,7 +119,7 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
    try{
     if(what==='in')await signIn(email,pass);
     else if(what==='up'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');if(await signUp(email,pass,name)==='confirm')msg('Check your email for a confirmation link, then come back and sign in.')}
-    else if(what==='forgot'){await recover(email);msg('If that email has an account, a reset link is on its way.')}
+    else if(what==='forgot'){recover(email).catch(()=>{});msg('Password reset emails aren\'t set up yet. Ask Nolan to reset it for you.')}
     else if(what==='name'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');await setName(name);status='Screen name saved.';close();refresh()}
     else if(what==='newpass'){const t=await token();await call(AUTH+'/user',{method:'PUT',body:JSON.stringify({password:pass})},t);await sync();status='Password updated. You are signed in.';close();refresh()}
    }catch(e){msg(friendly(e))}finally{busy=false}
