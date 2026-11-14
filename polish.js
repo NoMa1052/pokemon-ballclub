@@ -90,7 +90,7 @@
     document.querySelector('#modeSeg [data-v=pack] .sg-t small').textContent='Open 5 random cards';
     const throwBox=$('throwBox');if(throwBox){
       const lab=$('spinLabel');if(!spinning&&lab)lab.textContent=isPack()?'Open Pack':'Spin for your next player';
-      const cue=throwBox.querySelector('.tapcue');if(cue&&!spinning)cue.textContent=isPack()?'Swipe across the seam · or tap':'Tap the ball to spin';
+      const cue=throwBox.querySelector('.tapcue');if(cue&&!spinning)cue.textContent=isPack()?'Open pack · swipe the seam or tap':'Tap the ball to spin';
       const sub=throwBox.querySelector('.throw-sub');if(sub)sub.textContent=run.unrevealed?'Your choices are ready. Open to continue.':isPack()?'Choose one card, then give it a position.':'One type + one region. Pick a Pokémon, then its position.';
     }
     const pb=$('playBtn');if(pb){pb.textContent='Review team';const note=document.querySelector('.simulate-note');if(note)note.textContent='Your lineup is final when the season starts.';}

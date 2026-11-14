@@ -65,11 +65,11 @@ function wireRip(pk){
   if(!start||opening)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;
   if(!moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){start=null;suppressClick=true;reset();return;}
   if(!moved&&Math.abs(dx)>6){direction=start.x-start.rect.left<start.rect.width/2?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
-  if(!moved)return;e.preventDefault();const p=Math.max(0,Math.min(1,direction===1?(e.clientX-start.rect.left)/start.rect.width:(start.rect.right-e.clientX)/start.rect.width));pendingRip=p;if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!opening)paint(pendingRip)});
+  if(!moved)return;e.preventDefault();const p=Math.max(0,Math.min(1,direction*dx/(start.rect.width*.72)));pendingRip=p;if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!opening)paint(pendingRip)});
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
  },{passive:false});
- pk.addEventListener('pointerup',()=>{if(!start||opening)return;cancelAnimationFrame(dragFrame);dragFrame=0;if(moved)paint(pendingRip);start=null;if(moved){suppressClick=true;if(r>=.985)open();else reset();}});
+ pk.addEventListener('pointerup',()=>{if(!start||opening)return;cancelAnimationFrame(dragFrame);dragFrame=0;if(moved)paint(pendingRip);start=null;if(moved){suppressClick=true;if(r>=.62)open();else reset();}});
  pk.addEventListener('pointercancel',()=>{cancelAnimationFrame(dragFrame);dragFrame=0;start=null;suppressClick=true;if(!opening)reset();});
  pk.addEventListener('click',e=>{e.stopPropagation();if(suppressClick){suppressClick=false;return;}direction=1;open();});
  paint(0);
@@ -98,9 +98,9 @@ function playIntro(sp,done){
   card.style.animation='none';card.style.transform='';
   const target=card.getBoundingClientRect(),origin=source?.rect||{left:innerWidth/2-111,top:innerHeight/2-205,width:222,height:410};
   const tier=bestTier(sp),[c1,c2]=TIER[tier];
-  const el=document.createElement('div');el.className='direct-opening';el.setAttribute('aria-hidden','true');el.style.setProperty('--c1',c1);el.style.setProperty('--c2',c2);
+  const el=document.createElement('div');el.className='direct-opening tier-'+tier;el.setAttribute('aria-hidden','true');el.style.setProperty('--c1',c1);el.style.setProperty('--c2',c2);
   el.innerHTML=`<div class="direct-rays"></div><div class="direct-aura"></div><div class="direct-stack">${sp.ids.map((_,i)=>`<div class="direct-back" data-stack="${i}"><span class="opening-back-ball"></span></div>`).join('')}</div><div class="direct-seam"></div><div class="direct-wrapper">${source?.html||packArt(true)}</div><div class="direct-foil">${source?.foil||''}</div>`;
-  document.body.appendChild(el);
+  reveal.appendChild(el);
   const wrapper=el.querySelector('.direct-wrapper'),foil=el.querySelector('.direct-foil'),seam=el.querySelector('.direct-seam');
   for(const layer of [wrapper,foil])Object.assign(layer.style,{left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px'});
   Object.assign(seam.style,{left:origin.left+origin.width/2+'px',top:origin.top+origin.height*.128+'px',width:origin.width+'px'});
@@ -139,9 +139,9 @@ function playIntro(sp,done){
   wrapper.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(0,65px,0)',opacity:1,offset:.35},{transform:`translate3d(0,${innerHeight-origin.top+100}px,0) rotate(3deg)`,opacity:0}],{duration:760,delay:100,easing:'cubic-bezier(.35,0,.55,1)',fill:'forwards'});
   foil.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(65px,-190px,0) rotate(18deg)',opacity:0}],{duration:520,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'});
   seam.animate([{transform:'translate(-50%,-50%) scaleX(.8)',opacity:0},{transform:'translate(-50%,-50%) scaleX(1.2)',opacity:.9,offset:.22},{transform:'translate(-50%,-50%) scaleX(1.6)',opacity:0}],{duration:700,fill:'forwards'});
-  reveal.querySelectorAll('.rv-top,.rv-hint').forEach(node=>node.animate([{opacity:0},{opacity:1}],{duration:250,delay:1550,fill:'both'}));
+  reveal.querySelector('.rv-hint')?.animate([{opacity:0},{opacity:1}],{duration:250,delay:1200,fill:'both'});
   const stage=reveal.querySelector('.rv-stage');stage.style.pointerEvents='none';
-  reveal.classList.add('intro-running');
+  reveal.classList.add('intro-running');reveal.querySelectorAll('#rvSkip,#rvClose').forEach(b=>b.addEventListener('click',()=>finish(),{capture:true,once:true}));
   let settled=false,cleanupTimer=null;
   const finish=()=>{if(settled)return;settled=true;clearTimeout(cleanupTimer);motion.cancel();stage.style.pointerEvents='';reveal.classList.remove('intro-running');el.remove();};
   // Ensure a throttled animation cannot leave the input-blocking layer behind.

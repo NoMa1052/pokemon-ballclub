@@ -21,11 +21,17 @@
   const w=weekKey();let o=null;try{o=JSON.parse(store.get(wkStore(w))||'null')}catch(e){}
   return{w,started:!!o&&((o.picks?.length||0)>0||!!o.spin),done:!!o?.result,wins:o?.result?.wins,picks:o?.picks?.length||0,posted:!!o?.submitted};
  }
- function playWeekly(){
+ function beginWeekly(){
   const w=weekKey();spinning=false;mode='pack';
   run=loadRun('pack',wkStore(w))||{...makeRun('pack',16,true,hash('weekly-'+w)),keeps:{type:1,gen:1},doubles:1,releases:1,candies:1,week:w};
   run.week=w;close();$('season').hidden=true;saveRun();render();
   if(run.locked&&run.result)finish(false);else scrollTo({top:0});
+ }
+ function playWeekly(){
+  const s=weeklyState();if(s.started||s.done){beginWeekly();return}
+  const d=document.createElement('div');d.className='weekly-confirm';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-labelledby','weekly-confirm-title');
+  d.innerHTML='<div class="weekly-confirm-panel"><h2 id="weekly-confirm-title">This week’s challenge</h2><p>One weekly draft on this device. Your progress is saved here, so you can leave and resume it during the week.</p><p>Everyone gets the same packs for each pick. The challenge resets Monday at 00:00 UTC.</p><p>Your regular draft is saved separately.</p><div><button class="btn" id="weekly-cancel">Not yet</button><button class="btn primary" id="weekly-start">Start weekly draft</button></div></div>';document.body.appendChild(d);
+  const close=()=>d.remove();d.querySelector('#weekly-cancel').onclick=close;d.querySelector('#weekly-start').onclick=()=>{close();beginWeekly()};d.addEventListener('keydown',e=>{if(e.key==='Escape')close()});d.querySelector('#weekly-cancel').focus();
  }
  // Weekly packs come from the week and the pick number alone, so every player opens the same pack at each pick.
  // A re-rip at the same pick gives everyone the same second pack.
