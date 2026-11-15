@@ -1050,3 +1050,6 @@ body.rv-open>.wrap{visibility:visible!important}
 
 /* Keep partial tears physically open and the foil shadow quiet. */
 .pack .pk-loose{filter:drop-shadow(0 2px 2px #0005)!important}.pack .pk-cut path{stroke:#ede6d7;stroke-width:.34;opacity:.85}.pack:has(.pk-loose[style*="opacity: 1"]) .pk-tracer{opacity:0}.pack .pk-art{backface-visibility:hidden}
+
+/* Physical cut: a dark slit with a fine foil lip, never a floating fragment. */
+.pack .pk-cut path{stroke:#08101e;stroke-width:.65;opacity:1;filter:drop-shadow(0 .45px 0 #e8e0cb)!important}.pack .pk-loose{filter:none!important}

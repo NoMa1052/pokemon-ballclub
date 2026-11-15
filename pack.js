@@ -44,15 +44,17 @@ function wireRip(pk){
   const edgeY=x=>seam+Math.sin(x*1.71)*.13+Math.sin(x*4.37)*.09;
   jag.push([lo,edgeY(lo)]);for(let x=Math.ceil(lo);x<hi;x++)jag.push([x,edgeY(x)]);jag.push([hi,edgeY(hi)]);
   const pts=ps=>ps.map(([x,y])=>x.toFixed(2)+'% '+y.toFixed(2)+'%').join(',');
-  art.style.clipPath=direction===1?'polygon('+pts([[0,seam],...jag,[edge,0],[100,0],[100,100],[0,100]])+')':'polygon('+pts([[0,0],[edge,0],...jag,[100,100],[0,100]])+')';
-  // The torn part is one continuous strip that lifts away, hinged where the tear currently is.
-  const e=1-(1-p)**2,lift=1+8*e,jagUp=jag.map(([x,y])=>[x,y+.05]);
-  strip.style.opacity='1';
-  strip.style.clipPath=direction===1?'polygon('+pts([[0,0],[edge,0],...jagUp.slice().reverse(),[0,seam]])+')':'polygon('+pts([[edge,0],[100,0],[100,seam],...jagUp.slice().reverse()])+')';
-  strip.style.transformOrigin=`${edge}% ${seam}%`;
-  strip.style.transform=`translate3d(0,${-3*e}px,0) rotate(${direction*lift}deg)`;
-  pk.style.setProperty('--foil-tension',Math.sin(p*Math.PI));
+  // Keep the entire seal rigid and aligned until it is fully separated.
+  // A moving slice must never rotate independently of the still-attached foil.
+  if(p<1){art.style.clipPath='';strip.style.opacity='0'}
+  else{
+   const full=[];for(let x=0;x<=100;x++)full.push([x,edgeY(x)]);
+   art.style.clipPath='polygon('+pts([...full,[100,100],[0,100]])+')';
+   strip.style.clipPath='polygon('+pts([[0,0],[100,0],...full.slice().reverse()])+')';
+   strip.style.opacity='1';strip.style.transformOrigin=direction===1?'100% 12.8%':'0% 12.8%';strip.style.transform='translate3d(0,0,0) rotate(0deg)';
+  }
   tip.style.left=edge+'%';tip.style.top=seam+'%';tip.style.opacity=p<.99?'1':'0';
+  cut.style.opacity=p>=1?'0':'1';
   cut.setAttribute('d',jag.filter(([x])=>x>=3.5&&x<=96.5).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
  };
  const open=()=>{
@@ -67,12 +69,12 @@ function wireRip(pk){
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
  };
  const reset=()=>{if(r>0){committed=r;pk.classList.remove('dragging');return}pk.classList.remove('dragging');pk.classList.add('rip-reset');const begin=performance.now(),origin=r;const tick=now=>{const t=reduce()?1:Math.min(1,(now-begin)/170);paint(origin*(1-t));if(t<1)frame=requestAnimationFrame(tick);else pk.classList.remove('rip-reset');};cancelAnimationFrame(frame);frame=requestAnimationFrame(tick);};
- pk.addEventListener('pointerdown',e=>{if(e.button!==0||opening||spinning)return;cancelAnimationFrame(frame);start={x:e.clientX,y:e.clientY,rect:pk.getBoundingClientRect(),time:performance.now(),progress:r};committed=r;moved=false;suppressClick=false;lastPulse=0;pk.classList.remove('rip-reset');});
+ pk.addEventListener('pointerdown',e=>{if(e.button!==0||opening||spinning)return;cancelAnimationFrame(frame);start={x:e.clientX,y:e.clientY,rect:pk.getBoundingClientRect(),time:performance.now(),progress:r};committed=r;pendingRip=r;moved=false;suppressClick=false;lastPulse=0;pk.classList.remove('rip-reset');});
  pk.addEventListener('pointermove',e=>{
   if(!start||opening)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;
   if(!moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){start=null;suppressClick=true;reset();return;}
   if(!moved&&Math.abs(dx)>6){if(committed===0)direction=dx>0?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
-  if(!moved)return;e.preventDefault();const p=Math.max(r,Math.min(1,start.progress+direction*dx/(start.rect.width*.82)));pendingRip=p;if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!opening){paint(pendingRip);if(r>=.985)open()}});
+  if(!moved)return;e.preventDefault();const p=Math.max(r,Math.min(1,start.progress+direction*dx/(start.rect.width*.82)));pendingRip=Math.max(pendingRip,p);if(!dragFrame){let last=performance.now();const follow=now=>{dragFrame=0;if(opening)return;const dt=Math.min(40,now-last);last=now;const next=r+(pendingRip-r)*(1-Math.exp(-dt/24));paint(pendingRip-next<.001?pendingRip:next);if(r>=.985){open();return}if(pendingRip-r>.001)dragFrame=requestAnimationFrame(follow)};dragFrame=requestAnimationFrame(follow)};
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
  },{passive:false});
