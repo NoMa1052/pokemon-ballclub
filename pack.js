@@ -96,12 +96,12 @@ function wireRip(pk){
    const from=strip.style.transform;
    const detach=strip.animate([
     {transform:from,opacity:1,offset:0},
-    {transform:`translate3d(${direction*3}px,-7px,0) rotate(${direction*10}deg)`,opacity:1,offset:.2},
-    {transform:`translate3d(${direction*12}px,-22px,0) rotate(${direction*15}deg)`,opacity:1,offset:.52},
-    {transform:`translate3d(${direction*30}px,-40px,0) rotate(${direction*22}deg)`,opacity:.75,offset:.78},
-    {transform:`translate3d(${direction*48}px,-52px,0) rotate(${direction*26}deg)`,opacity:0,offset:1}
-   ],{duration:440,easing:'cubic-bezier(.32,0,.2,1)',fill:'forwards'});
-   let handed=false;const complete=()=>{if(handed)return;handed=true;handoff()};detach.finished.then(complete).catch(complete);setTimeout(complete,520);};
+    {transform:`translate3d(${direction*3}px,-8px,0) rotate(${direction*7}deg)`,opacity:1,offset:.18},
+    {transform:`translate3d(${direction*7}px,-12px,0) rotate(${direction*5}deg)`,opacity:1,offset:.32},
+    {transform:`translate3d(${direction*19}px,-27px,0) rotate(${direction*12}deg)`,opacity:.95,offset:.62},
+    {transform:`translate3d(${direction*38}px,-43px,0) rotate(${direction*19}deg)`,opacity:0,offset:1}
+   ],{duration:490,easing:'cubic-bezier(.25,.1,.25,1)',fill:'forwards'});
+   let handed=false;const complete=()=>{if(handed)return;handed=true;handoff()};detach.finished.then(complete).catch(complete);setTimeout(complete,590);};
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
  };
  const reset=()=>{if(r>0){committed=r;pk.classList.remove('dragging');return}pk.classList.remove('dragging');pk.classList.add('rip-reset');const begin=performance.now(),origin=r;const tick=now=>{const t=reduce()?1:Math.min(1,(now-begin)/170);paint(origin*(1-t));if(t<1)frame=requestAnimationFrame(tick);else pk.classList.remove('rip-reset');};cancelAnimationFrame(frame);frame=requestAnimationFrame(tick);};
@@ -110,7 +110,7 @@ function wireRip(pk){
   if(!start||opening)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;
   if(!moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){start=null;suppressClick=true;reset();return;}
   if(!moved&&Math.abs(dx)>6){if(committed===0)direction=dx>0?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
-  if(!moved)return;e.preventDefault();const p=Math.max(r,Math.min(1,start.progress+direction*dx/(start.rect.width*.82)));pendingRip=Math.max(pendingRip,p);if(!dragFrame){let last=performance.now();const follow=now=>{dragFrame=0;if(opening)return;const dt=Math.min(40,now-last);last=now;const next=r+(pendingRip-r)*(1-Math.exp(-dt/24));paint(pendingRip-next<.001?pendingRip:next);if(r>=.985){open();return}if(pendingRip-r>.001)dragFrame=requestAnimationFrame(follow)};dragFrame=requestAnimationFrame(follow)};
+  if(!moved)return;e.preventDefault();const p=Math.max(r,Math.min(1,start.progress+direction*dx/(start.rect.width*.82)));pendingRip=Math.max(pendingRip,p);if(!dragFrame){let last=performance.now();const follow=now=>{dragFrame=0;if(opening)return;const dt=Math.min(40,now-last);last=now;const next=r+(pendingRip-r)*(1-Math.exp(-dt/30));paint(pendingRip-next<.001?pendingRip:next);if(r>=.985){open();return}if(pendingRip-r>.001)dragFrame=requestAnimationFrame(follow)};dragFrame=requestAnimationFrame(follow)};
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
  },{passive:false});
