@@ -4,7 +4,7 @@
 const CW=1080,CH=1350,GAME_URL='https://pokemon-ballclub.vercel.app/';
 let modal=null,objectUrl=null,focusBefore=null;
 const navy='#10254a',ink='#152b46',cream='#f4e9d4',gold='#e6c685',red='#b63e45';
-function shareLink(){let code='';try{code=(typeof leagueCodes==='function'&&leagueCodes()[0])||''}catch(_){}return 'pokemon-ballclub.vercel.app'+(code?'/?league='+code:'')}
+function shareLink(){let code='';try{code=(typeof leagueCodes==='function'&&leagueCodes()[0])||''}catch(_){}return GAME_URL+(code?'?league='+encodeURIComponent(code):'')}
 window.shareLink=shareLink;
 function snapshot(){
  if(!run||!run.slots||!slotList().some(s=>run.slots[s]))throw Error('Complete your roster before sharing.');
@@ -19,7 +19,7 @@ function text(s){
  const l=['⚾ POKÉMON BALLCLUB','',s.team];
  if(s.record){l.push('Record: '+s.record+(s.grade?' · Grade '+s.grade:''));if(s.champ)l.push('🏆 World Series champions');else if(s.made)l.push('Made the playoffs');else l.push('Missed the playoffs');if(s.mvp)l.push('MVP: '+s.mvp.name+' · '+s.mvp.hr+' HR · '+Number(s.mvp.ops).toFixed(3).replace(/^0/,'')+' OPS')}
  else l.push('Team rating: '+s.ovr+' OVR');
- l.push('','Think you can beat my team?','https://'+shareLink());return l.join('\n');
+ l.push('','Think you can beat my team?',shareLink());return l.join('\n');
 }
 function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillStyle=fill;let size=sz;ctx.font='700 '+size+'px "Barlow",Arial,sans-serif';while(max&&ctx.measureText(String(str)).width>max&&size>16){ctx.font='700 '+(--size)+'px "Barlow",Arial,sans-serif'}ctx.fillText(String(str),px,py)}
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
