@@ -59,13 +59,19 @@ function wireRip(pk){
  };
  const open=()=>{
   if(opening||spinning)return;cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
-  const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(90,Math.round((1-origin)*450));
+  const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
    const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect()};doSpin()}};
    if(reduce()){handoff();return}
    const from=strip.style.transform;
-   const detach=strip.animate([{transform:from,opacity:1},{transform:`translate3d(${direction*12}px,-28px,0) rotate(${direction*16}deg)`,opacity:1,offset:.4},{transform:`translate3d(${direction*55}px,-65px,0) rotate(${direction*30}deg)`,opacity:0}],{duration:300,easing:'cubic-bezier(.22,.6,.36,1)',fill:'forwards'});
-   let handed=false;const complete=()=>{if(handed)return;handed=true;handoff()};detach.finished.then(complete).catch(complete);setTimeout(complete,360);};
+   const detach=strip.animate([
+    {transform:from,opacity:1,offset:0},
+    {transform:`translate3d(${direction*2}px,-3px,0) rotate(${direction*2}deg)`,opacity:1,offset:.2},
+    {transform:`translate3d(${direction*10}px,-18px,0) rotate(${direction*9}deg)`,opacity:1,offset:.52},
+    {transform:`translate3d(${direction*28}px,-36px,0) rotate(${direction*17}deg)`,opacity:.75,offset:.78},
+    {transform:`translate3d(${direction*45}px,-44px,0) rotate(${direction*21}deg)`,opacity:0,offset:1}
+   ],{duration:440,easing:'cubic-bezier(.32,0,.2,1)',fill:'forwards'});
+   let handed=false;const complete=()=>{if(handed)return;handed=true;handoff()};detach.finished.then(complete).catch(complete);setTimeout(complete,520);};
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
  };
  const reset=()=>{if(r>0){committed=r;pk.classList.remove('dragging');return}pk.classList.remove('dragging');pk.classList.add('rip-reset');const begin=performance.now(),origin=r;const tick=now=>{const t=reduce()?1:Math.min(1,(now-begin)/170);paint(origin*(1-t));if(t<1)frame=requestAnimationFrame(tick);else pk.classList.remove('rip-reset');};cancelAnimationFrame(frame);frame=requestAnimationFrame(tick);};
@@ -78,7 +84,7 @@ function wireRip(pk){
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
  },{passive:false});
- pk.addEventListener('pointerup',()=>{if(!start||opening)return;cancelAnimationFrame(dragFrame);dragFrame=0;if(moved)paint(pendingRip);start=null;if(moved){suppressClick=true;if(r>=.62)open();else reset();}});
+ pk.addEventListener('pointerup',()=>{if(!start||opening)return;start=null;if(moved){suppressClick=true;if(pendingRip>=.82){cancelAnimationFrame(dragFrame);dragFrame=0;open()}else reset();}});
  pk.addEventListener('pointercancel',()=>{cancelAnimationFrame(dragFrame);dragFrame=0;start=null;suppressClick=true;if(!opening)reset();});
  pk.addEventListener('click',e=>{e.stopPropagation();if(suppressClick){suppressClick=false;return;}if(r===0)direction=1;open();});
  paint(0);
