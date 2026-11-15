@@ -28,8 +28,41 @@ function addTilt(pk){
 // The actual photographed top of the wrapper peels away as the tear follows the finger.
 function wireRip(pk){
  if(pk._ripWired)return;pk._ripWired=true;
- const art=pk.querySelector('.pk-art'),strip=art.cloneNode(true);
- strip.classList.replace('pk-art','pk-loose');strip.setAttribute('aria-hidden','true');pk.appendChild(strip);
+ const art=pk.querySelector('.pk-art'),strip=document.createElement('canvas');
+ strip.className='pk-loose';strip.setAttribute('aria-hidden','true');pk.appendChild(strip);
+ const foilImage=new Image();foilImage.src=art.querySelector('image').getAttribute('href');
+ const cw=600,ch=Math.round(600*1706/922);strip.width=cw;strip.height=ch;
+ const foil=strip.getContext('2d');
+ const drawFoil=p=>{
+  if(!foilImage.complete||!foilImage.naturalWidth)return false;
+  foil.clearRect(0,0,cw,ch);const seal=ch*.128,front=p*cw;
+  // Render narrow connected slices along a curved strip. Curvature is zero at
+  // the attachment, increasing toward the free end; illumination follows it.
+  const step=2;
+  for(let u=cw;u>=0;u-=step){
+   const distance=Math.max(0,front-u),t=distance/cw;
+   const angle=Math.min(1.25,t*1.65),bend=t*t*(3-2*t);
+   const lift=cw*.10*bend,shift=cw*.055*bend;
+   const x=direction===1?u:cw-u-step;
+   const dx=x+direction*shift,dy=-lift;
+   const height=seal*Math.max(.24,Math.cos(angle));
+   foil.save();foil.translate(dx,seal+dy);foil.transform(1,-direction*Math.sin(angle)*.28,0,1,0,0);
+   foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,0,(step+1)/cw*foilImage.naturalWidth,foilImage.naturalHeight*.128,0,-height,step+1,height);
+   if(distance>0){
+    const shade=foil.createLinearGradient(0,-height,0,0);
+    shade.addColorStop(0,`rgba(255,255,255,${Math.sin(angle)*.28})`);
+    shade.addColorStop(.55,'rgba(255,255,255,0)');
+    shade.addColorStop(1,`rgba(0,0,0,${Math.sin(angle)*.32})`);
+    foil.fillStyle=shade;foil.fillRect(0,-height,step+1,height);
+    // Thin rolled lip exposes the unprinted silver inner foil.
+    foil.fillStyle=`rgba(205,215,225,${Math.min(.8,t*2)})`;
+    foil.fillRect(0,-Math.max(1,Math.sin(angle)*5),step+1,Math.max(1,Math.sin(angle)*5));
+   }
+   foil.restore();
+  }
+  return true;
+ };
+ foilImage.onload=()=>{if(r>0)paint(r)};
  pk.insertAdjacentHTML('beforeend','<span class="pk-mouth" aria-hidden="true"></span><span class="pk-tracer" aria-hidden="true"><i></i></span><svg class="pk-cut" viewBox="0 0 100 185" aria-hidden="true"><path fill="none"/></svg>');
  const cut=pk.querySelector('.pk-cut path');
  const pieces=Array.from({length:0},(_,i)=>{const piece=art.cloneNode(true);piece.classList.replace('pk-art','pk-foil-piece');piece.setAttribute('aria-hidden','true');pk.appendChild(piece);return piece});
@@ -44,14 +77,12 @@ function wireRip(pk){
   const edgeY=x=>seam+Math.sin(x*1.71)*.13+Math.sin(x*4.37)*.09;
   jag.push([lo,edgeY(lo)]);for(let x=Math.ceil(lo);x<hi;x++)jag.push([x,edgeY(x)]);jag.push([hi,edgeY(hi)]);
   const pts=ps=>ps.map(([x,y])=>x.toFixed(2)+'% '+y.toFixed(2)+'%').join(',');
-  // One complete seal pivots around the far, still-attached corner.
-  // Never rotate a cropped half: that produces a broken crimp and a moving joint.
   const full=[];for(let x=0;x<=100;x++)full.push([x,edgeY(x)]);
-  art.style.clipPath='polygon('+pts([...full,[100,100],[0,100]])+')';
-  strip.style.clipPath='polygon('+pts([[0,0],[100,0],...full.slice().reverse()])+')';
-  const peel=p*p*(3-2*p);
-  strip.style.opacity='1';strip.style.transformOrigin=direction===1?'100% 12.8%':'0% 12.8%';
-  strip.style.transform=`translate3d(0,${-2*peel}px,0) rotate(${direction*8*peel}deg)`;
+  if(drawFoil(p)){
+   art.style.clipPath='polygon('+pts([...full,[100,100],[0,100]])+')';
+   strip.style.opacity='1';strip.style.clipPath='none';
+   strip.style.transformOrigin='50% 12.8%';strip.style.transform='translate3d(0,0,0)';
+  }
   tip.style.left=edge+'%';tip.style.top=seam+'%';tip.style.opacity=p<.99?'1':'0';
   cut.style.opacity=p>=1?'0':'1';
   cut.setAttribute('d',jag.filter(([x])=>x>=3.5&&x<=96.5).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
