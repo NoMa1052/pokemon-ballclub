@@ -44,15 +44,14 @@ function wireRip(pk){
   const edgeY=x=>seam+Math.sin(x*1.71)*.13+Math.sin(x*4.37)*.09;
   jag.push([lo,edgeY(lo)]);for(let x=Math.ceil(lo);x<hi;x++)jag.push([x,edgeY(x)]);jag.push([hi,edgeY(hi)]);
   const pts=ps=>ps.map(([x,y])=>x.toFixed(2)+'% '+y.toFixed(2)+'%').join(',');
-  // Keep the entire seal rigid and aligned until it is fully separated.
-  // A moving slice must never rotate independently of the still-attached foil.
-  if(p<1){art.style.clipPath='';strip.style.opacity='0'}
-  else{
-   const full=[];for(let x=0;x<=100;x++)full.push([x,edgeY(x)]);
-   art.style.clipPath='polygon('+pts([...full,[100,100],[0,100]])+')';
-   strip.style.clipPath='polygon('+pts([[0,0],[100,0],...full.slice().reverse()])+')';
-   strip.style.opacity='1';strip.style.transformOrigin=direction===1?'100% 12.8%':'0% 12.8%';strip.style.transform='translate3d(0,0,0) rotate(0deg)';
-  }
+  // One complete seal pivots around the far, still-attached corner.
+  // Never rotate a cropped half: that produces a broken crimp and a moving joint.
+  const full=[];for(let x=0;x<=100;x++)full.push([x,edgeY(x)]);
+  art.style.clipPath='polygon('+pts([...full,[100,100],[0,100]])+')';
+  strip.style.clipPath='polygon('+pts([[0,0],[100,0],...full.slice().reverse()])+')';
+  const peel=p*p*(3-2*p);
+  strip.style.opacity='1';strip.style.transformOrigin=direction===1?'100% 12.8%':'0% 12.8%';
+  strip.style.transform=`translate3d(0,${-2*peel}px,0) rotate(${direction*8*peel}deg)`;
   tip.style.left=edge+'%';tip.style.top=seam+'%';tip.style.opacity=p<.99?'1':'0';
   cut.style.opacity=p>=1?'0':'1';
   cut.setAttribute('d',jag.filter(([x])=>x>=3.5&&x<=96.5).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
@@ -66,10 +65,10 @@ function wireRip(pk){
    const from=strip.style.transform;
    const detach=strip.animate([
     {transform:from,opacity:1,offset:0},
-    {transform:`translate3d(${direction*2}px,-3px,0) rotate(${direction*2}deg)`,opacity:1,offset:.2},
-    {transform:`translate3d(${direction*10}px,-18px,0) rotate(${direction*9}deg)`,opacity:1,offset:.52},
-    {transform:`translate3d(${direction*28}px,-36px,0) rotate(${direction*17}deg)`,opacity:.75,offset:.78},
-    {transform:`translate3d(${direction*45}px,-44px,0) rotate(${direction*21}deg)`,opacity:0,offset:1}
+    {transform:`translate3d(${direction*3}px,-7px,0) rotate(${direction*10}deg)`,opacity:1,offset:.2},
+    {transform:`translate3d(${direction*12}px,-22px,0) rotate(${direction*15}deg)`,opacity:1,offset:.52},
+    {transform:`translate3d(${direction*30}px,-40px,0) rotate(${direction*22}deg)`,opacity:.75,offset:.78},
+    {transform:`translate3d(${direction*48}px,-52px,0) rotate(${direction*26}deg)`,opacity:0,offset:1}
    ],{duration:440,easing:'cubic-bezier(.32,0,.2,1)',fill:'forwards'});
    let handed=false;const complete=()=>{if(handed)return;handed=true;handoff()};detach.finished.then(complete).catch(complete);setTimeout(complete,520);};
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
