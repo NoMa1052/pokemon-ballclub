@@ -23,7 +23,7 @@ function unlockRevealScroll(){
   document.body.classList.remove('rv-open');document.documentElement.classList.remove('rv-root');document.body.style.removeProperty('--reveal-scroll');
   if(revealScroll!==null){const y=revealScroll;revealScroll=null;window.scrollTo(0,y)}
 }
-function closeReveal(){if(revealEl){revealEl.remove();revealEl=null}unlockRevealScroll()}
+function closeReveal(){window.PBCOpeningFX?.cancel();document.querySelectorAll('.rv-departing').forEach(n=>n.remove());if(revealEl){revealEl.remove();revealEl=null}unlockRevealScroll()}
 // Rebuild the pack row when leaving the reveal. This refreshes card artwork as well as
 // the options UI, instead of uncovering potentially stale card elements underneath.
 // iPhone Safari can leave card pictures blank when they were created while the page behind the pack
@@ -94,22 +94,20 @@ function openReveal(sp,chooseAll=false){
     // Own the transform here for every card, including tap and keyboard advances.
     card.style.animation='none';
     const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const unlock=()=>{
+      if(!card.isConnected||revealEl!==el)return;
+      busy=false;const next=pendingAdvance;pendingAdvance=null;if(next)advance(next.step,next.dir);
+    };
+    card._previewEntrance=()=>{if(card.isConnected)window.PBCOpeningFX?.play(card,ms[i])};
     if(entryDirection&&!reduced){
       busy=true;
       const arrival=card.animate([
-        {transform:`translate3d(${-entryDirection*70}px,0,0) rotate(${-entryDirection*3}deg)`,opacity:.3},
-        {transform:'translate3d(0,0,0) rotate(0deg)',opacity:1}
-      ],{duration:230,easing:'cubic-bezier(.16,1,.3,1)'});
-      arrival.finished.then(()=>card._previewEntrance()).catch(()=>{busy=false;pendingAdvance=null});
-    }
-    card._previewEntrance=()=>{
-      if(!card.isConnected)return;
-      busy=true;
-      Promise.resolve(window.PBCOpeningFX?.play(card,ms[i])).finally(()=>{
-        if(!card.isConnected||revealEl!==el)return;
-        busy=false;const next=pendingAdvance;pendingAdvance=null;if(next)advance(next.step,next.dir);
-      });
-    };
+        {transform:`translate3d(${-entryDirection*38}px,8px,0) rotate(${-entryDirection*1.5}deg) scale(.975)`,opacity:0},
+        {transform:'translate3d(0,0,0) rotate(0deg) scale(1)',opacity:1}
+      ],{duration:380,easing:'cubic-bezier(.22,.61,.36,1)'});
+      card._previewEntrance();
+      arrival.finished.then(unlock).catch(unlock);
+    }else if(entryDirection){unlock()}
     if(!entryDirection)requestAnimationFrame(()=>{if(card.isConnected&&!el.classList.contains('intro-running'))card._previewEntrance()});
     const advance=(step=1,dir=-1)=>{
       if(el.classList.contains('intro-running'))return;if(busy){pendingAdvance={step,dir};return}
@@ -118,14 +116,24 @@ function openReveal(sp,chooseAll=false){
       let finished=false;
       const next=()=>{if(finished||revealEl!==el||!card.isConnected)return;finished=true;busy=false;i+=step;if(i>=ms.length)pendingAdvance=null;show(dir)};
       if(reduced){next();return}
-      const current=getComputedStyle(card);
-      const departure=card.animate([
+      // Keep the outgoing card on its own layer while the next one arrives.
+      window.PBCOpeningFX?.cancel();
+      const current=getComputedStyle(card),stageRect=stage.getBoundingClientRect();
+      const ghost=card.cloneNode(true);
+      const cardWidth=card.offsetWidth,cardHeight=card.offsetHeight;
+      ghost.classList.add('rv-departing');ghost.setAttribute('aria-hidden','true');
+      ghost.removeAttribute('id');
+      Object.assign(ghost.style,{left:(stageRect.left+(stage.clientWidth-cardWidth)/2)+'px',top:(stageRect.top+(stage.clientHeight-cardHeight)/2)+'px',width:cardWidth+'px',height:cardHeight+'px',boxSizing:'border-box',transform:current.transform,opacity:current.opacity});
+      document.body.append(ghost);
+      let removed=false;
+      const removeGhost=()=>{if(removed)return;removed=true;ghost.remove()};
+      const departure=ghost.animate([
         {transform:current.transform,opacity:current.opacity},
-        {transform:`translate3d(${dir*Math.max(card.clientWidth*1.4,innerWidth*.75)}px,0,0) rotate(${dir*12}deg)`,opacity:0}
-      ],{duration:250,easing:'cubic-bezier(.3,0,.7,.4)',fill:'forwards'});
-      departure.finished.then(next).catch(next);
-      // Keep the reveal moving even if a browser interrupts the animation.
-      setTimeout(next,500);
+        {transform:`translate3d(${dir*Math.max(cardWidth*.8,180)}px,-8px,0) rotate(${dir*7}deg)`,opacity:0}
+      ],{duration:270,easing:'cubic-bezier(.4,0,.6,1)',fill:'forwards'});
+      departure.finished.then(removeGhost).catch(removeGhost);
+      setTimeout(removeGhost,500);
+      next();
     };
     stage.onclick=()=>{if(suppressClick){suppressClick=false;return}advance()};
     stage.addEventListener('pointerdown',e=>{if(e.button!==0||busy||el.classList.contains('intro-running'))return;gesture={x:e.clientX,y:e.clientY,dx:0,dragging:false};suppressClick=false;card.style.transition='none'});
