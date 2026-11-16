@@ -1,0 +1,32 @@
+/* Physical opening preview, layered onto the existing Ballclub artwork. */
+.physical-stage{perspective:1100px;touch-action:pan-y}
+.physical-stack{display:grid;position:relative;isolation:isolate;perspective:1000px;overflow:visible;transform-origin:50% 65%}
+.physical-stack>.tcard{grid-area:1/1;position:relative!important;align-self:center;justify-self:center;transform-origin:50% 65%;backface-visibility:hidden;animation:none!important;will-change:transform,opacity;box-shadow:1px 1px 0 #d7d8d8,2px 2px 0 #7e8791,0 12px 24px #0005}
+.physical-stack>.tcard[hidden]{display:none!important}
+.physical-stack>.tcard:not(.physical-front){pointer-events:none}
+.physical-stage .tc-in::after{animation:none!important;opacity:0!important}
+.physical-stage::before{animation:none!important}
+.reveal:has(.physical-stack) .rv-hint{animation:none!important}
+.physical-sheen{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:20;opacity:0}
+.physical-sheen::after{content:'';position:absolute;inset:-35% -100%;background:linear-gradient(110deg,transparent 36%,#fff4c716 43%,#fffbd45c 50%,#fff4c714 57%,transparent 65%);transform:translate3d(-38%,0,0)}
+.physical-front.physical-catchlight:is(.gold,.leg,.shiny) .physical-sheen{animation:physical-glint 1350ms ease both}
+.physical-front.physical-catchlight:is(.gold,.leg,.shiny) .physical-sheen::after{animation:physical-reflect 1350ms cubic-bezier(.22,.61,.36,1) both}
+.physical-stack .shiny .physical-sheen::after{background:linear-gradient(110deg,transparent 32%,#ffb2e633 41%,#fffde678 48%,#a2eaff55 55%,#b8ffe12b 61%,transparent 68%)}
+.physical-stack .leg .physical-sheen::after{background:linear-gradient(110deg,transparent 33%,#bd96f62b 41%,#ffffff85 49%,#ffe7a03b 57%,transparent 66%)}
+.physical-front.physical-catchlight:is(.leg,.shiny) .physical-sheen,.physical-front.physical-catchlight:is(.leg,.shiny) .physical-sheen::after{animation-duration:1800ms}
+@keyframes physical-glint{0%{opacity:0}18%{opacity:1}76%{opacity:.8}100%{opacity:0}}
+@keyframes physical-reflect{to{transform:translate3d(38%,0,0)}}
+.physical-rip-light{position:absolute;left:-15%;width:130%;top:-20%;height:37%;background:radial-gradient(ellipse at 50% 100%,#f9ffffcf 0,#c5f7ff55 20%,#d9b8ff16 48%,transparent 72%);pointer-events:none;z-index:3;opacity:0;transform-origin:50% 100%;transform:scale(.7)}
+.pack.dragging .physical-rip-light{opacity:calc(var(--rip)*.3)}
+.pack.foil-releasing .physical-rip-light{animation:physical-spill 700ms ease-out both}
+.pack.foil-releasing .pk-cut path{stroke:#e4fcff;stroke-width:1;opacity:1}
+.pack .pk-loose{transform-origin:50% 26%!important;will-change:opacity!important}
+.physical-intro{pointer-events:auto}
+.physical-spill{position:absolute;height:190px;background:radial-gradient(ellipse at 50% 75%,#e6fcff99,#adcfff22 40%,transparent 70%);animation:physical-spill 850ms ease-out both;pointer-events:none}
+@keyframes physical-spill{0%{opacity:.3;transform:scale(.85)}25%{opacity:.9;transform:scale(1.08)}100%{opacity:0;transform:scale(1.4)}}
+@media(prefers-reduced-motion:reduce){
+ .physical-sheen,.physical-rip-light,.physical-spill{display:none!important}
+ .physical-stack>.tcard{will-change:auto;transition:none!important}
+}
+
+.physical-stack>.tcard{width:min(300px,78vw,calc((100dvh - 130px)*.64))}

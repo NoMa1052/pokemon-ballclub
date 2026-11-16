@@ -80,49 +80,88 @@ function openReveal(sp,chooseAll=false){
     el.querySelector("#rvTake2").onclick=()=>{if(!run.doubles||run.second)return;run.doubleArmed=!run.doubleArmed;selected=[];saveRun();renderBoard();spread()};
     el.querySelector("#rvList").onclick=returnToField;
   };
-  const show=(entryDirection=0)=>{
+  let stage=null,stack=null,cards=[],gesture=null,suppressClick=false;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const parked=d=>`translate3d(${Math.min(d,4)*5}px,${Math.min(d,4)*3}px,0) scale(${1-Math.min(d,4)*.012})`;
+  const entrance=card=>{
+    if(reduced||!card?.isConnected)return;
+    card.classList.remove('physical-catchlight');
+    requestAnimationFrame(()=>{if(card.isConnected)card.classList.add('physical-catchlight')});
+  };
+  const position=()=>{
+    cards.forEach((card,n)=>{
+      const depth=n-i;
+      card.hidden=depth<0;card.style.zIndex=String(ms.length-n);
+      card.style.transform=depth===0?'translate3d(0,0,0)':parked(depth);
+      card.style.opacity=depth>=0?'1':'0';card.style.transition='none';
+      card.classList.toggle('physical-front',depth===0);
+      card.setAttribute('aria-hidden',depth===0?'false':'true');
+    });
+    el.querySelector('.rv-count').textContent=(i+1)+' / '+ms.length;
+    el.querySelector('.rv-hint').textContent=i===ms.length-1?'Swipe or tap to see your pack':'Swipe left or tap to continue';
+  };
+  const settle=()=>{if(!cards[i])return;const c=cards[i];c.style.transition=reduced?'none':'transform 240ms cubic-bezier(.22,.61,.36,1)';c.style.transform='translate3d(0,0,0)'};
+  const advance=(step=1,dir=-1)=>{
+    if(revealEl!==el||el.classList.contains('intro-running'))return;
+    if(busy){pendingAdvance={step,dir};return}
+    if(i+step<0){settle();return}
+    busy=true;gesture=null;
+    const old=cards[i],next=cards[i+step],animations=[];
+    let finished=false,timer;
+    const finish=()=>{
+      if(finished)return;finished=true;clearTimeout(timer);
+      if(revealEl!==el||!stack?.isConnected){animations.forEach(a=>a.cancel());return}
+      i+=step;
+      if(i>=ms.length){animations.forEach(a=>a.cancel());pendingAdvance=null;busy=false;spread();stage=null;return}
+      position();animations.forEach(a=>a.cancel());busy=false;entrance(cards[i]);
+      const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);
+    };
+    if(reduced){finish();return}
+    old.classList.remove('physical-catchlight');
+    if(step>0){
+      const start=getComputedStyle(old).transform;
+      animations.push(old.animate([{transform:start,opacity:1},{transform:`translate3d(${dir*Math.max(old.offsetWidth*1.25,innerWidth*.7)}px,-12px,0) rotateY(${-dir*12}deg) rotate(${dir*5}deg)`,opacity:0}],{duration:420,easing:'cubic-bezier(.32,0,.3,1)',fill:'forwards'}));
+      if(next)animations.push(next.animate([{transform:parked(1)},{transform:'translate3d(0,0,0)'}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
+    }else{
+      next.hidden=false;next.style.opacity='1';
+      animations.push(next.animate([{transform:'translate3d(-110%,0,0) rotate(-5deg)',opacity:0},{transform:'translate3d(0,0,0)',opacity:1}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
+      animations.push(old.animate([{transform:getComputedStyle(old).transform},{transform:parked(1)}],{duration:420,fill:'forwards'}));
+    }
+    animations[0].finished.then(finish).catch(finish);timer=setTimeout(finish,650);
+  };
+  const show=()=>{
     if(revealEl!==el)return;
     if(i>=ms.length){spread();return}
-    const last=i===ms.length-1;
-    el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose">Back to field</button><span class="rv-count">${i+1} / ${ms.length}</span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
-      <button class="rv-stage" id="rvStage" aria-label="Next card" data-autofocus>${tcardHTML(ms[i])}</button>
-      <p class="rv-hint">${last?"Swipe or tap to see your pack":"Swipe left or tap to continue"}</p>`;
-    el.querySelector("#rvClose").onclick=returnToField;
-    el.querySelector("#rvSkip").onclick=e=>{e.stopPropagation();i=ms.length;show()};
-    const stage=el.querySelector('#rvStage'),card=stage.querySelector('.tcard');let gesture=null,suppressClick=false;
-    // The old cardpop animation filled forwards and masked inline swipe transforms.
-    // Own the transform here for every card, including tap and keyboard advances.
-    card.style.animation='none';
-    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(entryDirection&&!reduced){
-      busy=true;
-      const arrival=card.animate([
-        {transform:`translate3d(${-entryDirection*70}px,0,0) rotate(${-entryDirection*3}deg)`,opacity:.3},
-        {transform:'translate3d(0,0,0) rotate(0deg)',opacity:1}
-      ],{duration:230,easing:'cubic-bezier(.16,1,.3,1)'});
-      arrival.finished.then(()=>{busy=false;const next=pendingAdvance;pendingAdvance=null;if(next&&revealEl===el)advance(next.step,next.dir)}).catch(()=>{busy=false;pendingAdvance=null});
-    }
-    const advance=(step=1,dir=-1)=>{
-      if(el.classList.contains('intro-running'))return;if(busy){pendingAdvance={step,dir};return}
-      if(i+step<0){card.style.transition='transform 160ms ease,opacity 160ms ease';card.style.transform='';card.style.opacity='';return}
-      busy=true;
-      let finished=false;
-      const next=()=>{if(finished||revealEl!==el||!card.isConnected)return;finished=true;busy=false;i+=step;if(i>=ms.length)pendingAdvance=null;show(dir)};
-      if(reduced){next();return}
-      const current=getComputedStyle(card);
-      const departure=card.animate([
-        {transform:current.transform,opacity:current.opacity},
-        {transform:`translate3d(${dir*Math.max(card.clientWidth*1.4,innerWidth*.75)}px,0,0) rotate(${dir*12}deg)`,opacity:0}
-      ],{duration:250,easing:'cubic-bezier(.3,0,.7,.4)',fill:'forwards'});
-      departure.finished.then(next).catch(next);
-      // Keep the reveal moving even if a browser interrupts the animation.
-      setTimeout(next,500);
-    };
+    el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose">Back to field</button><span class="rv-count"></span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
+    <button class="rv-stage physical-stage" id="rvStage" aria-label="Next card" data-autofocus><span class="physical-stack">${ms.map(m=>tcardHTML(m)).join('')}</span></button><p class="rv-hint"></p>`;
+    stage=el.querySelector('#rvStage');stack=stage.querySelector('.physical-stack');cards=[...stack.children];
+    cards.forEach(card=>{
+      card.style.animation='none';
+      const shine=document.createElement('span');shine.className='physical-sheen';shine.setAttribute('aria-hidden','true');card.append(shine);
+      card._physicalEntrance=()=>entrance(card);
+    });
+    position();
+    el.querySelector('#rvClose').onclick=returnToField;
+    el.querySelector('#rvSkip').onclick=e=>{e.stopPropagation();pendingAdvance=null;busy=false;i=ms.length;spread();stage=null};
     stage.onclick=()=>{if(suppressClick){suppressClick=false;return}advance()};
-    stage.addEventListener('pointerdown',e=>{if(e.button!==0||busy||el.classList.contains('intro-running'))return;gesture={x:e.clientX,y:e.clientY,dx:0,dragging:false};suppressClick=false;card.style.transition='none'});
-    stage.addEventListener('pointermove',e=>{if(!gesture)return;const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;if(!gesture.dragging&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){gesture=null;return}if(!gesture.dragging&&Math.abs(dx)>10){gesture.dragging=true;stage.setPointerCapture(e.pointerId)}if(!gesture.dragging)return;e.preventDefault();gesture.dx=dx;card.style.transform=`translateX(${dx}px) rotate(${dx/35}deg)`;card.style.opacity=String(Math.max(.35,1-Math.abs(dx)/650))},{passive:false});
-    stage.addEventListener('pointerup',()=>{if(!gesture)return;const {dx,dragging}=gesture;gesture=null;if(!dragging)return;suppressClick=true;if(Math.abs(dx)>=Math.min(75,card.clientWidth*.22))advance(dx<0?1:-1,dx<0?-1:1);else{card.style.transition='transform 160ms ease,opacity 160ms ease';card.style.transform='';card.style.opacity=''}});
-    stage.addEventListener('pointercancel',()=>{gesture=null;suppressClick=true;card.style.transition='transform 160ms ease,opacity 160ms ease';card.style.transform='';card.style.opacity=''});
+    stage.addEventListener('pointerdown',e=>{
+      if(e.button!==0||busy||el.classList.contains('intro-running'))return;
+      gesture={x:e.clientX,y:e.clientY,dx:0,dragging:false};suppressClick=false;cards[i].style.transition='none';
+    });
+    stage.addEventListener('pointermove',e=>{
+      if(!gesture)return;
+      const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
+      if(!gesture.dragging&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){gesture=null;return}
+      if(!gesture.dragging&&Math.abs(dx)>8){gesture.dragging=true;stage.setPointerCapture(e.pointerId)}
+      if(!gesture.dragging)return;e.preventDefault();gesture.dx=dx;
+      cards[i].style.transform=`translate3d(${dx}px,${-Math.min(8,Math.abs(dx)*.025)}px,0) rotate(${dx/65}deg) rotateY(${-dx/35}deg)`;
+    },{passive:false});
+    stage.addEventListener('pointerup',()=>{
+      if(!gesture)return;const {dx,dragging}=gesture;gesture=null;if(!dragging)return;
+      suppressClick=true;if(Math.abs(dx)>=Math.min(70,cards[i].offsetWidth*.2))advance(dx<0?1:-1,dx<0?-1:1);else settle();
+    });
+    stage.addEventListener('pointercancel',()=>{gesture=null;suppressClick=true;settle()});
+    requestAnimationFrame(()=>{if(!el.classList.contains('intro-running'))entrance(cards[i])});
   };
   if(chooseAll)i=ms.length;show();
 }
