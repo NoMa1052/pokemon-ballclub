@@ -142,7 +142,7 @@ function playIntro(sp,done){
   if(!card||reduce())return;
   card.style.animation='none';card.style.transform='';
   const target=card.getBoundingClientRect(),origin=source?.rect||{left:innerWidth/2-111,top:innerHeight/2-205,width:222,height:410};
-  const tier=bestTier(sp),[c1,c2]=TIER[tier];
+  const tier="base",[c1,c2]=TIER[tier];
   const el=document.createElement('div');el.className='direct-opening';el.setAttribute('aria-hidden','true');el.style.setProperty('--c1',c1);el.style.setProperty('--c2',c2);
   el.innerHTML=`<div class="direct-rays"></div><div class="direct-aura"></div><div class="direct-stack">${sp.ids.map((_,i)=>`<div class="direct-back" data-stack="${i}"><span class="opening-back-ball"></span></div>`).join('')}</div><div class="direct-seam"></div><div class="direct-wrapper">${source?.html||packArt(true)}</div><div class="direct-foil">${source?.foil||''}</div>`;
   document.body.appendChild(el);
@@ -181,14 +181,14 @@ function playIntro(sp,done){
   reveal.style.setProperty('--opening-color',c1);
   reveal.classList.add('rarity-lit');
 
-  wrapper.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(0,65px,0)',opacity:1,offset:.35},{transform:`translate3d(0,${innerHeight-origin.top+100}px,0) rotate(3deg)`,opacity:0}],{duration:760,delay:100,easing:'cubic-bezier(.35,0,.55,1)',fill:'forwards'});
+  wrapper.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(0,65px,0)',opacity:1,offset:.35},{transform:`translate3d(0,${innerHeight-origin.top+100}px,0) rotate(3deg)`,opacity:0}],{duration:900,delay:80,easing:'cubic-bezier(.4,0,.55,1)',fill:'forwards'});
   foil.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(65px,-190px,0) rotate(18deg)',opacity:0}],{duration:520,easing:'cubic-bezier(.15,.7,.3,1)',fill:'forwards'});
   seam.animate([{transform:'translate(-50%,-50%) scaleX(.8)',opacity:0},{transform:'translate(-50%,-50%) scaleX(1.2)',opacity:.9,offset:.22},{transform:'translate(-50%,-50%) scaleX(1.6)',opacity:0}],{duration:700,fill:'forwards'});
   reveal.querySelectorAll('.rv-top,.rv-hint').forEach(node=>node.animate([{opacity:0},{opacity:1}],{duration:250,delay:1550,fill:'both'}));
   const stage=reveal.querySelector('.rv-stage');stage.style.pointerEvents='none';
   reveal.classList.add('intro-running');
   let settled=false,cleanupTimer=null;
-  const finish=()=>{if(settled)return;settled=true;clearTimeout(cleanupTimer);motion.cancel();stage.style.pointerEvents='';reveal.classList.remove('intro-running');el.remove();};
+  const finish=()=>{if(settled)return;settled=true;clearTimeout(cleanupTimer);motion.cancel();stage.style.pointerEvents='';reveal.classList.remove('intro-running');el.remove();if(card.isConnected)card._previewEntrance?.();};
   // Ensure a throttled animation cannot leave the input-blocking layer behind.
   cleanupTimer=setTimeout(finish,1900);
   motion.finished.then(finish).catch(finish);
