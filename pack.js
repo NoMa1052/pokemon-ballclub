@@ -47,16 +47,27 @@ function wireRip(pk){
   for(let u=cw-step;u>=0;u-=step){
    const t=Math.max(0,front-u)/cw,flex=t*t*(3-2*t);
    const x=direction===1?u:cw-u-step;
-   const lift=cw*.032*flex*(1-flight),h=seal*(1-.035*flex);
+   const lift=cw*.055*flex*(1-flight);
+   const roll=.65*flex+.35*Math.sin(flight*Math.PI),h=seal*Math.cos(roll);
    const w=Math.min(step+.6,cw-x);
    foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,0,w/cw*foilImage.naturalWidth,
     foilImage.naturalHeight*.128,x,seal-lift-h,w,h);
    if(t>0){
     const sheen=foil.createLinearGradient(0,seal-lift-h,0,seal-lift);
-    sheen.addColorStop(0,'rgba(255,255,255,0)');
-    sheen.addColorStop(.65,'rgba(255,255,255,'+(.1*flex)+')');
-    sheen.addColorStop(1,'rgba(0,0,0,'+(.14*flex)+')');
+    sheen.addColorStop(0,'rgba(0,5,18,'+(.14*flex)+')');
+    sheen.addColorStop(.38,'rgba(255,255,255,0)');
+    sheen.addColorStop(.7,'rgba(255,255,255,'+(.32*Math.sin(roll))+')');
+    sheen.addColorStop(1,'rgba(0,0,0,'+(.32*flex)+')');
     foil.fillStyle=sheen;foil.fillRect(x,seal-lift-h,w,h);
+    // A narrow folded lip exposes the silver backing without turning the
+    // whole seal into a broad, untextured sheet.
+    const lip=seal*.075*Math.sin(roll),y=seal-lift;
+    if(lip>.2){
+     const metal=foil.createLinearGradient(0,y-lip,0,y+lip*.2);
+     metal.addColorStop(0,'#46566c');metal.addColorStop(.28,'#b4c4d3');
+     metal.addColorStop(.62,'#f2f8fa');metal.addColorStop(1,'#7d8d9e');
+     foil.fillStyle=metal;foil.fillRect(x,y-lip,w,lip*1.2);
+    }
    }
   }
   foil.restore();return true;
