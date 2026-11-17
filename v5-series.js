@@ -27,7 +27,7 @@
   return `<section class="records-rivals"><h3>Rival series</h3>${list.length?`<ul>${list.map(x=>`<li><span>${esc(x.team)}</span><b class="${x.w>x.l?'up':x.w<x.l?'down':''}">${x.w}–${x.l}</b></li>`).join('')}</ul><p class="hint">Series won and lost against each club.</p>`:'<p class="hint">Play any posted club in a best of 7. Your series records show up here.</p>'}<button type="button" class="btn rival-pick" onclick="pickRival()">Pick a rival</button></section>`;
  };
 
- let S=null,timer=0;
+ let S=null,timer=0,seriesFrom=null;
  const HOME=[true,true,false,false,false,true,true];
  function start(rival){
   stop();
@@ -38,7 +38,7 @@
  }
  function shell(){
   let el=$('series');
-  if(!el){el=document.createElement('div');el.id='series';el.className='bg';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Rival series');document.body.appendChild(el);
+  if(!el){seriesFrom=document.activeElement;el=document.createElement('div');el.id='series';el.className='bg';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-label','Rival series');document.body.appendChild(el);
    el.addEventListener('keydown',e=>{if(e.key==='Escape')leave()})}
   el.innerHTML=`<div class="bg-in"><header class="bg-top"><span>Rival series · Best of 7</span><button type="button" class="btn" id="bgClose">Leave</button></header><div class="bg-series" id="bgSeries" hidden></div><div class="bg-stage" id="bgStage"></div></div>`;
   $('bgClose').onclick=leave;
@@ -68,7 +68,14 @@
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
  };
  function stop(){clearTimeout(timer);timer=0}
- function leave(){stop();$('series')?.remove();S=null;document.documentElement.classList.remove('lg-lock')}
+ function leave(){
+  stop();pickToken++;$('series')?.remove();S=null;
+  // The League underneath still owns the scroll lock.
+  const underneath=[...document.querySelectorAll('.bg,.sr')].some(el=>!el.hidden&&getComputedStyle(el).display!=='none');
+  document.documentElement.classList.toggle('lg-lock',underneath);
+  if(seriesFrom?.isConnected&&!seriesFrom.disabled)seriesFrom.focus({preventScroll:true});
+  seriesFrom=null;
+ }
  const pips=n=>Array.from({length:4},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('');
  function strip(){
   $('bgSeries').innerHTML=`<div class="bg-club me"><b>Your club</b><span class="bg-pips" aria-hidden="true">${pips(S.w)}</span></div><strong aria-label="Series ${S.w} to ${S.l}">${S.w}–${S.l}</strong><div class="bg-club"><b>${esc(S.rival.team)}</b><span class="bg-pips" aria-hidden="true">${pips(S.l)}</span></div>`;

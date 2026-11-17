@@ -98,13 +98,13 @@
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
   const roster=x=>typeof lineupHTML==='function'?lineupHTML(x.roster):'';
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${scope!=='all'&&typeof rivalSeriesButton==='function'?rivalSeriesButton(x):''}</details></li>`).join('')}</ol>`;
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x,scope==='all'):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];
   if(!rows.length)return `<p class="lg-empty">${scope==='all'?'Nobody has posted this week\'s challenge yet. Be the first.':'Nobody in this league has posted this week yet. Play the challenge above, then post your team.'}</p>`;
   const lead=rows[0],mineRow=rows.find(x=>isMine(x.device)),gap=mineRow&&mineRow!==lead?lead.wins-mineRow.wins:0;
-  return (mineRow?`<p class="lg-lead">${mineRow===lead?(rows.length>1?`You lead the week by ${lead.wins-rows[1].wins} win${lead.wins-rows[1].wins===1?'':'s'}.`:'You are the only one on the board. Invite your friends.'):`You are ${gap} win${gap===1?'':'s'} behind ${esc(lead.team)}.`}</p>`:'')+weekRows(rows)+'<p class="hint">Tap a team for its roster and to play it in a best of 7.</p>';
+  return (mineRow?`<p class="lg-lead">${mineRow===lead?(rows.length>1?`You lead the week by ${lead.wins-rows[1].wins} win${lead.wins-rows[1].wins===1?'':'s'}.`:'You are the only one on the board. Invite your friends.'):`You are ${gap} win${gap===1?'':'s'} behind ${esc(lead.team)}.`}</p>`:'')+weekRows(rows)+'<p class="hint">Open a team to view its roster, then choose Play a best of 7. Games from this board are exhibitions; league matchups count toward your league.</p>';
  }
  function tabSeason(){
   const PTS=[5,3,2],table={},wks=Object.keys(data.weeks).sort();
@@ -144,7 +144,7 @@
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
   if($('lgShare'))$('lgShare').onclick=()=>standings(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
-  if(data&&!data.error&&cur&&typeof wireRivalSeries==='function'&&tab==='week')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur.code);
+  if(data&&!data.error&&(!cur||tab==='week')&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
  async function join(raw,quiet){
