@@ -172,9 +172,12 @@ function playIntro(sp,done){
  const reveal=document.querySelector('.reveal'),stack=reveal?.querySelector('.physical-stack');
  if(!stack||reduce()){source?.layer.remove();return}
  const target=stack.getBoundingClientRect(),origin=source?.rect||{left:innerWidth/2-111,top:innerHeight/2-205,width:222,height:410};
- const dx=origin.left+origin.width/2-target.left-target.width/2;
- const dy=origin.top+origin.height*.42-target.top-target.height/2;
- const scale=Math.min(1,origin.width*.84/target.width);
+ const scale=Math.min(1,origin.width*.80/target.width,origin.height*.78/target.height);
+ const dx=origin.left+(origin.width-target.width*scale)/2-target.left;
+ const seam=origin.top+origin.height*.128;
+ const dy=seam+3-target.top;
+ const lift=Math.min(origin.height*.20,target.height*scale*.31);
+ const pose=(x,y,size)=>`translate3d(${x}px,${y}px,0) scale(${size})`;
  const el=source?.layer||document.createElement('div');
  let wrapper=source?.art;
  if(!wrapper){
@@ -188,14 +191,25 @@ function playIntro(sp,done){
   el.classList.add('cards-emerging');
  }
  reveal.classList.add('intro-running');
+ // At pack scale the first card is opaque and fits inside the foil. Expose
+ // its printed edge before the deck grows, so the two poses share a silhouette.
+ const previousOrigin=stack.style.transformOrigin;
+ stack.style.transformOrigin='0 0';
+ const duration=920;
  const cardMotion=stack.animate([
-  {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0,easing:'cubic-bezier(.18,.65,.3,1)'},
-  {transform:'translate3d(0,0,0) scale(1) rotateY(0deg)',opacity:1}
- ],{duration:1050,easing:'cubic-bezier(.22,.61,.36,1)',fill:'both'});
- wrapper.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(0,40px,0)',opacity:1,offset:.3},{transform:`translate3d(0,${innerHeight-origin.top+100}px,0)`,opacity:0}],{duration:850,easing:'cubic-bezier(.4,0,.7,1)',fill:'forwards'});
+  {transform:pose(dx,dy,scale),offset:0,easing:'ease-out'},
+  {transform:pose(dx,dy-lift,scale),offset:.30,easing:'cubic-bezier(.35,0,.22,1)'},
+  {transform:pose(0,0,1),offset:1}
+ ],{duration,fill:'both'});
+ wrapper.animate([
+  {transform:'translateY(0)',opacity:1,offset:0,easing:'ease-in'},
+  {transform:`translateY(${origin.height*.08}px)`,opacity:1,offset:.30,easing:'ease-in'},
+  {transform:`translateY(${origin.height*.72}px)`,opacity:1,offset:.64,easing:'ease-out'},
+  {transform:`translateY(${Math.max(origin.height,innerHeight-origin.top+20)}px)`,opacity:0,offset:1}
+ ],{duration,fill:'both'});
  let finished=false,timer;
- const finish=()=>{if(finished)return;finished=true;clearTimeout(timer);cardMotion.cancel();el.remove();reveal.classList.remove('intro-running');reveal.querySelector('.tcard.physical-front')?._physicalEntrance?.()};
- timer=setTimeout(finish,1250);cardMotion.finished.then(finish).catch(finish);
+ const finish=()=>{if(finished)return;finished=true;clearTimeout(timer);cardMotion.cancel();stack.style.transformOrigin=previousOrigin;el.remove();reveal.classList.remove('intro-running');reveal.querySelector('.tcard.physical-front')?._physicalEntrance?.()};
+ timer=setTimeout(finish,duration+200);cardMotion.finished.then(finish).catch(finish);
  el.onclick=()=>{cardMotion.finish();finish()};
 }
 
