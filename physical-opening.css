@@ -31,42 +31,18 @@
 
 .physical-stack>.tcard{width:min(300px,78vw,calc((100dvh - 130px)*.64))}
 
-/* This light exists only while a rare card is being revealed. */
+/* A single halo expands outward from the front card's perimeter. */
 .physical-stage{position:relative;isolation:isolate}
 .physical-stack{z-index:1}
 .physical-reveal-glow{
- position:absolute;left:50%;top:50%;width:min(175vw,900px);height:min(175vw,900px);
- margin:0;translate:-50% -50%;border-radius:50%;opacity:0;pointer-events:none;
- --ray:rgba(255,216,101,.8);--core:rgba(255,201,75,.55);--spark:#fff0b3;
- background:radial-gradient(circle,var(--core) 0%,transparent 58%),
- repeating-conic-gradient(from 4deg,var(--ray) 0deg 2deg,transparent 5deg 23deg);
- -webkit-mask-image:radial-gradient(circle,#000 12%,#0009 48%,transparent 74%);
- mask-image:radial-gradient(circle,#000 12%,#0009 48%,transparent 74%);
+ position:absolute;box-sizing:border-box;margin:0;translate:-50% -50%;
+ opacity:0;pointer-events:none;--edge:#ffeaa0;--halo:rgba(255,193,44,.8);
+ border:2px solid var(--edge);background:none;
+ box-shadow:0 0 9px var(--halo),0 0 24px var(--halo),inset 0 0 10px var(--halo);
  will-change:transform,opacity;
 }
-.physical-reveal-glow[data-tier]::before{
- content:'';position:absolute;inset:12%;border:2px solid var(--spark);border-radius:50%;
- box-shadow:0 0 18px var(--ray),inset 0 0 18px var(--ray);
- animation:rare-ring 1200ms cubic-bezier(.15,.65,.25,1) both;
-}
-.physical-reveal-glow[data-tier]::after{
- content:'';position:absolute;inset:0;
- background:
- radial-gradient(circle at 19% 23%,var(--spark) 0 2px,transparent 4px),
- radial-gradient(circle at 81% 28%,var(--spark) 0 3px,transparent 6px),
- radial-gradient(circle at 12% 64%,var(--spark) 0 3px,transparent 6px),
- radial-gradient(circle at 87% 65%,var(--spark) 0 2px,transparent 5px),
- radial-gradient(circle at 27% 83%,var(--spark) 0 2px,transparent 5px),
- radial-gradient(circle at 73% 84%,var(--spark) 0 3px,transparent 6px);
- filter:drop-shadow(0 0 6px var(--ray));
- animation:rare-sparks 1200ms ease-out both;
-}
-.physical-reveal-glow[data-tier="legend"]{--ray:rgba(195,146,255,.85);--core:rgba(145,94,255,.52);--spark:#f9e6ff}
-.physical-reveal-glow[data-tier="shiny"]{--ray:rgba(117,224,255,.85);--core:rgba(193,132,255,.5);--spark:#efffff}
-.physical-reveal-glow[data-tier="legend"]::before,.physical-reveal-glow[data-tier="legend"]::after,
-.physical-reveal-glow[data-tier="shiny"]::before,.physical-reveal-glow[data-tier="shiny"]::after{animation-duration:1600ms}
-@keyframes rare-ring{0%{opacity:.9;transform:scale(.55)}65%{opacity:.45}100%{opacity:0;transform:scale(1.18)}}
-@keyframes rare-sparks{0%{opacity:0;transform:scale(.68)}25%{opacity:1}70%{opacity:.8}100%{opacity:0;transform:scale(1.1)}}
+.physical-reveal-glow[data-tier="legend"]{--edge:#edceff;--halo:rgba(175,109,255,.85)}
+.physical-reveal-glow[data-tier="shiny"]{--edge:#d8fcff;--halo:rgba(105,224,255,.85);box-shadow:0 0 10px #86eaff,0 0 26px #e98ed5aa,inset 0 0 12px #b3f4ff}
 @media(prefers-reduced-motion:reduce){.physical-reveal-glow{display:none}}
 
 /* A short, feathered flash softens the moment the seal separates. */
