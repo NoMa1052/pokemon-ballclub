@@ -87,12 +87,36 @@ function openReveal(sp,chooseAll=false){
     const glow=stage?.querySelector('.physical-reveal-glow');
     if(glow){glow.getAnimations().forEach(a=>a.cancel());delete glow.dataset.tier}
   };
+  // Rare cards get one full twirl after reaching the front, before another
+  // swipe can dismiss them. The stack itself keeps its normal dimensions.
+  const twirlRare=card=>{
+    if(reduced||card._twirlDone||!card.matches('.leg,.shiny'))return;
+    card._twirlDone=true;busy=true;gesture=null;
+    const previousOrigin=card.style.transformOrigin;
+    card.style.transformOrigin='50% 50%';
+    const motion=card.animate([
+      {transform:'translate3d(0,0,0) rotate(-360deg) scale(.94)'},
+      {transform:'translate3d(0,0,0) rotate(0deg) scale(1)'}
+    ],{duration:780,easing:'cubic-bezier(.2,.55,.25,1)',fill:'both'});
+    let complete=false,timer;
+    const finish=()=>{
+      if(complete)return;complete=true;clearTimeout(timer);
+      motion.cancel();card.style.transformOrigin=previousOrigin;
+      if(revealEl!==el||!card.isConnected||!stack?.isConnected)return;
+      busy=false;
+      const queued=pendingAdvance;pendingAdvance=null;
+      if(queued)advance(queued.step,queued.dir);
+    };
+    timer=setTimeout(finish,1000);
+    motion.finished.then(finish).catch(finish);
+  };
   const entrance=card=>{
     if(reduced||!card?.isConnected)return;
     const tier=card.classList.contains('leg')?'legend':card.classList.contains('shiny')?'shiny':card.classList.contains('gold')?'gold':null;
     card.classList.remove('physical-catchlight');
     if(!tier){stopBurst();return}
     const bounds=card.getBoundingClientRect(),host=stage.getBoundingClientRect();
+    twirlRare(card);
     const flare=stage?.querySelector('.physical-reveal-glow');
     if(flare){
       flare.getAnimations().forEach(a=>a.cancel());
@@ -139,7 +163,7 @@ function openReveal(sp,chooseAll=false){
       i+=step;
       if(i>=ms.length){animations.forEach(a=>a.cancel());pendingAdvance=null;busy=false;spread();stage=null;return}
       position();animations.forEach(a=>a.cancel());busy=false;entrance(cards[i]);
-      const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);
+      if(!busy){const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);}
     };
     if(reduced){finish();return}
     old.classList.remove('physical-catchlight');stopBurst();
