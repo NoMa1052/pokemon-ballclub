@@ -134,7 +134,15 @@ function openReveal(sp,chooseAll=false){
       const start=getComputedStyle(old).transform;
       animations.push(old.animate([{transform:start,opacity:1},{transform:`translate3d(${dir*Math.max(old.offsetWidth*1.25,innerWidth*.7)}px,-12px,0) rotateY(${-dir*12}deg) rotate(${dir*5}deg)`,opacity:0}],{duration:next?420:300,easing:'cubic-bezier(.32,0,.3,1)',fill:'forwards'}));
       if(next){
-        animations.push(next.animate([{transform:parked(1)},{transform:'translate3d(0,0,0)'}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
+        // Move every remaining layer together so the card edges do not snap
+        // into their new positions when the front card finishes leaving.
+        for(let n=i+1;n<cards.length;n++){
+          const depth=n-i;
+          animations.push(cards[n].animate(
+            [{transform:parked(depth)},{transform:depth===1?'translate3d(0,0,0)':parked(depth-1)}],
+            {duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}
+          ));
+        }
       }
     }else{
       next.hidden=false;next.style.opacity='1';
