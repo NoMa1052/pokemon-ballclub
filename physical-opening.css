@@ -16,13 +16,13 @@
 .physical-catchlight:is(.leg,.shiny) .physical-sheen,.physical-catchlight:is(.leg,.shiny) .physical-sheen::after{animation-duration:1800ms}
 @keyframes physical-glint{0%{opacity:0}18%{opacity:1}76%{opacity:.8}100%{opacity:0}}
 @keyframes physical-reflect{to{transform:translate3d(38%,0,0)}}
-.physical-rip-light{position:absolute;left:-15%;width:130%;top:-20%;height:37%;background:radial-gradient(ellipse at 50% 100%,#f9ffffcf 0,#c5f7ff55 20%,#d9b8ff16 48%,transparent 72%);pointer-events:none;z-index:3;opacity:0;transform-origin:50% 100%;transform:scale(.7)}
+.physical-rip-light{position:absolute;left:-30%;width:160%;top:-12%;height:50%;background:radial-gradient(ellipse 49% 49% at 50% 50%,#f9ffffb8 0%,#c5f7ff55 22%,#d9b8ff18 52%,transparent 100%);pointer-events:none;z-index:3;opacity:0;transform-origin:50% 50%;transform:scale(.7)}
 .pack.dragging .physical-rip-light{opacity:calc(var(--rip)*.3)}
 .pack.foil-releasing .physical-rip-light{animation:physical-spill 700ms ease-out both}
 .pack.foil-releasing .pk-cut path{stroke:#e4fcff;stroke-width:1;opacity:1}
 .pack .pk-loose{transform-origin:50% 26%!important;will-change:opacity!important}
 .physical-intro{pointer-events:auto}
-.physical-spill{position:absolute;height:190px;background:radial-gradient(ellipse at 50% 75%,#e6fcff99,#adcfff22 40%,transparent 70%);animation:physical-spill 850ms ease-out both;pointer-events:none}
+.physical-spill{position:absolute;height:190px;background:radial-gradient(ellipse 49% 49% at 50% 50%,#e6fcff99 0%,#adcfff33 38%,transparent 100%);animation:physical-spill 850ms ease-out both;pointer-events:none}
 @keyframes physical-spill{0%{opacity:.3;transform:scale(.85)}25%{opacity:.9;transform:scale(1.08)}100%{opacity:0;transform:scale(1.4)}}
 @media(prefers-reduced-motion:reduce){
  .physical-sheen,.physical-rip-light,.physical-spill{display:none!important}
