@@ -5,7 +5,7 @@
 .physical-stack>.tcard[hidden]{display:none!important}
 .physical-stack>.tcard:not(.physical-front){pointer-events:none}
 .physical-stage .tc-in::after{animation:none!important;opacity:0!important}
-.physical-stage::before{animation:none!important}
+.reveal .rv-stage.physical-stage::before{content:none!important;display:none!important;animation:none!important}
 .reveal:has(.physical-stack) .rv-hint{animation:none!important}
 .physical-sheen{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:20;opacity:0}
 .physical-sheen::after{content:'';position:absolute;inset:-35% -100%;background:linear-gradient(110deg,transparent 36%,#fff4c716 43%,#fffbd45c 50%,#fff4c714 57%,transparent 65%);transform:translate3d(-38%,0,0)}
@@ -31,10 +31,19 @@
 
 .physical-stack>.tcard{width:min(300px,78vw,calc((100dvh - 130px)*.64))}
 
-/* A short burst comes from behind the card as it is uncovered. */
+/* This light exists only while a rare card is being revealed. */
 .physical-stage{position:relative;isolation:isolate}
 .physical-stack{z-index:1}
-.physical-reveal-glow{position:absolute;left:50%;top:50%;width:min(120vw,600px);height:min(120vw,600px);margin:0;translate:-50% -50%;border-radius:50%;opacity:0;pointer-events:none;background:radial-gradient(ellipse,rgba(255,218,99,.62) 0%,rgba(245,181,31,.27) 38%,transparent 70%);will-change:transform,opacity}
-.physical-reveal-glow[data-tier="legend"]{background:radial-gradient(ellipse,rgba(255,235,195,.65),rgba(194,137,255,.42) 36%,transparent 70%)}
-.physical-reveal-glow[data-tier="shiny"]{background:radial-gradient(ellipse,rgba(255,250,225,.7),rgba(255,175,221,.32) 30%,rgba(129,219,255,.26) 47%,transparent 70%)}
+.physical-reveal-glow{
+ position:absolute;left:50%;top:50%;width:min(160vw,800px);height:min(160vw,800px);
+ margin:0;translate:-50% -50%;border-radius:50%;opacity:0;pointer-events:none;
+ --ray:rgba(255,215,97,.64);--core:rgba(255,224,124,.48);
+ background:radial-gradient(circle,var(--core),transparent 60%),
+ repeating-conic-gradient(from 4deg,var(--ray) 0 4deg,transparent 5deg 20deg);
+ -webkit-mask-image:radial-gradient(circle,#000 10%,transparent 69%);
+ mask-image:radial-gradient(circle,#000 10%,transparent 69%);
+ will-change:transform,opacity;
+}
+.physical-reveal-glow[data-tier="legend"]{--ray:rgba(219,174,255,.65);--core:rgba(255,223,171,.48)}
+.physical-reveal-glow[data-tier="shiny"]{--ray:rgba(172,233,255,.65);--core:rgba(255,187,222,.55)}
 @media(prefers-reduced-motion:reduce){.physical-reveal-glow{display:none}}

@@ -83,11 +83,15 @@ function openReveal(sp,chooseAll=false){
   let stage=null,stack=null,cards=[],gesture=null,suppressClick=false;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const parked=d=>`translate3d(${Math.min(d,4)*5}px,${Math.min(d,4)*3}px,0) scale(${1-Math.min(d,4)*.012})`;
+  const stopBurst=()=>{
+    const glow=stage?.querySelector('.physical-reveal-glow');
+    if(glow){glow.getAnimations().forEach(a=>a.cancel());delete glow.dataset.tier}
+  };
   const entrance=card=>{
     if(reduced||!card?.isConnected)return;
     const tier=card.classList.contains('leg')?'legend':card.classList.contains('shiny')?'shiny':card.classList.contains('gold')?'gold':null;
     card.classList.remove('physical-catchlight');
-    if(!tier)return;
+    if(!tier){stopBurst();return}
     const flare=stage?.querySelector('.physical-reveal-glow');
     if(flare){
       flare.getAnimations().forEach(a=>a.cancel());
@@ -121,16 +125,15 @@ function openReveal(sp,chooseAll=false){
       if(revealEl!==el||!stack?.isConnected){animations.forEach(a=>a.cancel());return}
       i+=step;
       if(i>=ms.length){animations.forEach(a=>a.cancel());pendingAdvance=null;busy=false;spread();stage=null;return}
-      position();animations.forEach(a=>a.cancel());busy=false;
+      position();animations.forEach(a=>a.cancel());busy=false;entrance(cards[i]);
       const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);
     };
     if(reduced){finish();return}
-    old.classList.remove('physical-catchlight');
+    old.classList.remove('physical-catchlight');stopBurst();
     if(step>0){
       const start=getComputedStyle(old).transform;
-      animations.push(old.animate([{transform:start,opacity:1},{transform:`translate3d(${dir*Math.max(old.offsetWidth*1.25,innerWidth*.7)}px,-12px,0) rotateY(${-dir*12}deg) rotate(${dir*5}deg)`,opacity:0}],{duration:420,easing:'cubic-bezier(.32,0,.3,1)',fill:'forwards'}));
+      animations.push(old.animate([{transform:start,opacity:1},{transform:`translate3d(${dir*Math.max(old.offsetWidth*1.25,innerWidth*.7)}px,-12px,0) rotateY(${-dir*12}deg) rotate(${dir*5}deg)`,opacity:0}],{duration:next?420:300,easing:'cubic-bezier(.32,0,.3,1)',fill:'forwards'}));
       if(next){
-        entrance(next);
         animations.push(next.animate([{transform:parked(1)},{transform:'translate3d(0,0,0)'}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
       }
     }else{
@@ -138,7 +141,7 @@ function openReveal(sp,chooseAll=false){
       animations.push(next.animate([{transform:'translate3d(-110%,0,0) rotate(-5deg)',opacity:0},{transform:'translate3d(0,0,0)',opacity:1}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
       animations.push(old.animate([{transform:getComputedStyle(old).transform},{transform:parked(1)}],{duration:420,fill:'forwards'}));
     }
-    animations[0].finished.then(finish).catch(finish);timer=setTimeout(finish,650);
+    animations[0].finished.then(finish).catch(finish);timer=setTimeout(finish,next?650:500);
   };
   const show=()=>{
     if(revealEl!==el)return;
