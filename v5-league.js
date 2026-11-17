@@ -170,15 +170,22 @@
   }
   note="Couldn't create the league. Try again.";draw();
  }
+ function leagueShareLink(l){return SITE+'?league='+encodeURIComponent(l.code)}
+ function standingsText(l,rows,wk){
+  const heading='⚾ '+l.name+' | Pokémon Ballclub';
+  const board=rows.length
+   ?['Week '+wk+' standings',...rows.slice(0,10).map((x,i)=>(i+1)+'. '+x.team+' • '+x.wins+'–'+(162-x.wins)),...(rows.length>10?['+'+(rows.length-10)+' more teams']:[])].join('\n')
+   :'Week '+wk+' is open. Set the first score!';
+  return [heading,board,rows.length?'Think you can top the leaderboard?\nJoin our league:':'Join our league:',leagueShareLink(l)].join('\n\n');
+ }
  async function standings(l){
-  const rows=(data&&!data.error&&data.weeks[weekKey()])||[],wk=Number(weekKey().split('-W')[1]),link=`${SITE.replace(/^https:\/\//,'')}?league=${l.code}`;
-  const text=rows.length?`⚾ ${l.name} · Week ${wk}\n${rows.slice(0,10).map((x,i)=>`${i+1}. ${x.team} ${x.wins}–${162-x.wins}`).join('\n')}${rows.length>10?`\n+${rows.length-10} more`:''}\nResets Monday: ${link}`
-   :`⚾ ${l.name} · Week ${wk}\nNo teams on the board yet. Be the first.\n${link}`;
+  const rows=(data&&!data.error&&data.weeks[weekKey()])||[],wk=Number(weekKey().split('-W')[1]);
+  const text=standingsText(l,rows,wk);
   try{if(navigator.share&&matchMedia('(pointer:coarse)').matches){await navigator.share({text});return}await navigator.clipboard.writeText(text);note='Standings copied.'}catch(e){if(e?.name==='AbortError')return;note='Could not share from this browser.'}
   draw();
  }
  async function invite(l){
-  const text=`⚾ Join my Pokémon Ballclub league, ${l.name}.\nEveryone gets the same 16 packs each week. Best record wins.\n${SITE.replace(/^https:\/\//,'')}?league=${l.code}`;
+  const text=['⚾ Join '+l.name+' on Pokémon Ballclub!','Everyone gets the same 16 packs each week. Best record wins.',leagueShareLink(l)].join('\n\n');
   try{if(navigator.share){await navigator.share({text});return}await navigator.clipboard.writeText(text);note='Invite copied.'}catch(e){if(e?.name==='AbortError')return;note=`Share code ${l.code} with your friends.`}
   draw();
  }
