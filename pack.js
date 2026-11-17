@@ -9,7 +9,7 @@ const star=(cx,cy,R,r,n)=>{let p=[];for(let i=0;i<n*2;i++){const a=Math.PI*i/n-M
 const BODY="M9 35 C2 80 0 118 0 148 C0 182 2 222 9 261 H191 C198 222 200 182 200 148 C200 118 198 80 191 35 Z";
 const wrinkles=(y,dir)=>{let d1="",d2="";for(let i=0;i<44;i++){const x=6+i*4.4+((i*53)%7)/3,len=2.5+((i*37)%7)*.8,lean=(x-100)/100*3+((i*29)%5-2)*.4;
   const seg=`M${x.toFixed(1)} ${y} l${lean} ${len*dir} `;if(i%2)d1+=seg;else d2+=seg}return `<path d="${d1}" stroke="#fff" stroke-opacity=".09" stroke-width="1.4" stroke-linecap="round"/><path d="${d2}" stroke="#000" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>`};
-let tornPackSource=null,burstPendingSpin=null;
+let tornPackSource=null,burstPendingSpin=null,openingBurstTier="base";
 function packArt(opened=false){
  return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="pack-foil-v4.webp" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
 }
@@ -107,7 +107,7 @@ function wireRip(pk){
   // result is passed into the reveal; preview overrides only the light.
   burstPendingSpin=run.unrevealed?run.spin:drawNext();
   const chosen=bestTier(burstPendingSpin),preview=new URLSearchParams(location.search).get('burst');
-  pk.dataset.burst=['gold','leg','shiny','base'].includes(preview)?preview:chosen;
+  pk.dataset.burst=['gold','leg','shiny','base'].includes(preview)?preview:chosen;openingBurstTier=pk.dataset.burst;
   cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
   const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
@@ -166,11 +166,13 @@ function playIntro(sp,done){
  const scale=Math.min(1,origin.width*.84/target.width);
  const el=document.createElement('div');el.className='direct-opening physical-intro';
  el.setAttribute('aria-hidden','true');
- el.innerHTML='<div class="physical-spill"></div><div class="direct-wrapper">'+(source?.html||packArt(true))+'</div>';
+ el.dataset.burst=openingBurstTier;
+ el.innerHTML='<div class="opening-afterglow"></div><div class="physical-spill"></div><div class="direct-wrapper">'+(source?.html||packArt(true))+'</div>';
  document.body.append(el);
  const wrapper=el.querySelector('.direct-wrapper'),spill=el.querySelector('.physical-spill');
  Object.assign(wrapper.style,{left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px'});
  Object.assign(spill.style,{left:origin.left+'px',top:(origin.top+origin.height*.128-100)+'px',width:origin.width+'px'});
+ Object.assign(el.querySelector('.opening-afterglow').style,{left:(origin.left+origin.width/2)+'px',top:(origin.top+origin.height*.128)+'px'});
  reveal.classList.add('intro-running');
  const cardMotion=stack.animate([
   {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0},

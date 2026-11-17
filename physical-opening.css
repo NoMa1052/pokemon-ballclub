@@ -86,19 +86,25 @@
 @media(prefers-reduced-motion:reduce){.pack-seam-flash{display:none}}
 
 
-/* The opening light originates at the seam and spills softly onto the wrapper. */
-.pack-tier-burst{
- position:absolute;z-index:3;left:-18%;width:136%;top:4%;height:30%;
- pointer-events:none;opacity:0;transform-origin:50% 48%;
- --bloom:rgba(210,235,255,.55);--highlight:#f5fcff;
- background:radial-gradient(ellipse 46% 19% at 50% 48%,var(--highlight) 0%,var(--bloom) 28%,transparent 100%),
- radial-gradient(ellipse 43% 48% at 50% 58%,var(--bloom) 0%,transparent 100%);
- mix-blend-mode:screen;
+
+/* Light spreads out from the opened seam, then follows the cards upward. */
+.pack-tier-burst,.opening-afterglow{
+ --burst-core:#eef8ff;--burst-color:rgba(125,194,255,.85);--burst-alt:rgba(155,211,255,.65);
+ pointer-events:none;position:absolute;mix-blend-mode:screen;
+ background:
+ radial-gradient(ellipse at 50% 50%,#fff 0%,var(--burst-core) 5%,var(--burst-color) 16%,transparent 53%),
+ repeating-conic-gradient(from -8deg at 50% 50%,transparent 0deg 8deg,var(--burst-color) 10deg 13deg,transparent 17deg 25deg,var(--burst-alt) 27deg 30deg,transparent 34deg 45deg);
+ -webkit-mask-image:radial-gradient(ellipse at center,#000 5%,#000b 35%,transparent 72%);
+ mask-image:radial-gradient(ellipse at center,#000 5%,#000b 35%,transparent 72%);
 }
-.pack[data-burst="gold"] .pack-tier-burst,.pack[data-burst="god"] .pack-tier-burst{--bloom:rgba(255,190,54,.7);--highlight:#fff8d2}
-.pack[data-burst="leg"] .pack-tier-burst{--bloom:rgba(184,120,255,.7);--highlight:#fff1d1}
-.pack[data-burst="shiny"] .pack-tier-burst{--bloom:rgba(106,220,255,.7);--highlight:#ffedfc}
-.pack-tier-burst i{position:absolute;inset:0;background:radial-gradient(ellipse 48% 4% at 50% 48%,#fff 0%,var(--bloom) 48%,transparent 100%);opacity:.75}
-.pack.foil-releasing .pack-tier-burst{animation:pack-tier-pop 620ms ease-out both}
-@keyframes pack-tier-pop{0%{opacity:0;transform:scale(.7,.55)}20%{opacity:1;transform:scale(1,1)}55%{opacity:.8;transform:scale(1.08,1.1)}100%{opacity:0;transform:scale(1.15,1.25)}}
-@media(prefers-reduced-motion:reduce){.pack-tier-burst{display:none!important}}
+.pack[data-burst="gold"] .pack-tier-burst,.pack[data-burst="god"] .pack-tier-burst,
+.direct-opening[data-burst="gold"] .opening-afterglow,.direct-opening[data-burst="god"] .opening-afterglow{--burst-core:#fff4c0;--burst-color:rgba(255,191,47,.95);--burst-alt:rgba(255,219,125,.8)}
+.pack[data-burst="leg"] .pack-tier-burst,.direct-opening[data-burst="leg"] .opening-afterglow{--burst-core:#fff0bd;--burst-color:rgba(179,102,255,.95);--burst-alt:rgba(255,198,86,.8)}
+.pack[data-burst="shiny"] .pack-tier-burst,.direct-opening[data-burst="shiny"] .opening-afterglow{--burst-core:#fff1ff;--burst-color:rgba(94,228,255,.95);--burst-alt:rgba(255,111,223,.8)}
+.pack-tier-burst{z-index:3;left:50%;top:12.8%;width:310%;height:175%;translate:-50% -50%;opacity:0;transform-origin:50% 50%}
+.pack-tier-burst i{position:absolute;inset:0;background:radial-gradient(circle at 20% 30%,#fff 0 2px,transparent 5px),radial-gradient(circle at 78% 23%,#fff 0 2px,transparent 6px),radial-gradient(circle at 13% 62%,#fff 0 1px,transparent 4px),radial-gradient(circle at 84% 63%,#fff 0 2px,transparent 5px);filter:drop-shadow(0 0 7px var(--burst-color))}
+.pack.foil-releasing .pack-tier-burst{animation:pack-bloom 460ms ease-out both}
+@keyframes pack-bloom{0%{opacity:0;transform:scale(.4)}20%{opacity:1;transform:scale(.8)}65%{opacity:.95;transform:scale(1)}100%{opacity:.65;transform:scale(1.05)}}
+.opening-afterglow{width:min(170vw,900px);height:min(170vw,900px);translate:-50% -50%;opacity:0;animation:afterglow 1050ms ease-out both}
+@keyframes afterglow{0%{opacity:.65;transform:scale(1.05)}25%{opacity:.85;transform:scale(1.12)}100%{opacity:0;transform:scale(1.35) translateY(-5%)}}
+@media(prefers-reduced-motion:reduce){.pack-tier-burst,.opening-afterglow{display:none!important}}
