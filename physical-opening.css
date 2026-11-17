@@ -125,3 +125,23 @@
 .physical-twirling>.tc-in{backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(1px)}
 .physical-twirling>.physical-twirl-back{display:block}
 .physical-twirling>.physical-sheen{visibility:hidden}
+
+
+/* Hold the printed body steady while the loose crimp curls away. */
+#spinBtn.pack:is(.dragging,.rip-complete),.continuous-opening>.pack.rip-complete{
+ animation:none!important;transform:none!important;rotate:none!important;transition:none!important
+}
+.continuous-opening>.pack{position:absolute;margin:0;padding:0;border:0;pointer-events:none}
+.continuous-opening::before{
+ content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#1d3f6e,#0b1730 45%,#060b16 80%);
+ animation:opening-dim 440ms ease-in-out both
+}
+@keyframes opening-dim{from{opacity:0}to{opacity:1}}
+.continuous-opening.cards-emerging::before{animation:opening-clear 380ms ease-out both}
+@keyframes opening-clear{from{opacity:1}to{opacity:0}}
+.continuous-opening .pack.foil-releasing .pack-tier-burst{animation:continuous-bloom 1450ms ease-out both}
+@keyframes continuous-bloom{
+ 0%{opacity:0;transform:scale(.4)}7%{opacity:1;transform:scale(.8)}
+ 21%{opacity:.95;transform:scale(1)}32%{opacity:.65;transform:scale(1.05)}
+ 100%{opacity:0;transform:translateY(-5%) scale(1.28)}
+}

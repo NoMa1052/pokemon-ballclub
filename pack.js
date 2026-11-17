@@ -18,7 +18,7 @@ function packArt(opened=false){
 function addTilt(pk){
   if(pk._tilt)return;pk._tilt=1;
   pk.insertAdjacentHTML("beforeend",'<span class="pk-glare" aria-hidden="true"></span>');
-  pk.addEventListener("pointermove",e=>{if(pk.classList.contains("dragging")||pk.classList.contains("wobble"))return;
+  pk.addEventListener("pointermove",e=>{if(e.pointerType==='touch'||pk.matches('.dragging,.rip-complete,.wobble'))return;
     const r=pk.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
     pk.style.setProperty("--gx",(x+.5)*100+"%");pk.style.setProperty("--gy",(y+.5)*100+"%");
     pk.style.rotate=`${-y} ${x} 0 ${Math.min(10,Math.hypot(x,y)*18)}deg`;pk.classList.add("tilting")});
@@ -109,16 +109,29 @@ function wireRip(pk){
   cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
   const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
-   const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect(),burstRect:pk.querySelector('.pack-tier-burst')?.getBoundingClientRect()};doSpin()}};
-   if(reduce()){handoff();return}
-   pk.classList.add('foil-releasing');
+   if(reduce()){doSpin();return}
+   // Keep the live foil canvas, wrapper and light together across the draft rerender.
+   const rect=art.getBoundingClientRect();
+   const layer=document.createElement('div');
+   layer.className='direct-opening physical-intro continuous-opening';
+   layer.setAttribute('aria-hidden','true');
+   const packet=document.createElement('div');
+   packet.className='pack rip-complete foil-releasing';
+   packet.dataset.burst=pk.dataset.burst;
+   Object.assign(packet.style,{left:rect.left+'px',top:rect.top+'px'});
+   packet.style.setProperty('width',rect.width+'px','important');
+   packet.style.setProperty('height',rect.height+'px','important');
+   packet.append(art,strip,...pk.querySelectorAll('.physical-rip-light,.pack-tier-burst,.pack-seam-flash'));
+   layer.append(packet);document.body.append(layer);
+   pk.style.visibility='hidden';
    const releasedAt=performance.now();
    const floatAway=now=>{
-    if(!pk.isConnected)return;
+    if(!pk.isConnected){layer.remove();return;}
     const t=Math.min(1,(now-releasedAt)/460),e=1-(1-t)**2;
     drawFoil(1,e);strip.style.opacity=String(1-Math.max(0,(t-.55)/.45));
     if(t<1){frame=requestAnimationFrame(floatAway);return}
-    handoff();
+    tornPackSource={rect,layer,art};doSpin();
+    if(tornPackSource?.layer===layer){tornPackSource=null;layer.remove()}
    };
    frame=requestAnimationFrame(floatAway);};
 
@@ -157,26 +170,23 @@ const TIER={base:["#c9b98f","#7d8aa3"],silver:["#bfe0ff","#5e8fe6"],gold:["#ffd8
 function playIntro(sp,done){
  const source=tornPackSource;tornPackSource=null;done();
  const reveal=document.querySelector('.reveal'),stack=reveal?.querySelector('.physical-stack');
- if(!stack||reduce())return;
+ if(!stack||reduce()){source?.layer.remove();return}
  const target=stack.getBoundingClientRect(),origin=source?.rect||{left:innerWidth/2-111,top:innerHeight/2-205,width:222,height:410};
  const dx=origin.left+origin.width/2-target.left-target.width/2;
  const dy=origin.top+origin.height*.42-target.top-target.height/2;
  const scale=Math.min(1,origin.width*.84/target.width);
- const el=document.createElement('div');el.className='direct-opening physical-intro';
- el.setAttribute('aria-hidden','true');
- el.dataset.burst=openingBurstTier;
- el.innerHTML='<div class="opening-afterglow"></div><div class="physical-spill"></div><div class="direct-wrapper">'+(source?.html||packArt(true))+'</div>';
- document.body.append(el);
- const wrapper=el.querySelector('.direct-wrapper'),spill=el.querySelector('.physical-spill');
- Object.assign(wrapper.style,{left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px'});
- Object.assign(spill.style,{left:origin.left+'px',top:(origin.top+origin.height*.128-100)+'px',width:origin.width+'px'});
- const burstRect=source?.burstRect;
- Object.assign(el.querySelector('.opening-afterglow').style,{
- left:(burstRect?burstRect.left+burstRect.width/2:origin.left+origin.width/2)+'px',
- top:(burstRect?burstRect.top+burstRect.height/2:origin.top+origin.height*.128)+'px',
- width:(burstRect?burstRect.width:origin.width*3.1)+'px',
- height:(burstRect?burstRect.height:origin.height*1.75)+'px'
- });
+ const el=source?.layer||document.createElement('div');
+ let wrapper=source?.art;
+ if(!wrapper){
+  el.className='direct-opening physical-intro';
+  el.setAttribute('aria-hidden','true');
+  el.innerHTML='<div class="direct-wrapper">'+packArt(true)+'</div>';
+  document.body.append(el);
+  wrapper=el.firstElementChild;
+  Object.assign(wrapper.style,{left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px'});
+ }else{
+  el.classList.add('cards-emerging');
+ }
  reveal.classList.add('intro-running');
  const cardMotion=stack.animate([
   {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0,easing:'cubic-bezier(.18,.65,.3,1)'},
@@ -245,3 +255,4 @@ decoratePack();
 // Swallow clicks for a moment after a Re-rip so a double-click can't pick or place a card by accident.
 document.addEventListener("click",e=>{if(window.__rerippedAt&&performance.now()-window.__rerippedAt<450&&!e.target.closest('#rerollBtn,#rvRerip')){e.stopImmediatePropagation();e.preventDefault()}},true);
 document.addEventListener("dblclick",e=>{if(e.target.closest('#draft,#field,#pen,.reveal')){e.preventDefault()}},true);
+
