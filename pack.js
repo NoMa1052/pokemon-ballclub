@@ -53,6 +53,9 @@ function wireRip(pk){
    foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,0,w/cw*foilImage.naturalWidth,
     foilImage.naturalHeight*.128,x,seal-lift-h,w,h);
    if(t>0){
+    // Keep highlights and the silver fold inside the photographed foil alpha.
+    // The source artwork has transparent margins, especially along this seam.
+    foil.save();foil.globalCompositeOperation='source-atop';
     const sheen=foil.createLinearGradient(0,seal-lift-h,0,seal-lift);
     sheen.addColorStop(0,'rgba(0,5,18,'+(.14*flex)+')');
     sheen.addColorStop(.38,'rgba(255,255,255,0)');
@@ -68,6 +71,7 @@ function wireRip(pk){
      metal.addColorStop(.62,'#f2f8fa');metal.addColorStop(1,'#7d8d9e');
      foil.fillStyle=metal;foil.fillRect(x,y-lip,w,lip*1.2);
     }
+    foil.restore();
    }
   }
   foil.restore();return true;

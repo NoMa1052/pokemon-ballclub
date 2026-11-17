@@ -22,7 +22,7 @@
 .pack.foil-releasing .pk-cut path{stroke:#e4fcff;stroke-width:1;opacity:1}
 .pack .pk-loose{transform-origin:50% 26%!important;will-change:opacity!important}
 .physical-intro{pointer-events:auto}
-.physical-spill{position:absolute;height:190px;background:radial-gradient(ellipse 49% 49% at 50% 50%,#f3ffffdd 0%,#cfedff88 22%,#adcfff44 48%,transparent 100%);animation:physical-spill 850ms ease-out both;pointer-events:none}
+.physical-spill{position:absolute;height:190px;background:radial-gradient(ellipse 49% 49% at 50% 50%,#f8fffff2 0%,#ddf4ffbb 26%,#adcfff55 52%,transparent 100%);animation:physical-spill 850ms ease-out both;pointer-events:none}
 @keyframes physical-spill{0%{opacity:.3;transform:scale(.85)}25%{opacity:.9;transform:scale(1.08)}100%{opacity:0;transform:scale(1.4)}}
 @media(prefers-reduced-motion:reduce){
  .physical-sheen,.physical-rip-light,.physical-spill{display:none!important}
@@ -71,15 +71,16 @@
 
 /* A short, feathered flash softens the moment the seal separates. */
 .pack-seam-flash{
- position:absolute;left:-26%;top:-2%;width:152%;height:30%;z-index:5;
+ position:absolute;left:-30%;top:-4%;width:160%;height:34%;z-index:5;
  pointer-events:none;opacity:0;transform-origin:center;
- background:radial-gradient(ellipse 48% 42% at 50% 50%,#fffef8 0%,#ecfaffed 17%,#bce5ff88 40%,transparent 76%);
+ background:radial-gradient(ellipse 48% 42% at 50% 50%,#fffef8 0%,#f5fcff 22%,#ccecffaa 43%,transparent 78%);
 }
 .pack.foil-releasing .pack-seam-flash{animation:pack-seam-flash 460ms ease-out both}
 @keyframes pack-seam-flash{
  0%{opacity:0;transform:scale(.7,.45)}
  18%{opacity:1;transform:scale(1.06,1)}
- 48%{opacity:.7;transform:scale(1.18,1.25)}
+ 48%{opacity:.85;transform:scale(1.18,1.25)}
+ 72%{opacity:.4;transform:scale(1.2,1.4)}
  100%{opacity:0;transform:scale(1.2,1.5)}
 }
 @media(prefers-reduced-motion:reduce){.pack-seam-flash{display:none}}
