@@ -94,14 +94,15 @@ function openReveal(sp,chooseAll=false){
     card._twirlDone=true;busy=true;gesture=null;
     const previousOrigin=card.style.transformOrigin;
     card.style.transformOrigin='50% 50%';
+    card.classList.add('physical-twirling');
     const motion=card.animate([
-      {transform:'translate3d(0,0,0) rotate(-360deg) scale(.94)'},
-      {transform:'translate3d(0,0,0) rotate(0deg) scale(1)'}
+      {transform:'translate3d(0,0,0) rotateY(-360deg) scale(.94)'},
+      {transform:'translate3d(0,0,0) rotateY(0deg) scale(1)'}
     ],{duration:780,easing:'cubic-bezier(.2,.55,.25,1)',fill:'both'});
     let complete=false,timer;
     const finish=()=>{
       if(complete)return;complete=true;clearTimeout(timer);
-      motion.cancel();card.style.transformOrigin=previousOrigin;
+      motion.cancel();card.classList.remove('physical-twirling');card.style.transformOrigin=previousOrigin;
       if(revealEl!==el||!card.isConnected||!stack?.isConnected)return;
       busy=false;
       const queued=pendingAdvance;pendingAdvance=null;
@@ -197,6 +198,7 @@ function openReveal(sp,chooseAll=false){
     cards.forEach(card=>{
       card.style.animation='none';
       const shine=document.createElement('span');shine.className='physical-sheen';shine.setAttribute('aria-hidden','true');card.append(shine);
+      const back=document.createElement('span');back.className='physical-twirl-back';back.setAttribute('aria-hidden','true');card.append(back);
       card._physicalEntrance=()=>entrance(card);
     });
     position();

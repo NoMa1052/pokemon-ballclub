@@ -95,3 +95,10 @@
 .opening-afterglow{width:min(170vw,900px);height:min(170vw,900px);translate:-50% -50%;opacity:0;animation:afterglow 1050ms ease-out both}
 @keyframes afterglow{0%{opacity:.65;transform:scale(1)}100%{opacity:0;transform:scale(1.24) translateY(-5%)}}
 @media(prefers-reduced-motion:reduce){.pack-tier-burst,.opening-afterglow{display:none!important}}
+
+/* A real reverse face appears halfway through the vertical-axis twirl. */
+.physical-twirl-back{display:none;position:absolute;inset:0;border-radius:inherit;box-sizing:border-box;border:2px solid #f4eedc;outline:1px solid #c53e31;outline-offset:-8px;background:url(card-logo.webp) center/72% auto no-repeat,repeating-linear-gradient(90deg,#ffffff0d 0 1.5px,transparent 1.5px 15px),radial-gradient(120% 80% at 50% 42%,#1c3d74,#0b1b38 75%);backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:rotateY(180deg) translateZ(1px)}
+.physical-stack>.tcard.physical-twirling{backface-visibility:visible;transform-style:preserve-3d}
+.physical-twirling>.tc-in{backface-visibility:hidden;-webkit-backface-visibility:hidden;transform:translateZ(1px)}
+.physical-twirling>.physical-twirl-back{display:block}
+.physical-twirling>.physical-sheen{visibility:hidden}
