@@ -85,7 +85,15 @@ function openReveal(sp,chooseAll=false){
   const parked=d=>`translate3d(${Math.min(d,4)*5}px,${Math.min(d,4)*3}px,0) scale(${1-Math.min(d,4)*.012})`;
   const entrance=card=>{
     if(reduced||!card?.isConnected)return;
+    const tier=card.classList.contains('leg')?'legend':card.classList.contains('shiny')?'shiny':card.classList.contains('gold')?'gold':null;
     card.classList.remove('physical-catchlight');
+    if(!tier)return;
+    const flare=stage?.querySelector('.physical-reveal-glow');
+    if(flare){
+      flare.getAnimations().forEach(a=>a.cancel());
+      flare.dataset.tier=tier;
+      flare.animate([{opacity:0,transform:'scale(.82)'},{opacity:1,transform:'scale(1)',offset:.28},{opacity:.55,transform:'scale(1.06)',offset:.65},{opacity:0,transform:'scale(1.12)'}],{duration:tier==='gold'?1200:1600,easing:'ease-out'});
+    }
     requestAnimationFrame(()=>{if(card.isConnected)card.classList.add('physical-catchlight')});
   };
   const position=()=>{
@@ -98,7 +106,7 @@ function openReveal(sp,chooseAll=false){
       card.setAttribute('aria-hidden',depth===0?'false':'true');
     });
     el.querySelector('.rv-count').textContent=(i+1)+' / '+ms.length;
-    el.querySelector('.rv-hint').textContent=i===ms.length-1?'Swipe or tap to see your pack':'Swipe left or tap to continue';
+    el.querySelector('.rv-hint').textContent=i===ms.length-1?'Swipe or tap to see your pack':'Swipe either way or tap to continue';
   };
   const settle=()=>{if(!cards[i])return;const c=cards[i];c.style.transition=reduced?'none':'transform 240ms cubic-bezier(.22,.61,.36,1)';c.style.transform='translate3d(0,0,0)'};
   const advance=(step=1,dir=-1)=>{
@@ -113,7 +121,7 @@ function openReveal(sp,chooseAll=false){
       if(revealEl!==el||!stack?.isConnected){animations.forEach(a=>a.cancel());return}
       i+=step;
       if(i>=ms.length){animations.forEach(a=>a.cancel());pendingAdvance=null;busy=false;spread();stage=null;return}
-      position();animations.forEach(a=>a.cancel());busy=false;entrance(cards[i]);
+      position();animations.forEach(a=>a.cancel());busy=false;
       const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);
     };
     if(reduced){finish();return}
@@ -121,7 +129,10 @@ function openReveal(sp,chooseAll=false){
     if(step>0){
       const start=getComputedStyle(old).transform;
       animations.push(old.animate([{transform:start,opacity:1},{transform:`translate3d(${dir*Math.max(old.offsetWidth*1.25,innerWidth*.7)}px,-12px,0) rotateY(${-dir*12}deg) rotate(${dir*5}deg)`,opacity:0}],{duration:420,easing:'cubic-bezier(.32,0,.3,1)',fill:'forwards'}));
-      if(next)animations.push(next.animate([{transform:parked(1)},{transform:'translate3d(0,0,0)'}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
+      if(next){
+        entrance(next);
+        animations.push(next.animate([{transform:parked(1)},{transform:'translate3d(0,0,0)'}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
+      }
     }else{
       next.hidden=false;next.style.opacity='1';
       animations.push(next.animate([{transform:'translate3d(-110%,0,0) rotate(-5deg)',opacity:0},{transform:'translate3d(0,0,0)',opacity:1}],{duration:420,easing:'cubic-bezier(.22,.61,.36,1)',fill:'forwards'}));
@@ -133,7 +144,7 @@ function openReveal(sp,chooseAll=false){
     if(revealEl!==el)return;
     if(i>=ms.length){spread();return}
     el.innerHTML=`<div class="rv-top"><button class="btn rv-close" id="rvClose">Back to field</button><span class="rv-count"></span><button class="btn rv-btn" id="rvSkip">Show all cards</button></div>
-    <button class="rv-stage physical-stage" id="rvStage" aria-label="Next card" data-autofocus><span class="physical-stack">${ms.map(m=>tcardHTML(m)).join('')}</span></button><p class="rv-hint"></p>`;
+    <button class="rv-stage physical-stage" id="rvStage" aria-label="Next card" data-autofocus><span class="physical-reveal-glow" aria-hidden="true"></span><span class="physical-stack">${ms.map(m=>tcardHTML(m)).join('')}</span></button><p class="rv-hint"></p>`;
     stage=el.querySelector('#rvStage');stack=stage.querySelector('.physical-stack');cards=[...stack.children];
     cards.forEach(card=>{
       card.style.animation='none';
@@ -158,7 +169,7 @@ function openReveal(sp,chooseAll=false){
     },{passive:false});
     stage.addEventListener('pointerup',()=>{
       if(!gesture)return;const {dx,dragging}=gesture;gesture=null;if(!dragging)return;
-      suppressClick=true;if(Math.abs(dx)>=Math.min(70,cards[i].offsetWidth*.2))advance(dx<0?1:-1,dx<0?-1:1);else settle();
+      suppressClick=true;if(Math.abs(dx)>=Math.min(70,cards[i].offsetWidth*.2))advance(1,dx<0?-1:1);else settle();
     });
     stage.addEventListener('pointercancel',()=>{gesture=null;suppressClick=true;settle()});
     requestAnimationFrame(()=>{if(!el.classList.contains('intro-running'))entrance(cards[i])});

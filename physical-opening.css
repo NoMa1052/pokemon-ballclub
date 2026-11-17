@@ -9,11 +9,11 @@
 .reveal:has(.physical-stack) .rv-hint{animation:none!important}
 .physical-sheen{position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;z-index:20;opacity:0}
 .physical-sheen::after{content:'';position:absolute;inset:-35% -100%;background:linear-gradient(110deg,transparent 36%,#fff4c716 43%,#fffbd45c 50%,#fff4c714 57%,transparent 65%);transform:translate3d(-38%,0,0)}
-.physical-front.physical-catchlight:is(.gold,.leg,.shiny) .physical-sheen{animation:physical-glint 1350ms ease both}
-.physical-front.physical-catchlight:is(.gold,.leg,.shiny) .physical-sheen::after{animation:physical-reflect 1350ms cubic-bezier(.22,.61,.36,1) both}
+.physical-catchlight:is(.gold,.leg,.shiny) .physical-sheen{animation:physical-glint 1350ms ease both}
+.physical-catchlight:is(.gold,.leg,.shiny) .physical-sheen::after{animation:physical-reflect 1350ms cubic-bezier(.22,.61,.36,1) both}
 .physical-stack .shiny .physical-sheen::after{background:linear-gradient(110deg,transparent 32%,#ffb2e633 41%,#fffde678 48%,#a2eaff55 55%,#b8ffe12b 61%,transparent 68%)}
 .physical-stack .leg .physical-sheen::after{background:linear-gradient(110deg,transparent 33%,#bd96f62b 41%,#ffffff85 49%,#ffe7a03b 57%,transparent 66%)}
-.physical-front.physical-catchlight:is(.leg,.shiny) .physical-sheen,.physical-front.physical-catchlight:is(.leg,.shiny) .physical-sheen::after{animation-duration:1800ms}
+.physical-catchlight:is(.leg,.shiny) .physical-sheen,.physical-catchlight:is(.leg,.shiny) .physical-sheen::after{animation-duration:1800ms}
 @keyframes physical-glint{0%{opacity:0}18%{opacity:1}76%{opacity:.8}100%{opacity:0}}
 @keyframes physical-reflect{to{transform:translate3d(38%,0,0)}}
 .physical-rip-light{position:absolute;left:-15%;width:130%;top:-20%;height:37%;background:radial-gradient(ellipse at 50% 100%,#f9ffffcf 0,#c5f7ff55 20%,#d9b8ff16 48%,transparent 72%);pointer-events:none;z-index:3;opacity:0;transform-origin:50% 100%;transform:scale(.7)}
@@ -30,3 +30,11 @@
 }
 
 .physical-stack>.tcard{width:min(300px,78vw,calc((100dvh - 130px)*.64))}
+
+/* A short burst comes from behind the card as it is uncovered. */
+.physical-stage{position:relative;isolation:isolate}
+.physical-stack{z-index:1}
+.physical-reveal-glow{position:absolute;left:50%;top:50%;width:min(120vw,600px);height:min(120vw,600px);margin:0;translate:-50% -50%;border-radius:50%;opacity:0;pointer-events:none;background:radial-gradient(ellipse,rgba(255,218,99,.62) 0%,rgba(245,181,31,.27) 38%,transparent 70%);will-change:transform,opacity}
+.physical-reveal-glow[data-tier="legend"]{background:radial-gradient(ellipse,rgba(255,235,195,.65),rgba(194,137,255,.42) 36%,transparent 70%)}
+.physical-reveal-glow[data-tier="shiny"]{background:radial-gradient(ellipse,rgba(255,250,225,.7),rgba(255,175,221,.32) 30%,rgba(129,219,255,.26) 47%,transparent 70%)}
+@media(prefers-reduced-motion:reduce){.physical-reveal-glow{display:none}}
