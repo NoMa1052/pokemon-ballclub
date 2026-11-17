@@ -106,12 +106,26 @@ function wireRip(pk){
   // Choose the pack once at the moment the opening is committed. The same
   // result is passed into the reveal; preview overrides only the light.
   burstPendingSpin=run.unrevealed?run.spin:drawNext();
+  const openingRun=run,openingSpin=burstPendingSpin;
+  const firstArtwork=preparePackArtwork(openingSpin);
   const chosen=bestTier(burstPendingSpin),preview=new URLSearchParams(location.search).get('burst');
   pk.dataset.burst=['gold','leg','shiny','base'].includes(preview)?preview:chosen;openingBurstTier=pk.dataset.burst;
   cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
   const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
-   const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect(),burstRect:pk.querySelector('.pack-tier-burst')?.getBoundingClientRect()};doSpin()}};
+   const handoff=async()=>{
+    let waitLabel;
+    const labelTimer=setTimeout(()=>{
+     if(!pk.isConnected)return;
+     waitLabel=document.createElement('span');waitLabel.className='pack-art-wait';
+     waitLabel.setAttribute('role','status');waitLabel.textContent='Loading your cards…';pk.append(waitLabel);
+    },120);
+    let deadline;
+    await Promise.race([firstArtwork,new Promise(resolve=>{deadline=setTimeout(resolve,1500)})]);
+    clearTimeout(labelTimer);clearTimeout(deadline);waitLabel?.remove();
+    if(!pk.isConnected||run!==openingRun||burstPendingSpin!==openingSpin)return;
+    tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect(),burstRect:pk.querySelector('.pack-tier-burst')?.getBoundingClientRect()};doSpin();
+   };
    if(reduce()){handoff();return}
    pk.classList.add('foil-releasing');
    const releasedAt=performance.now();

@@ -1,11 +1,92 @@
 // Pack reveal: after a pack is ripped, its Pokémon pop up one at a time as trading cards.
 // Tap through them in shuffled pack order, then pick one from the spread. "Full stats" drops to the regular list.
 const ART_URL=(n,shiny)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny?"shiny/":""}${n}.png`;
+
+// Warm and decode artwork while the foil is opening. Share one request per
+// Pokémon across the hidden field row, reveal stack, and card inspection.
+const cardArtworkCache=new Map();
+function prepareCardArtwork(m,priority='auto'){
+ const key=String(m.num)+':'+(m.shiny?1:0);
+ const previous=cardArtworkCache.get(key);
+ if(previous)return previous;
+ const entry={image:null,ready:null};cardArtworkCache.set(key,entry);
+ entry.ready=new Promise(resolve=>{
+  let settled=false,remaining=3;const timers=[],requests=[];
+  const finish=image=>{
+   if(settled)return;settled=true;entry.image=image;
+   timers.forEach(clearTimeout);
+   requests.forEach(img=>{img.onload=null;img.onerror=null});
+   if(!image)cardArtworkCache.delete(key);
+   resolve(image);
+  };
+  const failed=()=>{if(--remaining===0)finish(null)};
+  const request=(src,pixel=false)=>{
+   if(settled)return;
+   const img=new Image();requests.push(img);img.decoding='async';
+   img.fetchPriority=requests.length===1?priority:'low';
+   img.onload=async()=>{
+    try{if(img.decode)await img.decode()}catch(_){}
+    if(img.naturalWidth){img.dataset.pixel=pixel?'1':'0';finish(img)}
+    else failed();
+   };
+   img.onerror=failed;img.src=src;
+  };
+  request(ART_URL(m.num,m.shiny));
+  timers.push(setTimeout(()=>request('https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/'+(m.shiny?'shiny/':'')+m.num+'.png'),1000));
+  timers.push(setTimeout(()=>request(SPRITE_URL(m.num,m.shiny),true),2200));
+  timers.push(setTimeout(()=>finish(null),8000));
+ });
+ // Keep recent decoded images without retaining every pack in a long session.
+ if(cardArtworkCache.size>80){
+  for(const [oldKey,old] of cardArtworkCache){
+   if(old.image&&oldKey!==key){cardArtworkCache.delete(oldKey);break}
+  }
+ }
+ return entry;
+}
+function preparePackArtwork(sp){
+ const ms=(sp?.ids||[]).filter(id=>!sp.usedIds?.includes(id)).map(id=>BYID.get(id)).filter(Boolean);
+ const entries=ms.map((m,i)=>prepareCardArtwork(m,i===0?'high':'low'));
+ return entries[0]?.ready||Promise.resolve(null);
+}
+function cardArtworkState(img,state){
+ const art=img.closest('.tc-art');if(!art)return;
+ art.dataset.artState=state;
+ const status=art.querySelector('.tc-art-status');
+ if(status)status.textContent=state==='failed'?'Artwork unavailable. Reconnecting…':'Loading artwork…';
+}
+async function cardArtworkLoaded(img){
+ const src=img.src;
+ try{if(img.decode)await img.decode()}catch(_){}
+ if(img.src!==src||!img.naturalWidth)return;
+ pokemonImageLoaded(img);img.dataset.artReady='1';cardArtworkState(img,'ready');
+}
+function hydrateCardArtwork(root=document){
+ root.querySelectorAll('img[data-card-art]:not([data-art-bound])').forEach(img=>{
+  img.dataset.artBound='1';
+  const entry=prepareCardArtwork({num:img.dataset.num,shiny:img.dataset.shiny==='1'});
+  entry.ready.then(ready=>{
+   if(!img.isConnected||img.dataset.artReady==='1')return;
+   if(!ready){img.dataset.failed='1';cardArtworkState(img,'failed');return}
+   img.classList.toggle('px',ready.dataset.pixel==='1');
+   if(img.src!==ready.src)img.src=ready.src;
+   if(img.complete&&img.naturalWidth)cardArtworkLoaded(img);
+  });
+ });
+}
+function cardArtworkError(img){
+ delete img.dataset.artReady;
+ cardArtworkState(img,'loading');
+ delete img.dataset.artBound;
+ hydrateCardArtwork(img.parentElement);
+}
+
 function tcardHTML(m,mini){
   setOverall(m);
   const c1=TYPE_COLORS[m.types[0]]||"#777",c2=TYPE_COLORS[m.types[1]]||c1;
   const tier=m.leg?"leg":m.shiny?"shiny":m.ovr>=90?"gold":m.ovr>=80?"silver":"base";
-  const img=`<img src="${ART_URL(m.num,m.shiny)}" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="async" onload="pokemonImageLoaded(this)" onerror="pokemonImageError(this)">`;
+  const prepared=prepareCardArtwork(m);
+  const img=`<img src="${prepared.image?.src||ART_URL(m.num,m.shiny)}" class="${prepared.image?.dataset.pixel==='1'?'px':''}" data-card-art="1" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="sync" onload="cardArtworkLoaded(this)" onerror="cardArtworkError(this)"><span class="tc-art-status" role="status">Loading artwork…</span>`;
   const tag=m.leg?'<span class="tc-tag">Legend</span>':m.shiny?'<span class="tc-tag">Shiny</span>':"";
   const best=`<span class="tc-best ${ovCls(m.ovr)}"><b>${m.ovr}</b><small>${m.hspot}</small></span>`;
   if(mini)return `<div class="tcard mini ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in"><b class="tc-name">${esc(m.name)}</b><div class="tc-art">${img}</div>${best}${tag}</div></div>`;
@@ -24,22 +105,13 @@ function unlockRevealScroll(){
   if(revealScroll!==null){const y=revealScroll;revealScroll=null;window.scrollTo(0,y)}
 }
 function closeReveal(){if(revealEl){revealEl.remove();revealEl=null}unlockRevealScroll()}
-// Rebuild the pack row when leaving the reveal. This refreshes card artwork as well as
-// the options UI, instead of uncovering potentially stale card elements underneath.
-// iPhone Safari can leave card pictures blank when they were created while the page behind the pack
-// was hidden. Once the page is showing again, give every card a brand-new image that is decoded
-// before it is put on the page, then nudge the row so Safari draws it.
+// The refreshed row shares the decoded artwork cache with the reveal.
 function repaintCardArt(){
-  const swap=()=>document.querySelectorAll(".cardrow img, #cands img").forEach(old=>{
-    const src=old.currentSrc||old.src;if(!src)return;
-    const fresh=new Image();fresh.decoding="sync";fresh.alt=old.alt||"";fresh.className=old.className;
-    if(old.getAttribute("onerror"))fresh.setAttribute("onerror",old.getAttribute("onerror"));
-    if(old.getAttribute("onload"))fresh.setAttribute("onload",old.getAttribute("onload"));
-    const put=()=>{if(old.isConnected)old.replaceWith(fresh)};
-    fresh.src=src;(fresh.decode?fresh.decode():Promise.resolve()).then(put,put);
-  });
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{swap();
-    const row=document.querySelector(".cardrow");if(row){row.style.transform="translateZ(0)";void row.offsetHeight;requestAnimationFrame(()=>row.style.removeProperty("transform"))}}));
+ hydrateCardArtwork();
+ requestAnimationFrame(()=>{const row=document.querySelector('.cardrow');if(!row)return;
+  row.style.transform='translateZ(0)';void row.offsetHeight;
+  requestAnimationFrame(()=>row.style.removeProperty('transform'));
+ });
 }
 function returnToField(){
   const row=document.querySelector(".cardrow"),scrollLeft=row?.scrollLeft||0;
@@ -73,6 +145,7 @@ function openReveal(sp,chooseAll=false){
         <button class="btn rv-opt${run.doubleArmed?" armed":""}" id="rvTake2" aria-pressed="${!!run.doubleArmed}" ${run.doubles&&!run.second&&run.picks.length<run.size-1?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}<small>Keep 2 cards · ${run.doubles} left</small></button>
       </div>
       ${run.doubleArmed?`<div class="master-confirm"><p>Choose two cards, then place them one at a time.</p><button class="btn primary" id="masterConfirm" ${selected.length===2?"":"disabled"}>Keep these 2 cards</button></div>`:`<p class="rv-hint">Tap a card to pick it</p>`}`;
+    hydrateCardArtwork(el);
     el.querySelectorAll(".rv-mini").forEach(b=>b.onclick=()=>{const id=+b.dataset.id;if(!run.doubleArmed){pick(id);return}if(takenNums().includes(BYID.get(id).num)&&!developmentOptions(BYID.get(id)).length)return;if(selected.includes(id))selected=selected.filter(x=>x!==id);else if(selected.length<2)selected.push(id);spread()});
     const confirm=el.querySelector('#masterConfirm');if(confirm)confirm.onclick=()=>{if(selected.length!==2)return;const ids=[...selected];closeReveal();document.dispatchEvent(new CustomEvent('pbc-master-picks',{detail:ids}))};
     // Not feeling this pack? Super Rod swaps it for a fresh one (and opens it). Master Ball keeps two cards from this one.
@@ -191,7 +264,7 @@ function openReveal(sp,chooseAll=false){
       const shine=document.createElement('span');shine.className='physical-sheen';shine.setAttribute('aria-hidden','true');card.append(shine);
       card._physicalEntrance=()=>entrance(card);
     });
-    position();
+    position();hydrateCardArtwork(stack);
     el.querySelector('#rvClose').onclick=returnToField;
     el.querySelector('#rvSkip').onclick=e=>{e.stopPropagation();pendingAdvance=null;busy=false;i=ms.length;spread();stage=null};
     stage.onclick=()=>{if(suppressClick){suppressClick=false;return}advance()};
@@ -229,6 +302,7 @@ function packPoolUI(){
   cands.className="cands cardrow";
   const ctl=d.querySelector(".packctl");if(ctl){const hint=ctl.nextElementSibling;cands.parentNode.insertBefore(ctl,cands);if(hint&&hint.classList.contains("hint"))ctl.after(hint)}
   cands.innerHTML=ms.map(m=>{const on=run.spin.usedIds?.includes(m.id)||(taken.includes(m.num)&&!developmentOptions(m).length);return `<button class="cand pcard" data-id="${m.id}" aria-pressed="${run.selected===m.id}" ${on?"disabled":""} aria-label="${esc(m.name)}">${tcardHTML(m)}${on?'<span class="pc-flag">On team</span>':run.selected===m.id?'<span class="pc-flag sel">Picked</span>':""}</button>`}).join("");
+  hydrateCardArtwork(cands);
   const sel=run.selected&&BYID.get(run.selected);
   place.innerHTML=sel?positionPickerHTML(sel):`<p class="hint" style="margin:6px 0 0;text-align:center">Swipe the cards, tap one to pick it.</p>`;
 }

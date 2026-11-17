@@ -1,5 +1,6 @@
 // Artwork requests retry alternate CDNs and recover when connectivity returns.
 function pokemonImageError(img){
+ if(img.dataset.cardArt){cardArtworkError(img);return}
  const n=img.dataset.num,sh=img.dataset.shiny==='1',art=img.dataset.art==='1';
  const folder=art?'other/official-artwork/':'',variant=sh?'shiny/':'';
  const tail=folder+variant+n+'.png';
