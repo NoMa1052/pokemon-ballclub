@@ -38,31 +38,56 @@ function wireRip(pk){
  const drawFoil=(p,flight=0)=>{
   if(!foilImage.complete||!foilImage.naturalWidth)return false;
   foil.clearRect(0,0,strip.width,strip.height);
-  const seal=ch*.128,front=p*cw,step=3;
+  const seal=ch*.128,front=p*cw,step=6,rows=10;
   foil.save();foil.translate(pad,pad);
+  // A dark curved cavity separates the front foil from the back wall.
+  // It grows only along the portion of the seam that has actually torn.
+  for(let u=0;u<cw;u+=step){
+   const t=Math.max(0,front-u)/cw,flex=t*t*(3-2*t);
+   if(!t)continue;
+   const x=direction===1?u:cw-u-step,depth=seal*.23*flex;
+   const cavity=foil.createLinearGradient(0,seal-depth,0,seal+2);
+   cavity.addColorStop(0,'#687484');cavity.addColorStop(.18,'#182235');
+   cavity.addColorStop(.55,'#020713');cavity.addColorStop(1,'#071020');
+   foil.fillStyle=cavity;foil.fillRect(x,seal-depth,step+.5,depth+2);
+   foil.fillStyle='rgba(214,225,237,'+(.32*flex)+')';
+   foil.fillRect(x,seal-depth,step+.5,.8);
+  }
   for(let u=cw-step;u>=0;u-=step){
-   const t=Math.max(0,front-u)/cw;
-   const released=t*t*(3-2*t);
-   // The attached end stays flat. The free end bends up and rolls to show its underside.
-   const roll=t*1.4+Math.sin(flight*Math.PI)*(.65+.35*(1-u/cw));
-   const lift=cw*.13*released+flight*cw*.27+Math.sin(u/cw*Math.PI)*flight*cw*.065;
-   const shift=cw*.025*released+flight*cw*.10;
+   const t=Math.max(0,front-u)/cw,flex=t*t*(3-2*t);
+   // Integrate the foil's changing angle across its height: the seal
+   // stays curved instead of compressing into a single flat rectangle.
+   const bend=t*3.5+Math.sin(flight*Math.PI)*.65;
+   const lift=cw*.17*flex+flight*cw*.25;
+   const shift=cw*.018*flex+flight*cw*.08;
    const x=direction===1?u:cw-u-step;
-   const projected=seal*Math.cos(roll),h=Math.max(1,Math.abs(projected));
-   const slope=direction*(.12*t+flight*.19*Math.cos(u/cw*Math.PI));
-   foil.save();foil.translate(x+direction*shift,seal-lift);foil.transform(1,slope,0,1,0,0);
-   if(projected>=0){
-    foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,0,Math.min(step+.7,cw-x)/cw*foilImage.naturalWidth,foilImage.naturalHeight*.128,0,-h,Math.min(step+.7,cw-x),h);
-   }else{
-    const silver=foil.createLinearGradient(0,-h,0,0);silver.addColorStop(0,'#768caa');silver.addColorStop(.35,'#f3f5f6');silver.addColorStop(.7,'#a6bbcd');silver.addColorStop(1,'#edf6ff');foil.fillStyle=silver;foil.fillRect(0,-h,step+.7,h);
-   }
-   if(t>0||flight>0){
-    const shade=foil.createLinearGradient(0,-h,0,0);
-    shade.addColorStop(0,'rgba(255,255,255,'+(Math.sin(roll)*.3)+')');
-    shade.addColorStop(.5,'rgba(255,255,255,0)');shade.addColorStop(1,'rgba(0,0,0,.22)');
-    foil.fillStyle=shade;foil.fillRect(0,-h,step+.7,h);
-    foil.fillStyle='#dce8f2';foil.globalAlpha=Math.min(.8,t*1.4+flight);
-    foil.fillRect(0,-2,step+.7,2);
+   const slope=direction*(.07*t+flight*.12*Math.cos(u/cw*Math.PI));
+   const curve=q=>bend<.001?seal*q:seal*Math.sin(bend*q)/bend;
+   const depth=q=>bend<.001?0:seal*(1-Math.cos(bend*q))/bend;
+   foil.save();foil.translate(x+direction*shift,seal-lift);
+   foil.transform(1,slope,0,1,0,0);
+   for(let j=0;j<rows;j++){
+    const q0=j/rows,q1=(j+1)/rows,q=(q0+q1)/2;
+    const y0=-curve(q0)-depth(q0)*.24,y1=-curve(q1)-depth(q1)*.24;
+    const top=Math.min(y0,y1),height=Math.max(.5,Math.abs(y1-y0));
+    const normal=Math.cos(bend*q),w=Math.min(step+.6,cw-x);
+    if(normal>=0){
+     foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,
+      (1-q1)*foilImage.naturalHeight*.128,w/cw*foilImage.naturalWidth,
+      foilImage.naturalHeight*.128/rows,0,top,w,height+.5);
+    }else{
+     const gleam=Math.pow(Math.max(0,Math.sin(bend*q)),9);
+     const tone=Math.round(105+100*gleam+20*Math.sin(u*.16));
+     foil.fillStyle='rgb('+tone+','+(tone+5)+','+Math.min(255,tone+13)+')';
+     foil.fillRect(0,top,w,height+.5);
+    }
+    if(t||flight){
+     const light=Math.sin(bend*q)*.22;
+     foil.fillStyle='rgba(255,255,255,'+Math.max(0,light)+')';
+     foil.fillRect(0,top,w,height+.5);
+     foil.fillStyle='rgba(0,5,18,'+(Math.max(0,1-Math.abs(normal))*.27)+')';
+     foil.fillRect(0,top,w,height+.5);
+    }
    }
    foil.restore();
   }
