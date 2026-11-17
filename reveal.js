@@ -52,8 +52,6 @@ function preparePackArtwork(sp){
 function cardArtworkState(img,state){
  const art=img.closest('.tc-art');if(!art)return;
  art.dataset.artState=state;
- const status=art.querySelector('.tc-art-status');
- if(status)status.textContent=state==='failed'?'Artwork unavailable. Reconnecting…':'Loading artwork…';
 }
 async function cardArtworkLoaded(img){
  const src=img.src;
@@ -74,6 +72,19 @@ function hydrateCardArtwork(root=document){
   });
  });
 }
+// Put the already-decoded image directly into the first card, avoiding
+// a second image element's load/decode cycle at the start of the reveal.
+function mountPreparedCardArtwork(card){
+ const img=card?.querySelector('img[data-card-art]');if(!img)return;
+ const key=img.dataset.num+':'+(img.dataset.shiny==='1'?1:0);
+ const ready=cardArtworkCache.get(key)?.image;
+ if(!ready||ready.isConnected||!ready.naturalWidth)return;
+ const pixel=ready.dataset.pixel==='1';
+ for(const attr of img.attributes){if(attr.name!=='src')ready.setAttribute(attr.name,attr.value)}
+ ready.classList.toggle('px',pixel);
+ ready.dataset.artBound='1';ready.dataset.artReady='1';
+ img.replaceWith(ready);pokemonImageLoaded(ready);cardArtworkState(ready,'ready');
+}
 function cardArtworkError(img){
  delete img.dataset.artReady;
  cardArtworkState(img,'loading');
@@ -86,7 +97,7 @@ function tcardHTML(m,mini){
   const c1=TYPE_COLORS[m.types[0]]||"#777",c2=TYPE_COLORS[m.types[1]]||c1;
   const tier=m.leg?"leg":m.shiny?"shiny":m.ovr>=90?"gold":m.ovr>=80?"silver":"base";
   const prepared=prepareCardArtwork(m);
-  const img=`<img src="${prepared.image?.src||ART_URL(m.num,m.shiny)}" class="${prepared.image?.dataset.pixel==='1'?'px':''}" data-card-art="1" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="sync" onload="cardArtworkLoaded(this)" onerror="cardArtworkError(this)"><span class="tc-art-status" role="status">Loading artwork…</span>`;
+  const img=`<img src="${prepared.image?.src||ART_URL(m.num,m.shiny)}" class="${prepared.image?.dataset.pixel==='1'?'px':''}" data-card-art="1" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="sync" onload="cardArtworkLoaded(this)" onerror="cardArtworkError(this)">`;
   const tag=m.leg?'<span class="tc-tag">Legend</span>':m.shiny?'<span class="tc-tag">Shiny</span>':"";
   const best=`<span class="tc-best ${ovCls(m.ovr)}"><b>${m.ovr}</b><small>${m.hspot}</small></span>`;
   if(mini)return `<div class="tcard mini ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in"><b class="tc-name">${esc(m.name)}</b><div class="tc-art">${img}</div>${best}${tag}</div></div>`;
@@ -264,7 +275,7 @@ function openReveal(sp,chooseAll=false){
       const shine=document.createElement('span');shine.className='physical-sheen';shine.setAttribute('aria-hidden','true');card.append(shine);
       card._physicalEntrance=()=>entrance(card);
     });
-    position();hydrateCardArtwork(stack);
+    position();mountPreparedCardArtwork(cards[0]);hydrateCardArtwork(stack);
     el.querySelector('#rvClose').onclick=returnToField;
     el.querySelector('#rvSkip').onclick=e=>{e.stopPropagation();pendingAdvance=null;busy=false;i=ms.length;spread();stage=null};
     stage.onclick=()=>{if(suppressClick){suppressClick=false;return}advance()};

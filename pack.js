@@ -114,15 +114,9 @@ function wireRip(pk){
   const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
    const handoff=async()=>{
-    let waitLabel;
-    const labelTimer=setTimeout(()=>{
-     if(!pk.isConnected)return;
-     waitLabel=document.createElement('span');waitLabel.className='pack-art-wait';
-     waitLabel.setAttribute('role','status');waitLabel.textContent='Loading your cards…';pk.append(waitLabel);
-    },120);
     let deadline;
     await Promise.race([firstArtwork,new Promise(resolve=>{deadline=setTimeout(resolve,1500)})]);
-    clearTimeout(labelTimer);clearTimeout(deadline);waitLabel?.remove();
+    clearTimeout(deadline);
     if(!pk.isConnected||run!==openingRun||burstPendingSpin!==openingSpin)return;
     tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect(),burstRect:pk.querySelector('.pack-tier-burst')?.getBoundingClientRect()};doSpin();
    };

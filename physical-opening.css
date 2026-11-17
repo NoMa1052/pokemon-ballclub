@@ -85,8 +85,3 @@
 @keyframes afterglow{0%{opacity:.65;transform:scale(1)}100%{opacity:0;transform:scale(1.24) translateY(-5%)}}
 @media(prefers-reduced-motion:reduce){.pack-tier-burst,.opening-afterglow{display:none!important}}
 
-/* Artwork remains legible while a slow or offline connection recovers. */
-.tc-art .tc-art-status{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;text-align:center;font:600 13px/1.4 system-ui,sans-serif;color:#34445c;pointer-events:none}
-.tc-art:has(img[data-card-art]):not([data-art-state="ready"])>img{visibility:hidden}
-.tc-art[data-art-state="ready"]>.tc-art-status{display:none}
-.pack-art-wait{position:absolute;left:0;right:0;top:45%;z-index:12;padding:12px 8px;border-radius:12px;background:#0b1b33e8;color:#f5eedc;font:600 14px/1.4 system-ui,sans-serif;text-align:center;pointer-events:none}
