@@ -180,6 +180,7 @@
  finish=function(){
   const fresh=!run.result,v=prevFinish.apply(this,arguments);
   addWeakLink();actionBar();
+  if(run.result)window.PBCShare?.prepare();
   if(fresh&&run.result&&!matchMedia('(prefers-reduced-motion: reduce)').matches)show(run.result);
   return v;
  };

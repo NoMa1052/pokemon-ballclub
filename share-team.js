@@ -23,7 +23,8 @@ function text(s){
 }
 function paint(ctx,str,px,py,sz,fill,align,max){ctx.textAlign=align||'left';ctx.textBaseline='middle';ctx.fillStyle=fill;let size=sz;ctx.font='700 '+size+'px "Barlow",Arial,sans-serif';while(max&&ctx.measureText(String(str)).width>max&&size>16){ctx.font='700 '+(--size)+'px "Barlow",Arial,sans-serif'}ctx.fillText(String(str),px,py)}
 function rect(ctx,x,y,w,h,fill,r=0){ctx.fillStyle=fill;if(r&&ctx.roundRect){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}else ctx.fillRect(x,y,w,h)}
-function image(url){return new Promise(resolve=>{const img=new Image();let done=false;const end=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?img:null)};const timer=setTimeout(()=>end(false),6000);img.crossOrigin='anonymous';img.onload=()=>end(true);img.onerror=()=>end(false);img.src=url})}
+const imageCache=new Map();
+function image(url){if(imageCache.has(url))return imageCache.get(url);const pending=new Promise(resolve=>{const img=new Image();let done=false;const end=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?img:null)};const timer=setTimeout(()=>end(false),6000);img.crossOrigin='anonymous';img.onload=()=>end(true);img.onerror=()=>end(false);img.src=url});imageCache.set(url,pending);pending.then(img=>{if(!img)imageCache.delete(url)});return pending}
 async function renderCanvas(s){
  // Fallback field-view poster drawn by hand: the record and the challenge on top, the team on the diamond, staff underneath.
  try{await Promise.race([document.fonts.ready,new Promise(r=>setTimeout(r,1500))])}catch(_){}
@@ -194,13 +195,25 @@ function shareButtons(){return [...document.querySelectorAll('#dcSave,#shareBtn,
 function buttonState(label,disabled){shareButtons().forEach(b=>{if(b.textContent!==label)b.textContent=label;b.disabled=disabled})}
 function schedule(){clearTimeout(prepareTimer);prepareTimer=setTimeout(prep,250)}
 function prep(){
- if(!shareButtons().length)return;let s;try{s=snapshot()}catch(_){return}
+ let s;try{s=snapshot()}catch(_){return}
  const key=keyOf(s);if(key===readyKey&&readyFile){buttonState('Share Team',false);return}if(buildingKey||key===failedKey)return;
  buildingKey=key;buttonState('Preparing image…',true);
- renderFull(s).then(out=>{URL.revokeObjectURL(out.url);if(key!==buildingKey)return;buildingKey=null;if(out.fallback)throw Error('Image could not be prepared');readyFile=new File([out.blob],out.name,{type:'image/png'});readyKey=key;let current;try{current=keyOf(snapshot())}catch(_){}if(current!==key){schedule();return}buttonState('Share Team',false)}).catch(()=>{if(buildingKey===key)buildingKey=null;readyKey=null;readyFile=null;failedKey=key;buttonState('Retry image',false)});
+ // Draw the roster directly instead of waiting on a potentially stalled DOM screenshot.
+ // All sprite requests run together and are cached for changes to the team name.
+ const timeout=new Promise((_,reject)=>setTimeout(()=>reject(Error('Image preparation timed out')),10000));
+ Promise.race([renderCanvas(s),timeout]).then(out=>{
+  URL.revokeObjectURL(out.url);if(key!==buildingKey)return;
+  buildingKey=null;readyFile=new File([out.blob],out.name,{type:'image/png'});readyKey=key;failedKey=null;
+  let current;try{current=keyOf(snapshot())}catch(_){}
+  if(current!==key){schedule();return}buttonState('Share Team',false);
+ }).catch(()=>{
+  if(buildingKey!==key)return;buildingKey=null;readyKey=null;readyFile=null;failedKey=key;
+  let current;try{current=keyOf(snapshot())}catch(_){}
+  if(current!==key){schedule();return}buttonState('Retry image',false);
+ });
 }
 document.addEventListener('input',e=>{if(e.target?.id==='teamName')schedule()},true);
 document.addEventListener('click',e=>{const btn=e.target.closest?.('#dcSave,#shareBtn,.pb-share-launch');if(!btn)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();let s;try{s=snapshot()}catch(_){return}if(keyOf(s)!==readyKey||!readyFile){failedKey=null;prep();return}if(!canShare(readyFile)){open();return}try{navigator.share({files:[readyFile],text:text(s)}).catch(err=>{if(err?.name!=='AbortError')alert('Unable to open sharing. Please try again.')})}catch(_){alert('Unable to open sharing. Please try again.')}},true);
 new MutationObserver(schedule).observe(document.body,{childList:true,subtree:true});schedule();
-window.PBCShare={open,render,snapshot,text};
+window.PBCShare={open,render,snapshot,text,prepare:prep};
 })();
