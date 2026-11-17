@@ -73,8 +73,19 @@
  -webkit-mask-image:radial-gradient(ellipse at center,#000 5%,#000b 35%,transparent 72%);
  mask-image:radial-gradient(ellipse at center,#000 5%,#000b 35%,transparent 72%);
 }
-.pack[data-burst="gold"] .pack-tier-burst,.pack[data-burst="god"] .pack-tier-burst,
-.direct-opening[data-burst="gold"] .opening-afterglow,.direct-opening[data-burst="god"] .opening-afterglow{--burst-core:#fff4c0;--burst-color:rgba(255,191,47,.95);--burst-alt:rgba(255,219,125,.8)}
+.pack[data-burst="gold"] .pack-tier-burst,
+.direct-opening[data-burst="gold"] .opening-afterglow{--burst-core:#fff4c0;--burst-color:rgba(255,191,47,.95);--burst-alt:rgba(255,219,125,.8)}
+/* God packs carry the full spectrum through both halves of the opening. */
+.pack[data-burst="god"] .pack-tier-burst,.direct-opening[data-burst="god"] .opening-afterglow{
+ --burst-core:#fff;--burst-color:rgba(190,237,255,.98);--burst-alt:rgba(244,184,255,.95);
+ background:
+ radial-gradient(ellipse at center,#fff 0%,#fff9f2 7%,#e3eeff99 17%,transparent 49%),
+ repeating-conic-gradient(from -8deg at center,
+ transparent 0deg 5deg,#ffabdfed 7deg 12deg,transparent 16deg 21deg,
+ #bba1fff2 23deg 28deg,transparent 32deg 37deg,#81ddfff2 39deg 44deg,
+ transparent 48deg 53deg,#98ffdae6 55deg 60deg,transparent 64deg 69deg,
+ #ffe89bf2 71deg 76deg,transparent 80deg 85deg,#ffb9a9ed 87deg 90deg);
+}
 .pack[data-burst="leg"] .pack-tier-burst,.direct-opening[data-burst="leg"] .opening-afterglow{--burst-core:#fff0bd;--burst-color:rgba(179,102,255,.95);--burst-alt:rgba(255,198,86,.8)}
 .pack[data-burst="shiny"] .pack-tier-burst,.direct-opening[data-burst="shiny"] .opening-afterglow{--burst-core:#fff1ff;--burst-color:rgba(94,228,255,.95);--burst-alt:rgba(255,111,223,.8)}
 .pack-tier-burst{z-index:3;left:50%;top:12.8%;width:310%;height:175%;translate:-50% -50%;opacity:0;transform-origin:50% 50%}
