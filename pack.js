@@ -9,7 +9,7 @@ const star=(cx,cy,R,r,n)=>{let p=[];for(let i=0;i<n*2;i++){const a=Math.PI*i/n-M
 const BODY="M9 35 C2 80 0 118 0 148 C0 182 2 222 9 261 H191 C198 222 200 182 200 148 C200 118 198 80 191 35 Z";
 const wrinkles=(y,dir)=>{let d1="",d2="";for(let i=0;i<44;i++){const x=6+i*4.4+((i*53)%7)/3,len=2.5+((i*37)%7)*.8,lean=(x-100)/100*3+((i*29)%5-2)*.4;
   const seg=`M${x.toFixed(1)} ${y} l${lean} ${len*dir} `;if(i%2)d1+=seg;else d2+=seg}return `<path d="${d1}" stroke="#fff" stroke-opacity=".09" stroke-width="1.4" stroke-linecap="round"/><path d="${d2}" stroke="#000" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>`};
-let tornPackSource=null;
+let tornPackSource=null,burstPendingSpin=null,openingBurstTier="base";
 function packArt(opened=false){
  return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="pack-foil-v4.webp" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
 }
@@ -29,7 +29,7 @@ function addTilt(pk){
 function wireRip(pk){
  if(pk._ripWired)return;pk._ripWired=true;
  const art=pk.querySelector('.pk-art'),strip=document.createElement('canvas');
- pk.insertAdjacentHTML('beforeend','<span class="physical-rip-light" aria-hidden="true"></span><span class="pack-seam-flash" aria-hidden="true"></span>');
+ pk.insertAdjacentHTML('beforeend','<span class="physical-rip-light" aria-hidden="true"></span><span class="pack-seam-flash" aria-hidden="true"></span><span class="pack-tier-burst" aria-hidden="true"><i></i></span>');
  strip.className='pk-loose';strip.setAttribute('aria-hidden','true');pk.appendChild(strip);
  const foilImage=new Image();foilImage.src=art.querySelector('image').getAttribute('href');
  const cw=600,ch=Math.round(600*1706/922),pad=180;strip.width=cw+pad*2;strip.height=ch+pad*2;
@@ -102,10 +102,14 @@ function wireRip(pk){
   cut.setAttribute('d',jag.filter(([x])=>x>=3.5&&x<=96.5).map(([x,y],i)=>(i?'L':'M')+x.toFixed(2)+' '+(y*1.85).toFixed(2)).join(' '));
  };
  const open=()=>{
-  if(opening||spinning)return;cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
+  if(opening||spinning)return;
+  // Choose the pack once; the opening light reflects those exact cards.
+  burstPendingSpin=run.unrevealed?run.spin:drawNext();
+  pk.dataset.burst=bestTier(burstPendingSpin);openingBurstTier=pk.dataset.burst;
+  cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
   const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
-   const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect()};doSpin()}};
+   const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect(),burstRect:pk.querySelector('.pack-tier-burst')?.getBoundingClientRect()};doSpin()}};
    if(reduce()){handoff();return}
    pk.classList.add('foil-releasing');
    const releasedAt=performance.now();
@@ -160,15 +164,22 @@ function playIntro(sp,done){
  const scale=Math.min(1,origin.width*.84/target.width);
  const el=document.createElement('div');el.className='direct-opening physical-intro';
  el.setAttribute('aria-hidden','true');
- el.innerHTML='<div class="physical-spill"></div><div class="direct-wrapper">'+(source?.html||packArt(true))+'</div>';
+ el.dataset.burst=openingBurstTier;
+ el.innerHTML='<div class="opening-afterglow"></div><div class="physical-spill"></div><div class="direct-wrapper">'+(source?.html||packArt(true))+'</div>';
  document.body.append(el);
  const wrapper=el.querySelector('.direct-wrapper'),spill=el.querySelector('.physical-spill');
  Object.assign(wrapper.style,{left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px'});
  Object.assign(spill.style,{left:origin.left+'px',top:(origin.top+origin.height*.128-100)+'px',width:origin.width+'px'});
+ const burstRect=source?.burstRect;
+ Object.assign(el.querySelector('.opening-afterglow').style,{
+ left:(burstRect?burstRect.left+burstRect.width/2:origin.left+origin.width/2)+'px',
+ top:(burstRect?burstRect.top+burstRect.height/2:origin.top+origin.height*.128)+'px',
+ width:(burstRect?burstRect.width:origin.width*3.1)+'px',
+ height:(burstRect?burstRect.height:origin.height*1.75)+'px'
+ });
  reveal.classList.add('intro-running');
  const cardMotion=stack.animate([
-  {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0},
-  {transform:`translate3d(${dx}px,${dy-55}px,0) scale(${scale}) rotateY(-7deg)`,opacity:1,offset:.28},
+  {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0,easing:'cubic-bezier(.18,.65,.3,1)'},
   {transform:'translate3d(0,0,0) scale(1) rotateY(0deg)',opacity:1}
  ],{duration:1050,easing:'cubic-bezier(.22,.61,.36,1)',fill:'both'});
  wrapper.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(0,40px,0)',opacity:1,offset:.3},{transform:`translate3d(0,${innerHeight-origin.top+100}px,0)`,opacity:0}],{duration:850,easing:'cubic-bezier(.4,0,.7,1)',fill:'forwards'});
@@ -182,7 +193,7 @@ function playIntro(sp,done){
 // Packs skip the spinning-names wait: the rip goes straight into the opening sequence.
 {const base=doSpin;doSpin=function(keep){
   if(!isPack()||keep||spinning)return base(keep);
-  const sp=run.unrevealed?run.spin:drawNext();
+  const sp=burstPendingSpin||(run.unrevealed?run.spin:drawNext());burstPendingSpin=null;
   run.justRipped=true;run.spin=sp;run.unrevealed=false;run.selected=null;saveRun();render();
 }}
 // Re-rip puts a fresh sealed pack back on the table to swipe open, instead of opening it for you.
