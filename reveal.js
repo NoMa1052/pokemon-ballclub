@@ -131,10 +131,10 @@ function openReveal(sp,chooseAll=false){
       const expand=px=>'scale('+((bounds.width+px*2)/bounds.width)+','+((bounds.height+px*2)/bounds.height)+')';
       flare.animate([
         {opacity:0,transform:expand(0)},
-        {opacity:.95,transform:expand(5),offset:.14},
-        {opacity:.5,transform:expand(18),offset:.5},
-        {opacity:0,transform:expand(40)}
-      ],{duration:tier==='gold'?900:1100,easing:'cubic-bezier(.2,.6,.3,1)'});
+        {opacity:tier==='gold'?.95:1,transform:expand(tier==='gold'?5:10),offset:.14},
+        {opacity:tier==='gold'?.5:.8,transform:expand(tier==='gold'?18:35),offset:.5},
+        {opacity:0,transform:expand(tier==='gold'?40:70)}
+      ],{duration:tier==='gold'?900:1300,easing:'cubic-bezier(.2,.6,.3,1)'});
     }
     requestAnimationFrame(()=>{if(card.isConnected)card.classList.add('physical-catchlight')});
   };

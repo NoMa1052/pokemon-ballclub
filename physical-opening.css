@@ -41,8 +41,31 @@
  box-shadow:0 0 9px var(--halo),0 0 24px var(--halo),inset 0 0 10px var(--halo);
  will-change:transform,opacity;
 }
-.physical-reveal-glow[data-tier="legend"]{--edge:#edceff;--halo:rgba(175,109,255,.85)}
-.physical-reveal-glow[data-tier="shiny"]{--edge:#d8fcff;--halo:rgba(105,224,255,.85);box-shadow:0 0 10px #86eaff,0 0 26px #e98ed5aa,inset 0 0 12px #b3f4ff}
+/* Saturated energy traces the perimeter, keeping the center clear. */
+.physical-reveal-glow[data-tier="legend"]{
+ --edge:#b659ff;--halo:#9d35ff;--echo:#ffcd38;
+ --spectrum:conic-gradient(from 20deg,#ffda4b,#b947ff 22%,#8438ff 42%,#ffe064 55%,#b947ff 76%,#ffda4b);
+}
+.physical-reveal-glow[data-tier="shiny"]{
+ --edge:#54f4ff;--halo:#14d9ff;--echo:#ff5fcf;
+ --spectrum:conic-gradient(from 20deg,#50f6ff,#86ffbf 17%,#ffe984 33%,#ff79b9 50%,#bb72ff 68%,#4cbfff 84%,#50f6ff);
+}
+.physical-reveal-glow:is([data-tier="legend"],[data-tier="shiny"]){
+ border:3px solid var(--edge);
+ box-shadow:0 0 12px 3px var(--halo),0 0 36px 7px color-mix(in srgb,var(--halo) 65%,transparent),inset 0 0 16px var(--halo);
+}
+.physical-reveal-glow:is([data-tier="legend"],[data-tier="shiny"])::before{
+ content:'';position:absolute;inset:-3px;border-radius:inherit;padding:4px;
+ background:var(--spectrum);
+ -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+ -webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask-composite:exclude;
+}
+.physical-reveal-glow:is([data-tier="legend"],[data-tier="shiny"])::after{
+ content:'';position:absolute;inset:7px;border-radius:inherit;border:2px solid var(--echo);
+ box-shadow:0 0 12px var(--echo),inset 0 0 10px var(--echo);
+ animation:rare-perimeter-echo 1300ms cubic-bezier(.2,.6,.3,1) both;
+}
+@keyframes rare-perimeter-echo{0%,12%{opacity:0;transform:scale(.98)}30%{opacity:.95}100%{opacity:0;transform:scale(1.09)}}
 @media(prefers-reduced-motion:reduce){.physical-reveal-glow{display:none}}
 
 /* A short, feathered flash softens the moment the seal separates. */
