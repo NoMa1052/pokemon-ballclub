@@ -29,7 +29,7 @@ function addTilt(pk){
 function wireRip(pk){
  if(pk._ripWired)return;pk._ripWired=true;
  const art=pk.querySelector('.pk-art'),strip=document.createElement('canvas');
- pk.insertAdjacentHTML('beforeend','<span class="physical-rip-light" aria-hidden="true"></span>');
+ pk.insertAdjacentHTML('beforeend','<span class="physical-rip-light" aria-hidden="true"></span><span class="pack-seam-flash" aria-hidden="true"></span>');
  strip.className='pk-loose';strip.setAttribute('aria-hidden','true');pk.appendChild(strip);
  const foilImage=new Image();foilImage.src=art.querySelector('image').getAttribute('href');
  const cw=600,ch=Math.round(600*1706/922),pad=180;strip.width=cw+pad*2;strip.height=ch+pad*2;
@@ -39,32 +39,25 @@ function wireRip(pk){
   if(!foilImage.complete||!foilImage.naturalWidth)return false;
   foil.clearRect(0,0,strip.width,strip.height);
   const seal=ch*.128,front=p*cw,step=3;
-  foil.save();foil.translate(pad,pad);
+  foil.save();
+  // The detached seal moves as a single piece, keeping the printed foil intact.
+  foil.translate(pad+cw/2+direction*flight*cw*.08,pad+seal/2-flight*cw*.2);
+  foil.rotate(direction*flight*.16);
+  foil.translate(-cw/2,-seal/2);
   for(let u=cw-step;u>=0;u-=step){
-   const t=Math.max(0,front-u)/cw;
-   const released=t*t*(3-2*t);
-   // The attached end stays flat. The free end bends up and rolls to show its underside.
-   const roll=t*1.4+Math.sin(flight*Math.PI)*(.65+.35*(1-u/cw));
-   const lift=cw*.13*released+flight*cw*.27+Math.sin(u/cw*Math.PI)*flight*cw*.065;
-   const shift=cw*.025*released+flight*cw*.10;
+   const t=Math.max(0,front-u)/cw,flex=t*t*(3-2*t);
    const x=direction===1?u:cw-u-step;
-   const projected=seal*Math.cos(roll),h=Math.max(1,Math.abs(projected));
-   const slope=direction*(.12*t+flight*.19*Math.cos(u/cw*Math.PI));
-   foil.save();foil.translate(x+direction*shift,seal-lift);foil.transform(1,slope,0,1,0,0);
-   if(projected>=0){
-    foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,0,Math.min(step+.7,cw-x)/cw*foilImage.naturalWidth,foilImage.naturalHeight*.128,0,-h,Math.min(step+.7,cw-x),h);
-   }else{
-    const silver=foil.createLinearGradient(0,-h,0,0);silver.addColorStop(0,'#768caa');silver.addColorStop(.35,'#f3f5f6');silver.addColorStop(.7,'#a6bbcd');silver.addColorStop(1,'#edf6ff');foil.fillStyle=silver;foil.fillRect(0,-h,step+.7,h);
+   const lift=cw*.032*flex*(1-flight),h=seal*(1-.035*flex);
+   const w=Math.min(step+.6,cw-x);
+   foil.drawImage(foilImage,x/cw*foilImage.naturalWidth,0,w/cw*foilImage.naturalWidth,
+    foilImage.naturalHeight*.128,x,seal-lift-h,w,h);
+   if(t>0){
+    const sheen=foil.createLinearGradient(0,seal-lift-h,0,seal-lift);
+    sheen.addColorStop(0,'rgba(255,255,255,0)');
+    sheen.addColorStop(.65,'rgba(255,255,255,'+(.1*flex)+')');
+    sheen.addColorStop(1,'rgba(0,0,0,'+(.14*flex)+')');
+    foil.fillStyle=sheen;foil.fillRect(x,seal-lift-h,w,h);
    }
-   if(t>0||flight>0){
-    const shade=foil.createLinearGradient(0,-h,0,0);
-    shade.addColorStop(0,'rgba(255,255,255,'+(Math.sin(roll)*.3)+')');
-    shade.addColorStop(.5,'rgba(255,255,255,0)');shade.addColorStop(1,'rgba(0,0,0,.22)');
-    foil.fillStyle=shade;foil.fillRect(0,-h,step+.7,h);
-    foil.fillStyle='#dce8f2';foil.globalAlpha=Math.min(.8,t*1.4+flight);
-    foil.fillRect(0,-2,step+.7,2);
-   }
-   foil.restore();
   }
   foil.restore();return true;
  };
@@ -103,8 +96,8 @@ function wireRip(pk){
    const releasedAt=performance.now();
    const floatAway=now=>{
     if(!pk.isConnected)return;
-    const t=Math.min(1,(now-releasedAt)/620),e=t*t*(3-2*t);
-    drawFoil(1,e);strip.style.opacity=String(1-Math.max(0,(t-.72)/.28));
+    const t=Math.min(1,(now-releasedAt)/460),e=1-(1-t)**2;
+    drawFoil(1,e);strip.style.opacity=String(1-Math.max(0,(t-.55)/.45));
     if(t<1){frame=requestAnimationFrame(floatAway);return}
     handoff();
    };

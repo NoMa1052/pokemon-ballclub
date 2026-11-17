@@ -68,3 +68,18 @@
 @keyframes rare-ring{0%{opacity:.9;transform:scale(.55)}65%{opacity:.45}100%{opacity:0;transform:scale(1.18)}}
 @keyframes rare-sparks{0%{opacity:0;transform:scale(.68)}25%{opacity:1}70%{opacity:.8}100%{opacity:0;transform:scale(1.1)}}
 @media(prefers-reduced-motion:reduce){.physical-reveal-glow{display:none}}
+
+/* A short, feathered flash softens the moment the seal separates. */
+.pack-seam-flash{
+ position:absolute;left:-14%;top:4%;width:128%;height:18%;z-index:5;
+ pointer-events:none;opacity:0;transform-origin:center;
+ background:radial-gradient(ellipse 48% 42% at 50% 50%,#fffdefff 0%,#e0f5ffb8 12%,#bce5ff4d 37%,transparent 75%);
+}
+.pack.foil-releasing .pack-seam-flash{animation:pack-seam-flash 460ms ease-out both}
+@keyframes pack-seam-flash{
+ 0%{opacity:0;transform:scale(.7,.45)}
+ 18%{opacity:.95;transform:scale(1,.85)}
+ 48%{opacity:.45;transform:scale(1.1,1.15)}
+ 100%{opacity:0;transform:scale(1.2,1.5)}
+}
+@media(prefers-reduced-motion:reduce){.pack-seam-flash{display:none}}
