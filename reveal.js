@@ -87,11 +87,27 @@ function openReveal(sp,chooseAll=false){
     const glow=stage?.querySelector('.physical-reveal-glow');
     if(glow){glow.getAnimations().forEach(a=>a.cancel());delete glow.dataset.tier}
   };
+  const spinRare=card=>{
+    if(reduced||card._rareSpinDone||!card.matches('.leg,.shiny'))return;
+    card._rareSpinDone=true;busy=true;
+    const spin=card.animate([
+      {transform:'translate3d(0,0,0) rotate(-360deg) scale(.94)'},
+      {transform:'translate3d(0,0,0) rotate(0deg) scale(1)'}
+    ],{duration:650,easing:'cubic-bezier(.16,.65,.28,1)'});
+    let complete=false;
+    const release=()=>{if(complete)return;complete=true;
+      if(revealEl!==el||!card.isConnected)return;
+      busy=false;const queued=pendingAdvance;pendingAdvance=null;
+      if(queued)advance(queued.step,queued.dir);
+    };
+    spin.finished.then(release).catch(release);setTimeout(release,850);
+  };
   const entrance=card=>{
     if(reduced||!card?.isConnected)return;
     const tier=card.classList.contains('leg')?'legend':card.classList.contains('shiny')?'shiny':card.classList.contains('gold')?'gold':null;
     card.classList.remove('physical-catchlight');
     if(!tier){stopBurst();return}
+    spinRare(card);
     const flare=stage?.querySelector('.physical-reveal-glow');
     if(flare){
       flare.getAnimations().forEach(a=>a.cancel());
@@ -126,7 +142,7 @@ function openReveal(sp,chooseAll=false){
       i+=step;
       if(i>=ms.length){animations.forEach(a=>a.cancel());pendingAdvance=null;busy=false;spread();stage=null;return}
       position();animations.forEach(a=>a.cancel());busy=false;entrance(cards[i]);
-      const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);
+      if(!busy){const queued=pendingAdvance;pendingAdvance=null;if(queued)advance(queued.step,queued.dir);}
     };
     if(reduced){finish();return}
     old.classList.remove('physical-catchlight');stopBurst();

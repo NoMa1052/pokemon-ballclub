@@ -111,7 +111,7 @@ function wireRip(pk){
   cancelAnimationFrame(dragFrame);opening=true;start=null;suppressClick=true;pk.style.setProperty('--tear-dir',direction);pk.classList.add('rip-complete');pk.classList.remove('dragging');
   const origin=r,begin=performance.now(),duration=reduce()?0:Math.max(140,Math.round((1-origin)*520));
   const finish=now=>{const t=duration?Math.min(1,(now-begin)/duration):1;paint(origin+(1-origin)*(1-(1-t)**2));if(t<1){frame=requestAnimationFrame(finish);return;}try{navigator.vibrate?.(18)}catch(_){};
-   const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect()};doSpin()}};
+   const handoff=()=>{if(pk.isConnected){tornPackSource={html:art.outerHTML,foil:'',rect:pk.getBoundingClientRect(),burstRect:pk.querySelector('.pack-tier-burst')?.getBoundingClientRect()};doSpin()}};
    if(reduce()){handoff();return}
    pk.classList.add('foil-releasing');
    const releasedAt=performance.now();
@@ -172,11 +172,16 @@ function playIntro(sp,done){
  const wrapper=el.querySelector('.direct-wrapper'),spill=el.querySelector('.physical-spill');
  Object.assign(wrapper.style,{left:origin.left+'px',top:origin.top+'px',width:origin.width+'px',height:origin.height+'px'});
  Object.assign(spill.style,{left:origin.left+'px',top:(origin.top+origin.height*.128-100)+'px',width:origin.width+'px'});
- Object.assign(el.querySelector('.opening-afterglow').style,{left:(origin.left+origin.width/2)+'px',top:(origin.top+origin.height*.128)+'px'});
+ const burstRect=source?.burstRect;
+ Object.assign(el.querySelector('.opening-afterglow').style,{
+ left:(burstRect?burstRect.left+burstRect.width/2:origin.left+origin.width/2)+'px',
+ top:(burstRect?burstRect.top+burstRect.height/2:origin.top+origin.height*.128)+'px',
+ width:(burstRect?burstRect.width:origin.width*3.1)+'px',
+ height:(burstRect?burstRect.height:origin.height*1.75)+'px'
+ });
  reveal.classList.add('intro-running');
  const cardMotion=stack.animate([
-  {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0},
-  {transform:`translate3d(${dx}px,${dy-55}px,0) scale(${scale}) rotateY(-7deg)`,opacity:1,offset:.28},
+  {transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotateY(-9deg)`,opacity:0,easing:'cubic-bezier(.18,.65,.3,1)'},
   {transform:'translate3d(0,0,0) scale(1) rotateY(0deg)',opacity:1}
  ],{duration:1050,easing:'cubic-bezier(.22,.61,.36,1)',fill:'both'});
  wrapper.animate([{transform:'translate3d(0,0,0)',opacity:1},{transform:'translate3d(0,40px,0)',opacity:1,offset:.3},{transform:`translate3d(0,${innerHeight-origin.top+100}px,0)`,opacity:0}],{duration:850,easing:'cubic-bezier(.4,0,.7,1)',fill:'forwards'});
