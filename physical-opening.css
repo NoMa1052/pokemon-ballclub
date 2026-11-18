@@ -146,3 +146,8 @@
  21%{opacity:.95;transform:scale(1)}32%{opacity:.65;transform:scale(1.05)}
  100%{opacity:0;transform:translateY(-5%) scale(1.28)}
 }
+
+/* The burst is wider than the phone. It belongs only in the fixed opening layer. */
+#spinBtn.pack .pack-tier-burst,#spinBtn.pack .pack-seam-flash{display:none}
+#throwBox:has(#spinBtn.pack){overflow-x:clip}
+#spinBtn.pack,.physical-stage{touch-action:pan-y pinch-zoom}
