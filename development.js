@@ -43,8 +43,9 @@ function developmentOptions(card){
     // Training with an earlier form never changes the owned species.
     const form=evolve?card.num:owned.num;
     const baseId=form+((owned.shiny||card.shiny)?SHINY_ID:0),next=developedCard(baseId,bonus,steps);
-    if(next.id===owned.id)return [];
-    return [{slot,owned,next,kind:evolve?'evolve':same?'train':'family',bonus,steps,added}];
+    const maxedDuplicate=same&&bonus===10&&next.id===owned.id;
+    if(next.id===owned.id&&!maxedDuplicate)return [];
+    return [{slot,owned,next,maxedDuplicate,kind:evolve?'evolve':same?'train':'family',bonus,steps,added}];
   });
 }
 function applyDevelopment(cardId,slot){
@@ -56,7 +57,7 @@ function applyDevelopment(cardId,slot){
   const extra=run.doubleArmed&&!run.second&&run.picks.length<run.size;
   if(extra){run.doubles--;run.doubleArmed=false;run.second=true}else{run.spin=null;run.second=false;run.doubleArmed=false}
   run.developmentActions=(run.developmentActions||0)+1;run.selected=null;run.hand=null;run.developChoice=null;run.handUndo=snapshot;
-  run.handFeedback={name:next.name,spot:lbl(slot),old:posOvr(owned,slot),rating:posOvr(next,slot),before,after:teamOvr(),development:kind};
+  run.handFeedback={name:next.name,spot:lbl(slot),old:posOvr(owned,slot),rating:posOvr(next,slot),before,after:teamOvr(),development:option.maxedDuplicate?'maxed':kind};
   sortStaff();saveRun();return true;
 }
 
