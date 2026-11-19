@@ -42,6 +42,9 @@
  async function sync(){
   const t=await token();if(!t)return false;
   const rows=await call(`${PROFILES}?select=*&user_id=eq.${session.user.id}`,{},t),remote=rows[0]||{},mine=local();
+  const leagueOwner=store.get('pbc-leagues-owner');
+  if(leagueOwner&&leagueOwner!==session.user.id)mine.leagues=[];
+  store.set('pbc-leagues-owner',session.user.id);
   const want=remote.screen_name||session.user.name||session.user.want||undefined;
   const merged={user_id:session.user.id,...(want?{screen_name:want}:{}),devices:uniq([...(remote.devices||[]),...devices,dev()]).slice(-40),team:mine.team||remote.team||null,
    clubhouse:mergeClub(mine.clubhouse,remote.clubhouse),dex:mergeDex(mine.dex,remote.dex),rivals:mergeRivals(mine.rivals,remote.rivals),leagues:mergeLeagues(mine.leagues,remote.leagues),updated_at:new Date().toISOString()};
@@ -70,7 +73,7 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
  const nameFree=async n=>!!(await call(RPC,{method:'POST',body:JSON.stringify({n})}));
  const friendly=e=>e.code==='invalid_credentials'||/invalid login/i.test(e.message)?'That email and password don\'t match.':e.code==='user_already_exists'||/already registered/i.test(e.message)?'That email already has an account. Sign in instead.':e.code==='weak_password'||/password should/i.test(e.message)?'Use at least 6 characters for the password.':e.code==='email_not_confirmed'||/not confirmed/i.test(e.message)?'Confirm your email first. Check your inbox for the link.':e.code==='23505'?'That screen name is taken. Try another.':e.code==='email_address_invalid'||/email address .* invalid/i.test(e.message)?'That email address doesn\'t look right.':e.status===429?'Too many tries. Wait a minute and try again.':e.message;
  async function finishSignIn(b,note){adopt(b);const named=(await sync())!=='taken';
-  status=named?(note||'Signed in. This browser is linked to your profile.'):'Signed in. That screen name was just taken, so pick another.';close();refresh();if(!named)open('name')}
+  status=named?(note||'Signed in. This browser is linked to your profile.'):'Signed in. That screen name was just taken, so pick another.';close();refresh();if(!named)open('name');else document.dispatchEvent(new Event('ballclub-signed-in'))}
  async function signIn(email,password){await finishSignIn(await call(AUTH+'/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})}))}
  async function signUp(email,password,name){
   const b=await call(AUTH+'/signup',{method:'POST',body:JSON.stringify({email,password,data:{screen_name:name}})});
@@ -109,7 +112,7 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">${M.title}</h2><button class="btn" id="acctClose">Close</button></div><div class="sheet-body">
    <form id="acctForm" novalidate>${M.fields}<p class="acct-msg" id="acctMsg" role="status">${esc(note)}</p>${M.btns}</form>
    ${M.foot?`<p class="acct-switch">${M.foot}</p>`:''}${M.fine?`<p class="acct-fine">${M.fine}</p>`:''}</div></div>`;
-  document.body.appendChild(el);$('acctClose').onclick=close;
+  document.body.appendChild(el);const cancel=()=>{close();document.dispatchEvent(new Event('ballclub-account-cancel'))};$('acctClose').onclick=cancel;
   const msg=t=>{$('acctMsg').textContent=t},run=async what=>{
    if(busy)return;const email=$('acctEmail')?.value.trim().toLowerCase(),pass=$('acctPass')?.value||'',name=cleanName($('acctName')?.value);
    if($('acctName')&&!NAME_RE.test(name))return msg(name.length<3||name.length>20?'Screen names are 3 to 20 characters.':'Use letters and numbers. Spaces, dots, dashes and underscores only go in the middle.');
@@ -120,14 +123,14 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
     if(what==='in')await signIn(email,pass);
     else if(what==='up'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');if(await signUp(email,pass,name)==='confirm')msg('Check your email for a confirmation link, then come back and sign in.')}
     else if(what==='forgot'){recover(email).catch(()=>{});msg('Password reset emails aren\'t set up yet. Ask Nolan to reset it for you.')}
-    else if(what==='name'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');await setName(name);status='Screen name saved.';close();refresh()}
+    else if(what==='name'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');await setName(name);status='Screen name saved.';close();refresh();document.dispatchEvent(new Event('ballclub-signed-in'))}
     else if(what==='newpass'){const t=await token();await call(AUTH+'/user',{method:'PUT',body:JSON.stringify({password:pass})},t);await sync();status='Password updated. You are signed in.';close();refresh()}
    }catch(e){msg(friendly(e))}finally{busy=false}
   };
   $('acctForm').onsubmit=e=>{e.preventDefault();run(M.submit)};
   el.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>run(b.dataset.do));
   el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const v=$('acctEmail')?.value;open(b.dataset.mode);if(v&&$('acctEmail'))$('acctEmail').value=v});
-  el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();close()}});
+  el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();cancel()}});
   (el.querySelector('input')||$('acctClose')).focus();
  }
  document.addEventListener('click',e=>{const b=e.target.closest?.('[data-acct]');if(!b)return;if(b.dataset.acct==='open')open();else if(b.dataset.acct==='name')open('name');else signOut()});
@@ -137,7 +140,7 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   const h=new URLSearchParams(location.hash.slice(1));if(!h.get('access_token'))return;
   const type=h.get('type'),at=h.get('access_token'),rt=h.get('refresh_token');history.replaceState(null,'',location.pathname+location.search);
   call(AUTH+'/user',{},at).then(u=>{adopt({access_token:at,refresh_token:rt,expires_in:+h.get('expires_in')||3600,user:u});
-   if(type==='recovery')open('reset');else sync().then(()=>{status='Email confirmed. You are signed in.'}).catch(()=>{})}).catch(()=>{});
+   if(type==='recovery')open('reset');else sync().then(()=>{status='Email confirmed. You are signed in.';close();document.dispatchEvent(new Event('ballclub-signed-in'))}).catch(()=>{})}).catch(()=>{});
  })();
  if(session)setTimeout(()=>sync().catch(()=>{}),1500);
  window.Account={get user(){return session?.user||null},async postHeaders(extra){
