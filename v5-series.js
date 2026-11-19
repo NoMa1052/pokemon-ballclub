@@ -54,7 +54,7 @@
   const stage=$('bgStage'),my=++pickToken;
   if(!team()){stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Finish a season with a 16-player team first. That team plays the series.</p></div>';return}
   stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Loading clubs…</p></div>';
-  let leagues=[];try{leagues=(JSON.parse(store.get('pbc5-leagues')||'[]')||[]).filter(x=>x&&x.code)}catch(e){}
+  let leagues=[];try{leagues=(JSON.parse(store.get('pbc5-leagues')||'[]')||[]).filter(x=>x&&window.leagueCodes?.().includes(x.code))}catch(e){}
   if(leagueCode)leagues=leagues.filter(l=>l.code===leagueCode);
   const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at,leagues,league_players&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
   const best=(rows,code)=>{const seen=new Set();return rows.filter(x=>{

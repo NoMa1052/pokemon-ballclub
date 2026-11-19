@@ -3,7 +3,7 @@
  const $=id=>document.getElementById(id);
  const LEAGUE_URL=LB_URL.replace(/ballclub_scores$/,'ballclub_leagues'),SITE='https://pokemon-ballclub.vercel.app/';
  const KEY='pbc5-leagues',CODE=/^[A-Z2-9]{5}$/;
- const mine=()=>{try{const a=JSON.parse(store.get(KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&CODE.test(x.code)).slice(0,3):[]}catch(e){return[]}};
+ const mine=()=>{if(!window.Account?.user)return [];const owner=store.get('pbc-leagues-owner');if(owner&&owner!==Account.user.id)return [];try{const a=JSON.parse(store.get(KEY)||'[]');return Array.isArray(a)?a.filter(x=>x&&CODE.test(x.code)).slice(0,3):[]}catch(e){return[]}};
  const keep=a=>store.set(KEY,JSON.stringify(a.slice(0,3)));
  window.leagueCodes=()=>mine().map(x=>x.code);
 
@@ -154,9 +154,28 @@
   if(data&&!data.error&&(!cur||tab==='week')&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
+ const intentKey='pbc-league-intent';
+ function needAccount(action,value){
+  if(window.Account?.user)return false;
+  store.set(intentKey,JSON.stringify({action,value}));
+  sheet.hidden=true;lock(false);
+  Account.open('in','Sign in or create an account to '+(action==='join'?'join this league.':'create your league.'));
+  return true;
+ }
+ document.addEventListener('ballclub-account-cancel',()=>{
+  if(!store.get(intentKey))return;
+  store.set(intentKey,'');open();
+ });
+ document.addEventListener('ballclub-signed-in',()=>{
+  let intent;try{intent=JSON.parse(store.get(intentKey)||'null')}catch(e){}
+  if(!intent)return;
+  store.set(intentKey,'');sheet.hidden=false;lock(true);
+  if(intent.action==='join')join(intent.value);else if(intent.action==='make')make(intent.value);
+ });
  async function join(raw,quiet){
   const code=String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!CODE.test(code)){note='A league code is 5 letters and numbers.';draw();return}
+  if(needAccount('join',code))return;
   if(mine().some(x=>x.code===code)){scope=code;form=null;note='';load();return}
   if(mine().length>=3){note='You can be in 3 leagues. Leave one first.';draw();return}
   try{const l=await lookup(code);if(!l){note=`No league with code ${code}.`;draw();return}
@@ -166,11 +185,12 @@
  async function make(raw){
   const name=String(raw||'').replace(/\s+/g,' ').trim().slice(0,24);
   if(!name){note='Give the league a name first.';draw();return}
+  if(needAccount('make',name))return;
   if(mine().length>=3){note='You can be in 3 leagues. Leave one first.';draw();return}
   const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   for(let attempt=0;attempt<3;attempt++){
    const code=Array.from({length:5},()=>A[Math.floor(Math.random()*A.length)]).join('');
-   try{const r=await fetch(LEAGUE_URL,{method:'POST',headers:lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify({code,name})});
+   try{const r=await fetch(LEAGUE_URL,{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify({code,name})});
     if(r.status===409)continue;if(!r.ok)throw 0;
     keep([...mine(),{code,name}]);scope=code;form=null;note=`${name} is ready. Share code ${code} with your friends.`;load();return}
    catch(e){break}
@@ -205,5 +225,5 @@
  };
  // Invite links: ?league=CODE joins and opens the sheet.
  const invited=new URLSearchParams(location.search).get('league');
- if(invited){history.replaceState(null,'',location.pathname);sheet.hidden=false;lock(true);join(invited)}
+ if(invited)window.addEventListener('DOMContentLoaded',()=>{const url=new URL(location.href);url.searchParams.delete('league');history.replaceState(null,'',url);sheet.hidden=false;lock(true);join(invited)},{once:true});
 })();
