@@ -56,17 +56,21 @@
   stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Loading clubs…</p></div>';
   let leagues=[];try{leagues=(JSON.parse(store.get('pbc5-leagues')||'[]')||[]).filter(x=>x&&x.code)}catch(e){}
   if(leagueCode)leagues=leagues.filter(l=>l.code===leagueCode);
-  const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at,leagues&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
-  const best=rows=>{const seen=new Set();return rows.filter(x=>x.device!==me()&&Array.isArray(x.roster)&&x.roster.length===16&&!seen.has(x.device)&&seen.add(x.device))};
+  const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at,leagues,league_players&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
+  const best=(rows,code)=>{const seen=new Set();return rows.filter(x=>{
+   const key=x.league_players?.[code]?.key||x.device;
+   if((typeof isMyDevice==='function'?isMyDevice(x.device):x.device===me())||!Array.isArray(x.roster)||x.roster.length!==16||seen.has(key))return false;
+   seen.add(key);return true;
+  })};
   let groups;
-  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&leagues=cs.%7B'+l.code+'%7D')),l.code]),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
+  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&week=not.is.null&leagues=cs.%7B'+l.code+'%7D'),l.code),l.code]),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
   catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" id="bgRetry">Try again</button></div>';const retry=$('bgRetry');if(retry&&my===pickToken)retry.onclick=()=>pickRival(leagueCode);return}
   if(my!==pickToken||!$('bgStage'))return;
   const recs=book(),flat=[];
   const html=(leagues.length?'':'<p class="bg-noleague">Join a league to play series that count. <button type="button" class="btn" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></p>')+groups.map(([name,rows,code])=>{
    if(!rows.length)return code?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`:'';
    const note=code?'':'<p class="hint">Just for fun. These results are not posted anywhere.</p>';
-   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(opponent(x,code))-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.team)}</b><small>${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(opponent(x,code))-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
   stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7. League series post to your league; exhibitions don't.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
  };
@@ -273,7 +277,7 @@
   if(!series.length)return [];
   const opponents=new Map();
   for(let offset=0;;offset+=500){
-   const rows=await get(LB_URL+'?select=device,team,created_at&mode=eq.pack&size=eq.16'+leagueFilter+'&order=created_at.asc,device.asc,team.asc&limit=500&offset='+offset);
+   const rows=await get(LB_URL+'?select=device,team,created_at&mode=eq.pack&size=eq.16&week=not.is.null'+leagueFilter+'&order=created_at.asc,device.asc,team.asc&limit=500&offset='+offset);
    for(const row of rows){
     const key=JSON.stringify([row.device,row.team]),time=Date.parse(row.created_at);
     if(!opponents.has(key)||time<opponents.get(key))opponents.set(key,time);
