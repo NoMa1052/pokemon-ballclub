@@ -145,6 +145,24 @@
    <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. A week counts as won once it ends.</p>
    ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><small>Week ${wkNo(w)}</small><b>${esc(playerName(c))}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
+ // Series box score. Rows saved before box scores existed only have game scores.
+ function seriesBoxHTML(x,P,wi){
+  const b=x.box&&x.box.v===1?x.box:null,o=[wi,1-wi];
+  const nm=id=>{if(!id)return 'Middle relief';const m=BYID.get(id);return esc(m?m.name.replace(/^Shiny /,''):'?')};
+  const ab=n=>esc((String(n).replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?').toUpperCase());
+  const ip=outs=>Math.floor(outs/3)+'.'+outs%3;
+  const games=b?b.g.map(g=>({s:g.s,sp:g.sp,h:g.h})):(x.games||[]).map(([a,c])=>({s:[a,c]}));
+  const sum=k=>games.reduce((t,g)=>t+(+g.s[k]||0),0);
+  let html=`<table class="h2h-gbg"><thead><tr><th scope="col">G</th><th scope="col" title="${esc(P[o[0]].n)}">${ab(P[o[0]].n)}</th><th scope="col" title="${esc(P[o[1]].n)}">${ab(P[o[1]].n)}</th>${b?'<th scope="col" class="l">Starters</th>':''}</tr></thead><tbody>${games.map((g,i)=>{const a=g.s[o[0]],c=g.s[o[1]];return `<tr><th scope="row">${i+1}</th><td class="${a>c?'win':''}">${a}</td><td class="${c>a?'win':''}">${c}</td>${b?`<td class="l sp">${nm(g.sp[o[0]][0])}<small>vs</small>${nm(g.sp[o[1]][0])}</td>`:''}</tr>`}).join('')}<tr class="tot"><th scope="row">R</th><td>${sum(o[0])}</td><td>${sum(o[1])}</td>${b?`<td class="l sp"><small>Hits ${games.reduce((t,g)=>t+g.h[o[0]],0)}–${games.reduce((t,g)=>t+g.h[o[1]],0)}</small></td>`:''}</tr></tbody></table>`;
+  if(!b)return html+'<p class="h2h-boxnote">Player stats are saved for series played from now on.</p>';
+  // Series MVP: the best bat on the winning club.
+  const score=r=>r[3]+2*r[4]+1.5*r[5],mvp=(b.bat[wi]||[]).reduce((a,r)=>!a||score(r)>score(a)?r:a,null);
+  if(mvp&&mvp[2]){const m=BYID.get(mvp[0]);html=`<div class="h2h-mvp">${m&&typeof tok==='function'?tok(m):''}<span><small>Series MVP</small><b>${nm(mvp[0])}</b><em>${mvp[3]} for ${mvp[2]}${mvp[4]?`, ${mvp[4]} HR`:''}, ${mvp[5]} RBI</em></span></div>`+html}
+  const club=k=>`<div class="bx-team"><h5>${esc(P[k].n)}${P[k].t&&P[k].t!==P[k].n?` <small>${esc(P[k].t)}</small>`:''}</h5>
+   <table class="bx"><thead><tr><th scope="col">Batting</th><th scope="col">AB</th><th scope="col">H</th><th scope="col">HR</th><th scope="col">RBI</th><th scope="col">BB</th><th scope="col">K</th></tr></thead><tbody>${(b.bat[k]||[]).map(r=>`<tr><th scope="row"><small>${esc(typeof lbl==='function'?lbl(r[1]):r[1])}</small>${nm(r[0])}</th><td>${r[2]}</td><td class="${r[3]>=Math.max(5,r[2]*.4)?'hi':''}">${r[3]}</td><td class="${r[4]?'hi':''}">${r[4]}</td><td>${r[5]}</td><td>${r[6]}</td><td>${r[7]}</td></tr>`).join('')}</tbody></table>
+   <table class="bx"><thead><tr><th scope="col">Pitching</th><th scope="col">GS</th><th scope="col">IP</th><th scope="col">H</th><th scope="col">R</th><th scope="col">BB</th><th scope="col">K</th></tr></thead><tbody>${(b.pit[k]||[]).slice().sort((p,q)=>q[6]-p[6]||q[1]-p[1]).map(r=>`<tr><th scope="row">${nm(r[0])}</th><td>${r[6]}</td><td>${ip(r[1])}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td class="${r[5]>=10?'hi':''}">${r[5]}</td></tr>`).join('')}</tbody></table></div>`;
+  return html+club(o[0])+club(o[1]);
+ }
  // Head-to-head: every series counts for both players. Rival cards for you, a grid for everyone, scoreboard results.
  function tabSeries(){
   const s=data.series;
@@ -198,7 +216,7 @@
    const A={n:playerName(x),t:x.team,k:playerKey(x),g:x.w},B={n:oppName(x),t:x.opp_team,k:oppKey(x),g:x.l};
    const [W,L]=aw?[A,B]:[B,A];
    const line=(p,win)=>`<div class="h2h-line${win?' win':''}"><span><b>${esc(p.n)}</b>${p.t&&p.t!==p.n?`<small>${esc(p.t)}</small>`:''}</span><em>${p.g}</em></div>`;
-   return `<li class="${mineKey(W.k)||mineKey(L.k)?'me':''}">${line(W,true)}${line(L,false)}<div class="h2h-foot"><i class="h2h-bars">${st.win.map(v=>`<b class="${v?'w':'l'}"></b>`).join('')}</i><small>${st.tag?`<strong>${esc(st.tag)}</strong> · `:''}${day(x.created_at)}</small></div></li>`}).join('')}</ul>`:'';
+   return `<li class="${mineKey(W.k)||mineKey(L.k)?'me':''}"><details class="h2h-res"><summary>${line(W,true)}${line(L,false)}<div class="h2h-foot"><i class="h2h-bars">${st.win.map(v=>`<b class="${v?'w':'l'}"></b>`).join('')}</i><small>${st.tag?`<strong>${esc(st.tag)}</strong> · `:''}${day(x.created_at)}</small></div><span class="h2h-open">Box score</span></summary><div class="h2h-box">${seriesBoxHTML(x,[A,B],aw?0:1)}</div></details></li>`}).join('')}</ul>`:'';
   return `<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>`+
    (s.length||rivals?rivals+grid+results:'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
  }
