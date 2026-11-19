@@ -216,7 +216,7 @@ function renderDraft(){
     ${run.spin.pack?`<div class="spinctl packctl">
       <span class="label">Options</span>
       <button class="btn" id="rerollBtn" ${run.rerolls&&!run.second?"":"disabled"}>Super Rod</button>
-      <button class="btn${run.doubleArmed?" armed":""}" id="doubleBtn" aria-pressed="${!!run.doubleArmed}" ${run.doubles&&!run.second&&run.picks.length<size-1?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}</button>
+      <button class="btn${run.doubleArmed?" armed":""}" id="doubleBtn" aria-pressed="${!!run.doubleArmed}" ${masterCanArm()?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}</button>
     </div><p class="hint" style="margin:0">Super Rod swaps this pack for a new one: ${run.rerolls} left. Master Ball keeps two cards from one pack: ${run.doubles} left.</p>`:run.spin.legend?`<p class="hint" style="margin:0">Legend spin. These are rare, so make it count.</p>`:`<div class="spinctl">
       <span class="label">Redraw</span>
       <button class="btn" id="rerollBtn" ${run.rerolls?"":"disabled"}>Respin all</button>

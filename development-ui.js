@@ -8,6 +8,7 @@
   if(!first)return [];
   return candyOptions().filter(o=>o.evolve&&o.owned.num===first&&o.next.num===middle).map(o=>({...o,finalCard:card}));
  };
+ window.cardChainOptions=chainOptions;
  const cardBase=tcardHTML;
  tcardHTML=function(m,mini){
   let html=cardBase(m,mini),label=m.friendship?`Friendship +${m.friendship} · Raised on your team`:'';
@@ -22,7 +23,9 @@
   const card=BYID.get(id),opts=developmentOptions(card),chains=chainOptions(card);if(!opts.length&&!chains.length)return;
   choice=id;$('developmentChoice')?.remove();
   const el=document.createElement('div');el.id='developmentChoice';el.className='sheet growth-sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','growthTitle');
-  const canDraft=!takenNums().includes(card.num)&&!earlierFormOfTeammate(card),teamBefore=teamOvr();
+  // First of a Master Ball pair with one spot left: this card has to develop, so the other card can take the spot.
+  const tightFirst=run.doubleArmed&&!run.second&&masterTight()&&run.masterQueue?.length>0;
+  const canDraft=!tightFirst&&!takenNums().includes(card.num)&&!earlierFormOfTeammate(card),teamBefore=teamOvr();
   const single=opts.length===1&&!chains.length?opts[0]:null;
   const title=single?.maxedDuplicate?'Friendship maxed':canDraft?'Use this card':single?(single.kind==='evolve'?'Evolve ':'Train ')+single.owned.name:'Choose an upgrade';
   el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="growthTitle">${esc(title)}</h2><button class="btn" id="growthClose">Back</button></div><div class="sheet-body"><p class="growth-cost">${single?.maxedDuplicate?'Choose whether to spend this pick.':canDraft?'Add a new teammate or upgrade one you already have.':single?.kind==='evolve'?'Evolve your teammate with this card.':'Use this duplicate to strengthen a teammate.'}</p>${opts.map(o=>{
@@ -50,7 +53,9 @@
   else if(takenNums().includes(card.num)||run.spin?.usedIds?.includes(id)){e.preventDefault();e.stopImmediatePropagation()}
  },true);
  function chooseMasterCard(id){if(developmentOptions(BYID.get(id)).length||chainOptions(BYID.get(id)).length)showChoice(id);else{run.selected=id;render()}}
- document.addEventListener('pbc-master-picks',e=>{const ids=e.detail;if(!run.doubleArmed||run.second||run.hand||!Array.isArray(ids)||ids.length!==2||new Set(ids).size!==2||ids.some(id=>!run.spin?.ids.includes(id)))return;run.masterQueue=[ids[1]];saveRun();chooseMasterCard(ids[0])});
+ document.addEventListener('pbc-master-picks',e=>{const ids=e.detail;if(!run.doubleArmed||run.second||run.hand||!Array.isArray(ids)||ids.length!==2||new Set(ids).size!==2||ids.some(id=>!run.spin?.ids.includes(id)))return;let order=[...ids];
+  if(masterTight()){if(!order.some(cardCanDevelop))return;const rank=id=>!cardCanDevelop(id)?2:(!takenNums().includes(BYID.get(id).num)&&!earlierFormOfTeammate(BYID.get(id)))?1:0;order.sort((a,b)=>rank(a)-rank(b))}
+  run.masterQueue=[order[1]];saveRun();chooseMasterCard(order[0])});
  const previousRender=render;
  render=function(){previousRender();if(run.second&&!run.hand&&!choice&&run.masterQueue?.length){const id=run.masterQueue.shift();saveRun();chooseMasterCard(id);return;}if(choice&&!developmentOptions(BYID.get(choice)).length)closeChoice();
   const toast=$('handToast');if(toast&&run.handFeedback?.development){const f=run.handFeedback;toast.classList.add('growth-toast');toast.querySelector('span').innerHTML=`<b>${esc(f.name)} ${f.development==='maxed'?'· pick used':f.development==='evolve'?'evolved':'trained'}</b><small>Rating ${f.old} <span aria-hidden="true">→</span> <strong>${f.rating}</strong></small>`}

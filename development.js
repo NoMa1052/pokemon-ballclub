@@ -63,3 +63,13 @@ function applyDevelopment(cardId,slot){
 
 // A pack card that is an earlier form of a teammate (Abra when you have Kadabra or Alakazam) can only train that teammate.
 function earlierFormOfTeammate(card){return Object.values(run.slots).some(o=>{let a=EVOLUTION_PARENT[o.num];for(let i=0;i<4&&a;i++,a=EVOLUTION_PARENT[a])if(a===card.num)return true;return false})}
+
+// Master Ball keeps two cards from one pack. Evolving, training or adding friendship fills no roster spot,
+// so with one spot left the Master Ball still works if one of the two cards develops a teammate.
+function cardCanDevelop(id){const c=BYID.get(id);return !!c&&(developmentOptions(c).length>0||((window.cardChainOptions&&window.cardChainOptions(c))||[]).length>0)}
+function masterTight(){return run.size-run.picks.length===1}
+function masterCanArm(){
+  if(!run.doubles||run.second)return false;const open=run.size-run.picks.length;
+  if(open>=2)return true;if(open<1||!run.spin?.pack)return false;
+  return run.spin.ids.some(id=>!(run.spin.usedIds||[]).includes(id)&&cardCanDevelop(id));
+}

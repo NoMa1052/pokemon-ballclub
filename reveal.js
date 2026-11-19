@@ -63,21 +63,21 @@ function openReveal(sp,chooseAll=false){
   if(!ms.length)return;
   const el=revealEl=document.createElement("div");el.className="reveal";el.setAttribute("role","dialog");el.setAttribute("aria-label","Pack opening");
   revealScroll=window.scrollY;document.body.style.setProperty('--reveal-scroll',-revealScroll+'px');document.querySelector('.wrap')?.setAttribute('inert','');document.documentElement.classList.add('rv-root');document.body.classList.add('rv-open');document.body.appendChild(el);
-  let i=0,busy=false,selected=[],pendingAdvance=null;
+  let i=0,busy=false,selected=[],pendingAdvance=null,masterWarn=false;
   const pick=id=>{closeReveal();run.selected=id;render();const pl=document.getElementById("place");if(pl)pl.scrollIntoView({behavior:"smooth",block:"center"})};
   const spread=()=>{
     el.innerHTML=`<div class="rv-top"><span class="rv-count">${run.doubleArmed?`Choose 2 cards · ${selected.length}/2`:"Your pack"}</span><button class="btn rv-btn" id="rvList">Back to field</button></div>
       <div class="rv-grid">${ms.map(m=>`<button class="rv-mini${selected.includes(m.id)?' master-selected':''}" data-id="${m.id}" aria-pressed="${selected.includes(m.id)}" aria-label="${run.doubleArmed?'Select':'Pick'} ${esc(m.name)}">${tcardHTML(m,true)}${selected.includes(m.id)?`<span class="master-order">${selected.indexOf(m.id)+1}</span>`:""}</button>`).join("")}</div>
       <div class="rv-opts">
         <button class="btn rv-opt" id="rvRerip" ${run.rerolls&&!run.second?"":"disabled"}>Super Rod<small>New pack · ${run.rerolls} left</small></button>
-        <button class="btn rv-opt${run.doubleArmed?" armed":""}" id="rvTake2" aria-pressed="${!!run.doubleArmed}" ${run.doubles&&!run.second&&run.picks.length<run.size-1?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}<small>Keep 2 cards · ${run.doubles} left</small></button>
+        <button class="btn rv-opt${run.doubleArmed?" armed":""}" id="rvTake2" aria-pressed="${!!run.doubleArmed}" ${masterCanArm()?"":"disabled"}>${run.doubleArmed?"Master Ball ready":"Master Ball"}<small>Keep 2 cards · ${run.doubles} left</small></button>
       </div>
-      ${run.doubleArmed?`<div class="master-confirm"><p>Choose two cards, then place them one at a time.</p><button class="btn primary" id="masterConfirm" ${selected.length===2?"":"disabled"}>Keep these 2 cards</button></div>`:`<p class="rv-hint">Tap a card to pick it</p>`}`;
-    el.querySelectorAll(".rv-mini").forEach(b=>b.onclick=()=>{const id=+b.dataset.id;if(!run.doubleArmed){pick(id);return}if(takenNums().includes(BYID.get(id).num)&&!developmentOptions(BYID.get(id)).length)return;if(selected.includes(id))selected=selected.filter(x=>x!==id);else if(selected.length<2)selected.push(id);spread()});
+      ${run.doubleArmed?`<div class="master-confirm"><p${masterWarn?' class="master-warn"':''}>${masterTight()?"One spot left: one of your two cards has to evolve, train or add friendship to a teammate.":"Choose two cards, then place them one at a time."}</p><button class="btn primary" id="masterConfirm" ${selected.length===2&&(!masterTight()||selected.some(cardCanDevelop))?"":"disabled"}>Keep these 2 cards</button></div>`:`<p class="rv-hint">Tap a card to pick it</p>`}`;
+    el.querySelectorAll(".rv-mini").forEach(b=>b.onclick=()=>{const id=+b.dataset.id;if(!run.doubleArmed){pick(id);return}if(takenNums().includes(BYID.get(id).num)&&!developmentOptions(BYID.get(id)).length)return;masterWarn=false;if(selected.includes(id))selected=selected.filter(x=>x!==id);else if(selected.length<2){if(selected.length===1&&masterTight()&&!cardCanDevelop(id)&&!cardCanDevelop(selected[0])){masterWarn=true;spread();return}selected.push(id)}spread()});
     const confirm=el.querySelector('#masterConfirm');if(confirm)confirm.onclick=()=>{if(selected.length!==2)return;const ids=[...selected];closeReveal();document.dispatchEvent(new CustomEvent('pbc-master-picks',{detail:ids}))};
     // Not feeling this pack? Super Rod swaps it for a fresh one (and opens it). Master Ball keeps two cards from this one.
     el.querySelector("#rvRerip").onclick=()=>{if(!run.rerolls||run.second)return;run.rerolls--;run.selected=null;run.doubleArmed=false;run.spin=drawNext();run.justRipped=true;saveRun();closeReveal();render()};
-    el.querySelector("#rvTake2").onclick=()=>{if(!run.doubles||run.second)return;run.doubleArmed=!run.doubleArmed;selected=[];saveRun();renderBoard();spread()};
+    el.querySelector("#rvTake2").onclick=()=>{if(!run.doubles||run.second||(!run.doubleArmed&&!masterCanArm()))return;run.doubleArmed=!run.doubleArmed;selected=[];saveRun();renderBoard();spread()};
     el.querySelector("#rvList").onclick=returnToField;
   };
   let stage=null,stack=null,cards=[],gesture=null,suppressClick=false;

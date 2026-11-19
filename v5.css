@@ -1053,3 +1053,4 @@ body.rv-open>.wrap{visibility:visible!important}
 
 /* Physical cut: a dark slit with a fine foil lip, never a floating fragment. */
 .pack .pk-cut path{stroke:#08101e;stroke-width:.65;opacity:1;filter:drop-shadow(0 .45px 0 #e8e0cb)!important}.pack .pk-loose{filter:none!important}
+.master-confirm p.master-warn{color:#ffcb05;font-weight:600}

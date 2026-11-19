@@ -47,6 +47,6 @@ function applyCandy(slot,nextId){
    tools.innerHTML=`<button class="candy-control" type="button"><img src="${ITEM_ART['rare-candy']}" alt=""><span><b>Rare Candy</b><small>Evolve or boost a teammate</small></span><em>1 left</em></button>`;
    const anchor=draft.querySelector('#newRun');if(anchor)anchor.before(tools);else draft.append(tools);
    tools.querySelector('button').onclick=()=>showCandy();}
-  const master=document.getElementById('doubleBtn');if(master)master.onclick=()=>{if(!run.doubles||run.second)return;run.doubleArmed=true;saveRun();openReveal(run.spin,true)};
+  const master=document.getElementById('doubleBtn');if(master)master.onclick=()=>{if(!masterCanArm())return;run.doubleArmed=true;saveRun();openReveal(run.spin,true)};
  };render();
 })();
