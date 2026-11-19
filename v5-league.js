@@ -77,8 +77,24 @@
   const player=row.league_players?.[code];
   return {...row,memberKey:player?.key,displayName:player?.name};
  }
+ let personal={};
+ async function checkWeeklyPost(request,w){
+  try{
+   const linked=window.Account?.user?JSON.parse(store.get('pbc6-devices')||'[]'):[];
+   const devices=[...new Set([me(),...linked])].filter(d=>typeof d==='string'&&/^[a-z0-9_-]+$/i.test(d));
+   const query=new URLSearchParams({select:'team,wins,roster',mode:'eq.pack',size:'eq.16',week:'eq.'+w,device:'in.('+devices.join(',')+')',order:'wins.desc,created_at.asc',limit:'1'});
+   const response=await fetch(LB_URL+'?'+query,{headers:lbHead()});
+   if(!response.ok)throw Error();
+   const [row]=await response.json();
+   if(request===token)personal={w,row};
+  }catch(e){if(request===token)personal={w,error:true}}
+  if(request===token)draw();
+ }
+ function postedWeekly(w){
+  return data?.weeks?.[w]?.find(x=>isMine(x.device))||(personal.w===w&&personal.row);
+ }
  async function load(){
-  const my=++token;data=null;draw();
+  const my=++token,w=weekKey();data=null;personal={w,pending:true};draw();checkWeeklyPost(my,w);
   if(!mine().some(l=>l.code===scope))return;
   const league='&leagues=cs.%7B'+scope+'%7D';
   try{
@@ -98,7 +114,10 @@
   draw();
  }
  function weeklyCard(){
-  const s=weeklyState(),n=wkNo(s.w),btn=s.done?(s.posted?'View my team':'Post your team'):s.started?'Resume':'Play this week';
+  const s=weeklyState(),n=wkNo(s.w),row=postedWeekly(s.w);
+  if(row&&!s.posted)return `<section class="lg-week done"><div><small>Your weekly challenge · Week ${n}</small><p>${esc(row.team)} finished <b>${row.wins}–${162-row.wins}</b>.</p><details><summary>View my team</summary>${lineupHTML(row.roster)}</details></div></section>`;
+  if(!s.done&&(personal.pending||personal.error))return `<section class="lg-week"><div><small>Your weekly challenge · Week ${n}</small><p>${personal.error?'Couldn’t check your weekly result.':'Checking your weekly result…'}</p></div>${personal.error?'<button type="button" class="btn" id="lgCheckWeek">Try again</button>':''}</section>`;
+  const btn=s.done?(s.posted?'View my team':'Post your team'):s.started?'Resume':'Play this week';
   const line=s.done?`You went <b>${s.wins}–${162-s.wins}</b>${s.posted?'':' but have not posted it'}.`:s.started?`In progress: pick ${Math.min(16,s.picks+1)} of 16.`:'Same pack at every pick for everyone. One attempt.';
   return `<section class="lg-week${s.done?' done':''}"><div><small>Your weekly challenge · Week ${n}</small><p>${line}</p><em>${weekLeft()}</em></div><button type="button" class="btn${s.done&&s.posted?'':' primary'}" id="lgPlay">${btn}</button></section>`;
  }
@@ -145,6 +164,7 @@
   const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':(!cur||tab==='week')?tabWeek():tab==='season'?tabSeason():tabSeries();
   body.innerHTML=hero+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+tabs+(!cur||tab==='week'?weeklyCard():'')+`<div id="lgList" class="lg-panel">${content}</div>`;
   if($('lgPlay'))$('lgPlay').onclick=playWeekly;
+  if($('lgCheckWeek'))$('lgCheckWeek').onclick=load;
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';form=null;load()});
   body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;draw()});
   if($('lgSwitch'))$('lgSwitch').onclick=()=>{form=!form;note='';draw();$('lgCode')?.focus()};
