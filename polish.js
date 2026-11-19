@@ -120,7 +120,7 @@
     if(!run.result||$('season').hidden||$('season').querySelector('.season-summary'))return;
     const res=run.result,b=Clubhouse.read(),k=Clubhouse.boardKey(run),best=b.boards[k]?.bestWins,stats=breakdown(),top=stats.reduce((a,x)=>x[1]>a[1]?x:a),low=stats.reduce((a,x)=>x[1]<a[1]?x:a);
     const intro=$('season').querySelector('.res-top');
-    const recordText=best===res.wins?`Personal best: ${best} wins in ${Clubhouse.boardName(k)}.`:`${best-res.wins} wins short of your ${Clubhouse.boardName(k)} best (${best}).`;
+    const recordText=best===res.wins?`Personal best: ${best} wins.`:`${best-res.wins} wins short of your best (${best}).`;
     const oldBest=intro?.querySelector('div:last-child>.hint');if(oldBest)oldBest.textContent=recordText;
     const summary=document.createElement('section');summary.className='season-summary';summary.innerHTML=`<h3>Your team’s scouting report</h3><div class="team-bars">${stats.map(([n,v,d])=>`<div class="team-bar" title="${d}"><span>${n}</span><i style="--w:${Math.max(0,Math.min(100,v))}%" class="${v>=85?'hi':v>=70?'mid':'lo'}"></i><b>${v}</b></div>`).join('')}</div><p class="hint">${top[0]} led this roster. ${low[0]===top[0]?'A balanced team across all three areas.':low[0]+' is the clearest area to improve next run.'}</p>${lastRecord?.unlocks.length?`<p class="achievement-unlock" role="status">Unlocked: ${lastRecord.unlocks.map(id=>Clubhouse.achievements.find(a=>a[0]===id)[1]).join(' · ')}</p>`:''}`;
     const awards=$('season').querySelector('.awards');awards.before(summary);
@@ -137,8 +137,6 @@
 Record: ${res.wins}–${162-res.wins}
 ${res.post.champ?'🏆 World Series champions!':res.post.made?res.post.text:'Missed the playoffs.'}
 
-Mode: ${isPack()?'Packs':'Spin'}
-Roster: ${run.size===16?'Standard':'Quick'} (${run.size} players)
 Team rating: ${teamOvr()}
 
 ⭐ MVP: ${mv.h.m.name}

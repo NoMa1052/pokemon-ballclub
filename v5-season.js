@@ -164,7 +164,7 @@
   if(!hero||hero.nextElementSibling!==h){
    hero?.remove();
    const res=run.result,post=res.post||{},names=['Division','Pennant','World Series'],ovr=h.querySelector('.season-tiles div:nth-child(2) b')?.textContent||'',nums=(h.querySelector('.season-runs')?.textContent||'').match(/[\d.]+/g)||[];
-   const tone=post.champ?'gold':post.made?'red':'gray',eyebrow=h.querySelector('.season-eyebrow')?.textContent.trim()||'Final';
+   const tone=post.champ?'gold':post.made?'red':'gray',eyebrow=[...(h.querySelector('.season-eyebrow')?.children||[])].map(e=>e.textContent.trim()).filter(Boolean).join(' · ')||'Final';
    hero=document.createElement('section');hero.id='resHero';hero.className='res-hero';
    hero.innerHTML=`<small class="rh-eye">${esc(run.week?'Final · Weekly challenge':eyebrow)}</small>
     <div class="rh-rec"><b aria-label="${res.wins} wins and ${162-res.wins} losses">${res.wins}–${162-res.wins}</b><span class="ch-stamp"><b>${esc(res.grade)}</b><small>GRADE</small></span></div>
