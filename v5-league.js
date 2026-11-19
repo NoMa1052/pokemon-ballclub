@@ -76,10 +76,10 @@
   const league=scope!=='all'?'&leagues=cs.%7B'+scope+'%7D':'&week=eq.'+weekKey();
   try{
    const [a,b]=await Promise.all([
-    fetch(`${LB_URL}?select=team,wins,grade,rs,ra,roster,device,week,created_at&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
-    scope!=='all'?fetch(`${SERIES}?select=team,opp_team,w,l,games,device,created_at&leagues=cs.%7B${scope}%7D&order=created_at.desc&limit=200`,{headers:lbHead()}):null]);
+    fetch(`${LB_URL}?select=team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
+    scope!=='all'?readLeagueSeries(scope,200):[]]);
    if(!a.ok)throw 0;
-   const scores=(await a.json()).map(x=>({...x,ovr:rosterOvr(x.roster,FULL)})),series=b&&b.ok?await b.json():[];
+   const scores=(await a.json()).map(x=>({...x,ovr:rosterOvr(x.roster,FULL)})),series=b;
    if(my!==token)return;
    // Each player's best team per week, ranked.
    const weeks={},names={};
@@ -121,7 +121,7 @@
   for(const x of s){const t=rec[x.device]=rec[x.device]||{name:x.team,w:0,l:0,device:x.device};x.w>x.l?t.w++:t.l++}
   const rows=Object.values(rec).sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
   const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
-  return `<button type="button" class="btn primary lg-pick" onclick="pickRival()">Play a rival series</button>`+
+  return `<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>`+
    (rows.length?`<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Series won</th><th>Lost</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.w}</td><td>${t.l}</td></tr>`).join('')}</tbody></table>
    <h3 class="lg-h">Latest results</h3><ul class="lg-series">${s.slice(0,15).map(x=>{const won=x.w>x.l;return `<li class="${isMine(x.device)?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`
    :'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
@@ -144,6 +144,7 @@
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
   if($('lgShare'))$('lgShare').onclick=()=>standings(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
+  if(cur&&$('lgRivalPick'))$('lgRivalPick').onclick=()=>pickRival(cur.code);
   if(data&&!data.error&&(!cur||tab==='week')&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}

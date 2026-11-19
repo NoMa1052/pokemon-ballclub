@@ -19,9 +19,10 @@
  const ord=n=>n+(n%10===1&&n!==11?'st':n%10===2&&n!==12?'nd':n%10===3&&n!==13?'rd':'th');
  const ip=o=>Math.floor(o/3)+(o%3?'.'+o%3:'');
  const me=()=>deviceId().slice(0,16);
+ const opponent=(row,code)=>({...row,league:code&&row.leagues?.includes(code)?code:null});
 
  window.rivalSeriesButton=(x,exhibition)=>x.device===me()?'':`<button type="button" class="btn rival-btn"${team()?'':' disabled'}>${team()?(exhibition?'Exhibition: play a best of 7':'Play a best of 7 against this club'):'Finish a 16-player season to play this club'}</button>`;
- window.wireRivalSeries=(root,rows,league)=>{const theirs=rows.filter(x=>x.device!==me()).map(x=>({...x,league}));root.querySelectorAll('.rival-btn').forEach((b,i)=>b.onclick=()=>{if(theirs[i]&&team())start(theirs[i])})};
+ window.wireRivalSeries=(root,rows,league)=>{const theirs=rows.filter(x=>x.device!==me()).map(x=>opponent(x,league));root.querySelectorAll('.rival-btn').forEach((b,i)=>b.onclick=()=>{if(theirs[i]&&team())start(theirs[i])})};
  window.rivalriesHTML=()=>{
   const list=Object.values(book()).filter(x=>x&&x.team).sort((a,b)=>b.last-a.last).slice(0,8);
   return `<section class="records-rivals"><h3>Rival series</h3>${list.length?`<ul>${list.map(x=>`<li><span>${esc(x.team)}</span><b class="${x.w>x.l?'up':x.w<x.l?'down':''}">${x.w}–${x.l}</b></li>`).join('')}</ul><p class="hint">Series won and lost against each club.</p>`:'<p class="hint">Play any posted club in a best of 7. Your series records show up here.</p>'}<button type="button" class="btn rival-pick" onclick="pickRival()">Pick a rival</button></section>`;
@@ -47,23 +48,25 @@
  }
  // ---------- choosing a rival ----------
  let pickToken=0;
- window.pickRival=async function(){
+ window.pickRival=async function(leagueCode){
+  if(typeof leagueCode!=='string')leagueCode=null;
   stop();S=null;shell();
   const stage=$('bgStage'),my=++pickToken;
   if(!team()){stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Finish a season with a 16-player team first. That team plays the series.</p></div>';return}
   stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Loading clubs…</p></div>';
   let leagues=[];try{leagues=(JSON.parse(store.get('pbc5-leagues')||'[]')||[]).filter(x=>x&&x.code)}catch(e){}
-  const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
+  if(leagueCode)leagues=leagues.filter(l=>l.code===leagueCode);
+  const get=async q=>{const r=await fetch(`${LB_URL}?select=team,wins,grade,roster,device,created_at,leagues&mode=eq.pack&size=eq.16${q}&order=wins.desc,created_at.asc&limit=120`,{headers:lbHead()});if(!r.ok)throw 0;return r.json()};
   const best=rows=>{const seen=new Set();return rows.filter(x=>x.device!==me()&&Array.isArray(x.roster)&&x.roster.length===16&&!seen.has(x.device)&&seen.add(x.device))};
   let groups;
-  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&leagues=cs.%7B'+l.code+'%7D')),l.code]),(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])}
-  catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" onclick="pickRival()">Try again</button></div>';return}
+  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&leagues=cs.%7B'+l.code+'%7D')),l.code]),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
+  catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" id="bgRetry">Try again</button></div>';const retry=$('bgRetry');if(retry&&my===pickToken)retry.onclick=()=>pickRival(leagueCode);return}
   if(my!==pickToken||!$('bgStage'))return;
   const recs=book(),flat=[];
   const html=(leagues.length?'':'<p class="bg-noleague">Join a league to play series that count. <button type="button" class="btn" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></p>')+groups.map(([name,rows,code])=>{
    if(!rows.length)return code?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`:'';
    const note=code?'':'<p class="hint">Just for fun. These results are not posted anywhere.</p>';
-   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push({...x,league:code})-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.team)}</b><small>${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(opponent(x,code))-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.team)}</b><small>${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
   stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7. League series post to your league; exhibitions don't.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
  };
@@ -247,22 +250,50 @@
 
  // Series results go to your leagues' feeds, under the name of your last posted team.
  async function postSeries(){
+  const completed=S;
   const msg=$('bgMsg'),codes=S.rival.league&&typeof leagueCodes==='function'&&leagueCodes().includes(S.rival.league)?[S.rival.league]:[];
   // Only series against a league mate post, and only to that league.
   if(!codes.length){if(msg&&S)msg.textContent='Exhibition: not posted anywhere.';return}
   let name=myName();
   // No name saved on this phone yet: use the name of the last team this device posted.
   if(!name){try{const r=await fetch(`${LB_URL}?select=team&device=eq.${encodeURIComponent(me())}&order=created_at.desc&limit=1`,{headers:lbHead()});if(r.ok){name=((await r.json())[0]||{}).team||'';if(name)store.set(LAST+'-name',name)}}catch(e){}}
-  if(!S)return;
+  if(S!==completed)return;
   if(!name){if(msg)msg.textContent='Post a team once to give your club a name. Then your series results show in your league.';return}
   const row={device:me(),team:name.slice(0,40),opp_device:S.rival.device||null,opp_team:String(S.rival.team).slice(0,40),w:S.w,l:S.l,games:S.results.map(x=>[x.me,x.opp]),leagues:codes};
   try{const r=await fetch(SERIES_URL,{method:'POST',headers:lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok)throw 0;
    if(msg&&S)msg.textContent='Posted to your league.'}
   catch(e){if(msg&&S)msg.textContent="Couldn't post this series to your league."}
  }
+ // Older series stored only a league tag. Verify that the opponent had posted
+ // that club in this league when the series was played.
+ window.readLeagueSeries=async function(code,limit){
+  const leagueFilter='&leagues=cs.'+encodeURIComponent('{'+code+'}');
+  const get=async url=>{const response=await fetch(url,{headers:lbHead()});if(!response.ok)throw Error('League results unavailable');return response.json()};
+  const series=await get(SERIES_URL+'?select=team,opp_team,opp_device,w,l,games,device,created_at'+leagueFilter+'&order=created_at.desc&limit='+limit);
+  if(!series.length)return [];
+  const opponents=new Map();
+  for(let offset=0;;offset+=500){
+   const rows=await get(LB_URL+'?select=device,team,created_at&mode=eq.pack&size=eq.16'+leagueFilter+'&order=created_at.asc,device.asc,team.asc&limit=500&offset='+offset);
+   for(const row of rows){
+    const key=JSON.stringify([row.device,row.team]),time=Date.parse(row.created_at);
+    if(!opponents.has(key)||time<opponents.get(key))opponents.set(key,time);
+   }
+   if(rows.length<500)break;
+  }
+  return series.filter(row=>opponents.get(JSON.stringify([row.opp_device,row.opp_team]))<=Date.parse(row.created_at)&&!reportedExhibition(row));
+ };
+ // Two confirmed leaderboard exhibitions from before match source was recorded.
+ // Match the historical series, allowing the displayed date to cross UTC midnight.
+ function reportedExhibition(row){
+  if(row.opp_team!=='Grest')return false;
+  const date=String(row.created_at).slice(0,10);
+  const games=(row.games||[]).map(([a,b])=>a>b?'W':'L').join('');
+  return (row.team==='Gummy Razzoolian'&&games==='WWWLLW'&&['2026-11-19','2026-11-20'].includes(date))||
+   (row.team.replace(/’/g,"'")==="Balztoo Da'Wall"&&games==='WLLLL'&&['2026-11-17','2026-11-18'].includes(date));
+ }
  window.leagueSeriesFeed=async(code,host)=>{
   if(!host)return;host.innerHTML='';
-  let rows;try{const r=await fetch(`${SERIES_URL}?select=team,opp_team,w,l,games,device,created_at&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=12`,{headers:lbHead()});if(!r.ok)throw 0;rows=await r.json()}catch(e){return}
+  let rows;try{rows=await readLeagueSeries(code,12)}catch(e){return}
   if(!host.isConnected)return;
   const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   host.innerHTML=`<h3 class="lg-h">Rival series <span>Latest results</span></h3>`+(rows.length?`<ul class="lg-series">${rows.map(x=>{const won=x.w>x.l;return `<li class="${x.device===me()?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`:'<p class="hint">No series yet. Open a team above and play it in a best of 7; the result shows here for the whole league.</p>');
