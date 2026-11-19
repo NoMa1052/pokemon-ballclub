@@ -79,7 +79,8 @@
  }
  async function load(){
   const my=++token;data=null;draw();
-  const league=scope!=='all'?'&leagues=cs.%7B'+scope+'%7D':'&week=eq.'+weekKey();
+  if(!mine().some(l=>l.code===scope))return;
+  const league='&leagues=cs.%7B'+scope+'%7D';
   try{
    const [a,b]=await Promise.all([
     fetch(`${LB_URL}?select=league_players,team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
@@ -104,7 +105,7 @@
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
   const roster=x=>typeof lineupHTML==='function'?lineupHTML(x.roster):'';
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(playerName(x))}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>${scope==='all'?`Rating ${x.ovr} · Grade ${esc(x.grade)}`:x.displayName?'Team: '+esc(x.team):'Posted team'}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${scope!=='all'?`<p class="hint">Team rating ${x.ovr} · Grade ${esc(x.grade)}</p>`:''}${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x,scope==='all'):''}</details></li>`).join('')}</ol>`;
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${isMine(x.device)?'<i class="you">You</i>':''}</b>${x.displayName?`<small>${esc(x.displayName)}</small>`:''}</span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${scope!=='all'?`<p class="hint">Team rating ${x.ovr} · Grade ${esc(x.grade)}</p>`:''}${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x,scope==='all'):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];
@@ -140,8 +141,8 @@
   const hero=cur?`<section class="lg-hero"><small>Your league</small><h2>${esc(cur.name)}</h2><p>Invite code <b>${cur.code}</b></p><div><button type="button" class="btn primary" id="lgInvite">Invite friends</button>${ls.length>1||ls.length<3?`<button type="button" class="btn" id="lgSwitch">Manage leagues</button>`:''}</div></section>`
    :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
   const picker=form?`<div class="lg-form">${ls.length?`<div class="lg-chips" role="group" aria-label="Your leagues">${ls.map(x=>`<button type="button" data-scope="${x.code}" aria-pressed="${scope===x.code}">${esc(x.name)}</button>`).join('')}</div>`:''}${ls.length<3?`<label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div>`:'<p class="hint">You can be in 3 leagues. Leave one to join another.</p>'}${cur?`<button type="button" class="btn quiet" id="lgLeave">Leave ${esc(cur.name)}</button>`:''}</div>`:'';
-  const tabs=cur?`<div class="lg-tabs" role="tablist">${[['week','This week'],['season','Season points'],['series','Head-to-head']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:`<h3 class="lg-h">This week, everyone</h3>`;
-  const content=!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':(!cur||tab==='week')?tabWeek():tab==='season'?tabSeason():tabSeries();
+  const tabs=cur?`<div class="lg-tabs" role="tablist">${[['week','This week'],['season','Season points'],['series','Head-to-head']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
+  const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':(!cur||tab==='week')?tabWeek():tab==='season'?tabSeason():tabSeries();
   body.innerHTML=hero+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+tabs+(!cur||tab==='week'?weeklyCard():'')+`<div id="lgList" class="lg-panel">${content}</div>`;
   if($('lgPlay'))$('lgPlay').onclick=playWeekly;
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';form=null;load()});
@@ -153,7 +154,7 @@
   if($('lgShare'))$('lgShare').onclick=()=>standings(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
   if(cur&&$('lgRivalPick'))$('lgRivalPick').onclick=()=>pickRival(cur.code);
-  if(data&&!data.error&&(!cur||tab==='week')&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
+  if(cur&&data&&!data.error&&tab==='week'&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
  const intentKey='pbc-league-intent';
@@ -203,7 +204,7 @@
  function standingsText(l,rows,wk){
   const heading='⚾ '+l.name+' | Pokémon Ballclub';
   const board=rows.length
-   ?['Week '+wk+' standings',...rows.slice(0,10).map((x,i)=>(i+1)+'. '+playerName(x)+' • '+x.wins+'–'+(162-x.wins)),...(rows.length>10?['+'+(rows.length-10)+' more teams']:[])].join('\n')
+   ?['Week '+wk+' standings',...rows.slice(0,10).map((x,i)=>(i+1)+'. '+x.team+(x.displayName?' ('+x.displayName+')':'')+' • '+x.wins+'–'+(162-x.wins)),...(rows.length>10?['+'+(rows.length-10)+' more teams']:[])].join('\n')
    :'Week '+wk+' is open. Set the first score!';
   return [heading,board,rows.length?'Think you can top the leaderboard?\nJoin our league:':'Join our league:',leagueShareLink(l)].join('\n\n');
  }
