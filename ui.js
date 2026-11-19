@@ -453,7 +453,7 @@ function wireSubmit(){
     const list=slotList(),res=run.result;
     const row={team,size:run.size,wins:res.wins,grade:res.grade,rs:Math.round(res.runs.rs),ra:Math.round(res.runs.ra),roster:list.map(s=>run.slots[s]?run.slots[s].id:0),device:deviceId().slice(0,16),mode:isPack()?"pack":"spin",week:run.week||null,leagues:typeof leagueCodes==="function"?leagueCodes():[]};
     try{
-      const r=await fetch(LB_URL,{method:"POST",headers:lbHead({"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
+      const r=await fetch(LB_URL,{method:"POST",headers:row.leagues?.length&&window.Account?await Account.postHeaders({"Content-Type":"application/json",Prefer:"return=minimal"}):lbHead({"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
       if(!r.ok){let m="";try{m=(await r.json()).message||""}catch(e){}throw Object.assign(new Error(m),{why:/too fast/i.test(m)?"Slow down a moment, then try again.":/already posted/i.test(m)?"This team is already on the leaderboard.":""})}
       store.set("pbc2-team",team);
       let rank=null;

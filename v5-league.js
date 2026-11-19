@@ -62,37 +62,30 @@
    if(Clubhouse.read().weekWin||!mine().length)return;
    const day=new Date().toISOString().slice(0,10);if(store.get('pbc6-weekchk')===day)return;store.set('pbc6-weekchk',day);
    for(const code of mine().map(x=>x.code)){
-    const r=await fetch(`${LB_URL}?select=team,wins,rs,ra,roster,device,week,created_at&mode=eq.pack&size=eq.16&week=lt.${weekKey()}&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});
-    if(!r.ok)continue;const weeks={},members=await leagueMembers(code);
-    for(const x of await r.json())(weeks[x.week]=weeks[x.week]||[]).push({...identify(x,members),ovr:rosterOvr(x.roster,FULL)});
+    const r=await fetch(`${LB_URL}?select=league_players,team,wins,rs,ra,roster,device,week,created_at&mode=eq.pack&size=eq.16&week=lt.${weekKey()}&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});
+    if(!r.ok)continue;const weeks={};
+    for(const x of await r.json())(weeks[x.week]=weeks[x.week]||[]).push({...identify(x,code),ovr:rosterOvr(x.roster,FULL)});
     for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(playerKey(x))&&seen.add(playerKey(x)))}
     checkWeekWin(weeks);if(Clubhouse.read().weekWin)return;
    }
   }catch(e){}
  },4000);
 
- // Resolve only devices that have posted to the selected league.
- async function leagueMembers(code){
-  const url=LB_URL.replace(/ballclub_scores$/,'rpc/ballclub_league_members');
-  const response=await fetch(url,{method:'POST',headers:lbHead({'Content-Type':'application/json'}),body:JSON.stringify({league_code:code})});
-  if(!response.ok)throw new Error('Could not load league players');
-  return new Map((await response.json()).map(member=>[member.device,member]));
- }
  const playerKey=x=>x.memberKey||'device:'+x.device;
  const playerName=x=>x.displayName||x.team;
- function identify(row,members){
-  const member=members.get(row.device);
-  return {...row,memberKey:member?.member_key,displayName:member?.screen_name,opponentName:members.get(row.opp_device)?.screen_name};
+ function identify(row,code){
+  const player=row.league_players?.[code];
+  return {...row,memberKey:player?.key,displayName:player?.name};
  }
  async function load(){
   const my=++token;data=null;draw();
   const league=scope!=='all'?'&leagues=cs.%7B'+scope+'%7D':'&week=eq.'+weekKey();
   try{
-   const [a,b,members]=await Promise.all([
-    fetch(`${LB_URL}?select=team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
-    scope!=='all'?readLeagueSeries(scope,200):[],scope!=='all'?leagueMembers(scope):new Map()]);
+   const [a,b]=await Promise.all([
+    fetch(`${LB_URL}?select=league_players,team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
+    scope!=='all'?readLeagueSeries(scope,200):[]]);
    if(!a.ok)throw 0;
-   const scores=(await a.json()).map(x=>({...identify(x,members),ovr:rosterOvr(x.roster,FULL)})),series=b.map(x=>identify(x,members));
+   const scores=(await a.json()).map(x=>({...identify(x,scope),ovr:rosterOvr(x.roster,FULL)})),opponents=new Map(scores.filter(x=>x.displayName).map(x=>[JSON.stringify([x.device,x.team]),x.displayName])),series=b.map(x=>({...identify(x,scope),opponentName:opponents.get(JSON.stringify([x.opp_device,x.opp_team]))}));
    if(my!==token)return;
    // Each player's best team per week, ranked.
    const weeks={},names={};
