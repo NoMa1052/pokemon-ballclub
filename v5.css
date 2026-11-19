@@ -1124,3 +1124,24 @@ body.rv-open>.wrap{visibility:visible!important}
 .h2h-boxnote{margin:8px 0 2px;font-size:12.500px;color:#8fa6cc}
 .h2h-box .bx-team h5 small{margin-left:6px;font:400 12px/1 var(--f-body,inherit);letter-spacing:0;text-transform:none;color:#a9b8d0}
 .h2h-box .bx-team{margin-top:10px}
+/* Roster view (Records, League, Clubhouse) */
+.rs{margin-top:8px}
+.rs-units{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:6px;margin-bottom:4px}
+.rs-units div{background:#0f2248;border-radius:10px;padding:8px 8px 9px;text-align:center}
+.rs-units small{display:block;font:600 10.5px/1 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#a9b8d0}
+.rs-units b{display:block;margin-top:3px;font:700 24px/1 var(--f-data);color:#ffcb05}
+.rs-bar{display:block;height:5px;margin-top:7px;border-radius:3px;background:#0b1b38;overflow:hidden}.rs-bar i{display:block;height:100%;border-radius:3px;background:#ffcb05}
+.rs-h{display:flex;justify-content:space-between;margin:14px 2px 6px;font:600 11px/1 var(--f-data);letter-spacing:.16em;text-transform:uppercase;color:#a9b8d0}
+.rs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:6px}
+.rs-chip{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:46px;width:100%;padding:5px 9px 5px 5px!important;border-radius:12px!important;border:1px solid #223b66!important;background:#0f2248!important;color:#f4eedc;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.rs-chip .tok{width:34px;height:34px}
+.rs-chip span{min-width:0}
+.rs-chip b{display:block;font:600 13.5px/1.1 var(--f-data);letter-spacing:.04em;text-transform:uppercase;color:#f4eedc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-chip small{display:block;margin-top:2px;font:600 10.5px/1 var(--f-data);letter-spacing:.06em;color:#a9b8d0}
+.rs-chip em{font:700 17px/1 var(--f-data);font-style:normal;color:#f4eedc}
+.rs-chip.best{border-color:#ffcb05!important;background:#1f3561!important}.rs-chip.best em{color:#ffcb05}
+.rs-chip:active{transform:scale(.98)}
+.rs-chip:focus-visible{outline:2px solid #ffcb05;outline-offset:2px}
+.rs-cap{margin:10px 0 2px;text-align:center;font-size:12px;color:#8fa6cc}
+.rs{padding:2px 12px 10px}
+.lg-rows details>.hint,.lg-rows details>.lb-line{padding:0 12px}

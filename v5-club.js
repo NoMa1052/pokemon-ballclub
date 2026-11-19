@@ -65,7 +65,18 @@
  const TEXT={hundred:'100',elite:'150',perfect:'162',allgens:'1–4',leglineup:'×3',ironman:'50',shinyhunt:'10'};
  const day=t=>{try{return new Date(t).toLocaleDateString(undefined,{month:'short',day:'numeric'})}catch(e){return ''}};
  // Shared by Clubhouse, Leaderboard and League: a posted roster as a grid of tappable players.
- window.lineupHTML=roster=>`<div class="ch-lineup">${FULL.map((s,i)=>{const m=BYID.get(roster[i]);return m?`<button type="button" data-history-mon="${m.id}" aria-label="Inspect ${esc(m.name)} card">${tok(m)}<i>${lbl(s)}</i><em>${posOvr(m,s)}</em></button>`:''}).join('')}</div>`;
+ // Roster view: unit ratings, then players grouped into lineup, rotation and bullpen. The best player gets a gold outline.
+ window.lineupHTML=roster=>{
+  if(!Array.isArray(roster))return '';
+  const slots=roster.length===11?STD:FULL,ps=slots.map((s,i)=>({s,m:BYID.get(roster[i])})).filter(x=>x.m);
+  if(!ps.length)return '';
+  const rate=x=>posOvr(x.m,x.s),best=ps.reduce((a,x)=>!a||rate(x)>rate(a)?x:a,null);
+  const groups=[['Lineup',ps.filter(x=>FIELD_SLOTS.includes(x.s))],['Rotation',ps.filter(x=>x.s.startsWith('SP'))],['Bullpen',ps.filter(x=>x.s.startsWith('RP'))]].filter(g=>g[1].length);
+  const avg=a=>Math.round(a.reduce((t,x)=>t+rate(x),0)/a.length);
+  const unit=([label,a])=>{const v=avg(a);return `<div><small>${label}</small><b>${v}</b><span class="rs-bar" aria-hidden="true"><i style="width:${Math.max(4,Math.min(100,(v-70)/29*100))}%"></i></span></div>`};
+  const chip=x=>`<button type="button" class="rs-chip${x===best?' best':''}" data-history-mon="${x.m.id}" aria-label="${esc(x.m.name)}, ${lbl(x.s)}, rated ${rate(x)}${x===best?', best player':''}. Open card">${tok(x.m)}<span><b>${esc(x.m.name.replace(/^Shiny /,''))}</b><small>${lbl(x.s)}</small></span><em>${rate(x)}</em></button>`;
+  return `<div class="rs"><div class="rs-units">${groups.map(unit).join('')}</div>${groups.map(([label,a])=>`<h4 class="rs-h"><span>${label}</span><span>${avg(a)} avg</span></h4><div class="rs-grid">${a.map(chip).join('')}</div>`).join('')}<p class="rs-cap">Gold outline: best player · Tap a player for their card</p></div>`;
+ };
  window.starTok=roster=>{let best=null,bv=-1;FULL.forEach((s,i)=>{const m=BYID.get(roster[i]);if(m){const v=posOvr(m,s);if(v>bv){bv=v;best=m}}});return best?`<span class="star">${tok(best)}</span>`:'<span class="star"></span>'};
  // Seasons posted before names were kept: look up this device's posts once and match them by record and roster.
  let filled=false;
