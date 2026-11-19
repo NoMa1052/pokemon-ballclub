@@ -62,29 +62,35 @@
    if(Clubhouse.read().weekWin||!mine().length)return;
    const day=new Date().toISOString().slice(0,10);if(store.get('pbc6-weekchk')===day)return;store.set('pbc6-weekchk',day);
    for(const code of mine().map(x=>x.code)){
-    const r=await fetch(`${LB_URL}?select=team,wins,rs,ra,roster,device,week,created_at&mode=eq.pack&size=eq.16&week=lt.${weekKey()}&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});
+    const r=await fetch(`${LB_URL}?select=league_players,team,wins,rs,ra,roster,device,week,created_at&mode=eq.pack&size=eq.16&week=lt.${weekKey()}&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});
     if(!r.ok)continue;const weeks={};
-    for(const x of await r.json())(weeks[x.week]=weeks[x.week]||[]).push({...x,ovr:rosterOvr(x.roster,FULL)});
-    for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(x.device)&&seen.add(x.device))}
+    for(const x of await r.json())(weeks[x.week]=weeks[x.week]||[]).push({...identify(x,code),ovr:rosterOvr(x.roster,FULL)});
+    for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(playerKey(x))&&seen.add(playerKey(x)))}
     checkWeekWin(weeks);if(Clubhouse.read().weekWin)return;
    }
   }catch(e){}
  },4000);
 
+ const playerKey=x=>x.memberKey||'device:'+x.device;
+ const playerName=x=>x.displayName||x.team;
+ function identify(row,code){
+  const player=row.league_players?.[code];
+  return {...row,memberKey:player?.key,displayName:player?.name};
+ }
  async function load(){
   const my=++token;data=null;draw();
   const league=scope!=='all'?'&leagues=cs.%7B'+scope+'%7D':'&week=eq.'+weekKey();
   try{
    const [a,b]=await Promise.all([
-    fetch(`${LB_URL}?select=team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
+    fetch(`${LB_URL}?select=league_players,team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
     scope!=='all'?readLeagueSeries(scope,200):[]]);
    if(!a.ok)throw 0;
-   const scores=(await a.json()).map(x=>({...x,ovr:rosterOvr(x.roster,FULL)})),series=b;
+   const scores=(await a.json()).map(x=>({...identify(x,scope),ovr:rosterOvr(x.roster,FULL)})),opponents=new Map(scores.filter(x=>x.displayName).map(x=>[JSON.stringify([x.device,x.team]),x.displayName])),series=b.map(x=>({...identify(x,scope),opponentName:opponents.get(JSON.stringify([x.opp_device,x.opp_team]))}));
    if(my!==token)return;
    // Each player's best team per week, ranked.
    const weeks={},names={};
-   for(const x of scores){(weeks[x.week]=weeks[x.week]||[]).push(x);if(!names[x.device])names[x.device]=x.team}
-   for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(x.device)&&seen.add(x.device))}
+   for(const x of scores){(weeks[x.week]=weeks[x.week]||[]).push(x);if(!names[playerKey(x)])names[playerKey(x)]=playerName(x)}
+   for(const w in weeks){const seen=new Set();weeks[w]=weeks[w].sort(lbRank).filter(x=>!seen.has(playerKey(x))&&seen.add(playerKey(x)))}
    data={weeks,names,series};
    if(scope!=='all')checkWeekWin(weeks);
   }catch(e){if(my!==token)return;data={error:true}}
@@ -98,38 +104,38 @@
  const medal=i=>i<3?` m${i+1}`:'';
  function weekRows(rows){
   const roster=x=>typeof lineupHTML==='function'?lineupHTML(x.roster):'';
-  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(x.team)}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x,scope==='all'):''}</details></li>`).join('')}</ol>`;
+  return `<ol class="lg-rows">${rows.map((x,i)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk${medal(i)}">${i+1}</span>${typeof starTok==="function"?starTok(x.roster):""}<span class="tm"><b>${esc(playerName(x))}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>${x.displayName&&x.team!==x.displayName?esc(x.team)+' · ':''}Rating ${x.ovr} · Grade ${esc(x.grade)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${roster(x)}${typeof rivalSeriesButton==='function'?rivalSeriesButton(x,scope==='all'):''}</details></li>`).join('')}</ol>`;
  }
  function tabWeek(){
   const rows=data.weeks[weekKey()]||[];
   if(!rows.length)return `<p class="lg-empty">${scope==='all'?'Nobody has posted this week\'s challenge yet. Be the first.':'Nobody in this league has posted this week yet. Play the challenge above, then post your team.'}</p>`;
   const lead=rows[0],mineRow=rows.find(x=>isMine(x.device)),gap=mineRow&&mineRow!==lead?lead.wins-mineRow.wins:0;
-  return (mineRow?`<p class="lg-lead">${mineRow===lead?(rows.length>1?`You lead the week by ${lead.wins-rows[1].wins} win${lead.wins-rows[1].wins===1?'':'s'}.`:'You are the only one on the board. Invite your friends.'):`You are ${gap} win${gap===1?'':'s'} behind ${esc(lead.team)}.`}</p>`:'')+weekRows(rows)+'<p class="hint">Open a team to view its roster, then choose Play a best of 7. '+(scope==='all'?'Exhibitions are just for fun and are not posted to a league.':'Matchups against league mates count toward this league.')+'</p>';
+  return (mineRow?`<p class="lg-lead">${mineRow===lead?(rows.length>1?`You lead the week by ${lead.wins-rows[1].wins} win${lead.wins-rows[1].wins===1?'':'s'}.`:'You are the only one on the board. Invite your friends.'):`You are ${gap} win${gap===1?'':'s'} behind ${esc(playerName(lead))}.`}</p>`:'')+weekRows(rows)+'<p class="hint">Open a team to view its roster, then choose Play a best of 7. '+(scope==='all'?'Exhibitions are just for fun and are not posted to a league.':'Matchups against league mates count toward this league.')+'</p>';
  }
  function tabSeason(){
   const PTS=[5,3,2],table={},wks=Object.keys(data.weeks).sort();
-  for(const w of wks)data.weeks[w].forEach((x,i)=>{const t=table[x.device]=table[x.device]||{device:x.device,name:data.names[x.device],pts:0,won:0,played:0,best:0};t.pts+=PTS[i]||1;t.played++;if(i===0&&w!==weekKey())t.won++;t.best=Math.max(t.best,x.wins)});
+  for(const w of wks)data.weeks[w].forEach((x,i)=>{const t=table[playerKey(x)]=table[playerKey(x)]||{device:x.device,name:data.names[playerKey(x)],pts:0,won:0,played:0,best:0};t.pts+=PTS[i]||1;t.played++;if(i===0&&w!==weekKey())t.won++;t.best=Math.max(t.best,x.wins)});
   const rows=Object.values(table).sort((a,b)=>b.pts-a.pts||b.best-a.best);
   if(!rows.length)return '<p class="lg-empty">The season table fills in as weeks are played.</p>';
   const past=wks.filter(w=>w!==weekKey()).reverse().slice(0,8);
-  return `<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Pts</th><th>Weeks won</th><th>Played</th><th>Best</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.pts}</td><td>${t.won}</td><td>${t.played}</td><td>${t.best}–${162-t.best}</td></tr>`).join('')}</tbody></table>
+  return `<table class="lg-table"><thead><tr><th></th><th class="l">Player</th><th>Pts</th><th>Weeks won</th><th>Played</th><th>Best</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.pts}</td><td>${t.won}</td><td>${t.played}</td><td>${t.best}–${162-t.best}</td></tr>`).join('')}</tbody></table>
    <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. A week counts as won once it ends.</p>
-   ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><small>Week ${wkNo(w)}</small><b>${esc(c.team)}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
+   ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><small>Week ${wkNo(w)}</small><b>${esc(playerName(c))}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
  function tabSeries(){
   const s=data.series,rec={};
-  for(const x of s){const t=rec[x.device]=rec[x.device]||{name:x.team,w:0,l:0,device:x.device};x.w>x.l?t.w++:t.l++}
+  for(const x of s){const t=rec[playerKey(x)]=rec[playerKey(x)]||{name:playerName(x),w:0,l:0,device:x.device};x.w>x.l?t.w++:t.l++}
   const rows=Object.values(rec).sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
   const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   return `<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>`+
-   (rows.length?`<table class="lg-table"><thead><tr><th></th><th class="l">Club</th><th>Series won</th><th>Lost</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.w}</td><td>${t.l}</td></tr>`).join('')}</tbody></table>
-   <h3 class="lg-h">Latest results</h3><ul class="lg-series">${s.slice(0,15).map(x=>{const won=x.w>x.l;return `<li class="${isMine(x.device)?'me':''}"><span><b>${esc(x.team)}</b> ${won?'beat':'lost to'} <b>${esc(x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`
+   (rows.length?`<table class="lg-table"><thead><tr><th></th><th class="l">Player</th><th>Series won</th><th>Lost</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.w}</td><td>${t.l}</td></tr>`).join('')}</tbody></table>
+   <h3 class="lg-h">Latest results</h3><ul class="lg-series">${s.slice(0,15).map(x=>{const won=x.w>x.l;return `<li class="${isMine(x.device)?'me':''}"><span><b>${esc(playerName(x))}</b> ${won?'beat':'lost to'} <b>${esc(x.opponentName||x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`
    :'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
  }
  function draw(){
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
   const clubs=data&&!data.error?Object.keys(data.names).length:0;
-  const hero=cur?`<section class="lg-hero"><small>Your league</small><h2>${esc(cur.name)}</h2><p>${clubs?`${clubs} club${clubs===1?'':'s'} on the board · `:''}Code <b>${cur.code}</b></p><div><button type="button" class="btn primary" id="lgInvite">Invite friends</button><button type="button" class="btn" id="lgShare">Share standings</button>${ls.length>1||ls.length<3?`<button type="button" class="btn" id="lgSwitch">${ls.length>1?'Switch league':'Join another'}</button>`:''}</div></section>`
+  const hero=cur?`<section class="lg-hero"><small>Your league</small><h2>${esc(cur.name)}</h2><p>${clubs?`${clubs} player${clubs===1?'':'s'} on the board · `:''}Code <b>${cur.code}</b></p><div><button type="button" class="btn primary" id="lgInvite">Invite friends</button><button type="button" class="btn" id="lgShare">Share standings</button>${ls.length>1||ls.length<3?`<button type="button" class="btn" id="lgSwitch">${ls.length>1?'Switch league':'Join another'}</button>`:''}</div></section>`
    :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
   const picker=form?`<div class="lg-form">${ls.length?`<div class="lg-chips" role="group" aria-label="Your leagues">${ls.map(x=>`<button type="button" data-scope="${x.code}" aria-pressed="${scope===x.code}">${esc(x.name)}</button>`).join('')}</div>`:''}${ls.length<3?`<label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div>`:'<p class="hint">You can be in 3 leagues. Leave one to join another.</p>'}${cur?`<button type="button" class="btn quiet" id="lgLeave">Leave ${esc(cur.name)}</button>`:''}</div>`:'';
   const tabs=cur?`<div class="lg-tabs" role="tablist">${[['week','This week'],['season','Season'],['series','Series']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:`<h3 class="lg-h">This week, everyone</h3>`;
@@ -175,7 +181,7 @@
  function standingsText(l,rows,wk){
   const heading='⚾ '+l.name+' | Pokémon Ballclub';
   const board=rows.length
-   ?['Week '+wk+' standings',...rows.slice(0,10).map((x,i)=>(i+1)+'. '+x.team+' • '+x.wins+'–'+(162-x.wins)),...(rows.length>10?['+'+(rows.length-10)+' more teams']:[])].join('\n')
+   ?['Week '+wk+' standings',...rows.slice(0,10).map((x,i)=>(i+1)+'. '+playerName(x)+' • '+x.wins+'–'+(162-x.wins)),...(rows.length>10?['+'+(rows.length-10)+' more teams']:[])].join('\n')
    :'Week '+wk+' is open. Set the first score!';
   return [heading,board,rows.length?'Think you can top the leaderboard?\nJoin our league:':'Join our league:',leagueShareLink(l)].join('\n\n');
  }

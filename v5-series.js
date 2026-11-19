@@ -260,7 +260,7 @@
   if(S!==completed)return;
   if(!name){if(msg)msg.textContent='Post a team once to give your club a name. Then your series results show in your league.';return}
   const row={device:me(),team:name.slice(0,40),opp_device:S.rival.device||null,opp_team:String(S.rival.team).slice(0,40),w:S.w,l:S.l,games:S.results.map(x=>[x.me,x.opp]),leagues:codes};
-  try{const r=await fetch(SERIES_URL,{method:'POST',headers:lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok)throw 0;
+  try{const r=await fetch(SERIES_URL,{method:'POST',headers:codes.length&&window.Account?await Account.postHeaders({'Content-Type':'application/json',Prefer:'return=minimal'}):lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok)throw 0;
    if(msg&&S)msg.textContent='Posted to your league.'}
   catch(e){if(msg&&S)msg.textContent="Couldn't post this series to your league."}
  }
@@ -269,7 +269,7 @@
  window.readLeagueSeries=async function(code,limit){
   const leagueFilter='&leagues=cs.'+encodeURIComponent('{'+code+'}');
   const get=async url=>{const response=await fetch(url,{headers:lbHead()});if(!response.ok)throw Error('League results unavailable');return response.json()};
-  const series=await get(SERIES_URL+'?select=team,opp_team,opp_device,w,l,games,device,created_at'+leagueFilter+'&order=created_at.desc&limit='+limit);
+  const series=await get(SERIES_URL+'?select=league_players,team,opp_team,opp_device,w,l,games,device,created_at'+leagueFilter+'&order=created_at.desc&limit='+limit);
   if(!series.length)return [];
   const opponents=new Map();
   for(let offset=0;;offset+=500){

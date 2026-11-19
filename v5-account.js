@@ -140,5 +140,10 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
    if(type==='recovery')open('reset');else sync().then(()=>{status='Email confirmed. You are signed in.'}).catch(()=>{})}).catch(()=>{});
  })();
  if(session)setTimeout(()=>sync().catch(()=>{}),1500);
- window.Account={get user(){return session?.user||null},sync,open};
+ window.Account={get user(){return session?.user||null},async postHeaders(extra){
+  if(!session)return lbHead(extra);
+  const access=await token();
+  if(!access)throw new Error('Sign in again to post to your league.');
+  return lbHead({...extra,Authorization:'Bearer '+access});
+ },sync,open};
 })();
