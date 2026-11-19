@@ -48,7 +48,7 @@
  }
  // ---------- choosing a rival ----------
  let pickToken=0;
- window.pickRival=async function(leagueCode){
+ window.pickRival=async function(leagueCode,rivalKey){
   if(typeof leagueCode!=='string')leagueCode=null;
   stop();S=null;shell();
   const stage=$('bgStage'),my=++pickToken;
@@ -66,13 +66,15 @@
   try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&week=not.is.null&leagues=cs.%7B'+l.code+'%7D'),l.code),l.code]),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
   catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" id="bgRetry">Try again</button></div>';const retry=$('bgRetry');if(retry&&my===pickToken)retry.onclick=()=>pickRival(leagueCode);return}
   if(my!==pickToken||!$('bgStage'))return;
-  const recs=book(),flat=[];
+  const recs=book(),flat=[],keys=[];
   const html=(leagues.length?'':'<p class="bg-noleague">Join a league to play series that count. <button type="button" class="btn" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></p>')+groups.map(([name,rows,code])=>{
    if(!rows.length)return code?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`:'';
    const note=code?'':'<p class="hint">Just for fun. These results are not posted anywhere.</p>';
-   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(opponent(x,code))-1,r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(opponent(x,code))-1;keys[i]=code?(x.league_players?.[code]?.key||'device:'+x.device):null;const r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
   stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7. League series post to your league; exhibitions don't.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
+  // Rematch from the league page: start right away against that player's best league team.
+  if(rivalKey){const i=keys.indexOf(rivalKey);if(i>=0)start(flat[i])}
  };
  function stop(){clearTimeout(timer);timer=0}
  function leave(){

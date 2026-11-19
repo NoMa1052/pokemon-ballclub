@@ -102,7 +102,7 @@
     fetch(`${LB_URL}?select=league_players,team,wins,grade,rs,ra,roster,device,week,created_at,leagues&mode=eq.pack&size=eq.16&week=not.is.null${league}&order=created_at.desc&limit=600`,{headers:lbHead()}),
     scope!=='all'?readLeagueSeries(scope,200):[]]);
    if(!a.ok)throw 0;
-   const scores=(await a.json()).map(x=>({...identify(x,scope),ovr:rosterOvr(x.roster,FULL)})),opponents=new Map(scores.filter(x=>x.displayName).map(x=>[JSON.stringify([x.device,x.team]),x.displayName])),series=b.map(x=>({...identify(x,scope),opponentName:opponents.get(JSON.stringify([x.opp_device,x.opp_team]))}));
+   const scores=(await a.json()).map(x=>({...identify(x,scope),ovr:rosterOvr(x.roster,FULL)})),opponents=new Map(scores.filter(x=>x.displayName).map(x=>[JSON.stringify([x.device,x.team]),x])),series=b.map(x=>{const o=opponents.get(JSON.stringify([x.opp_device,x.opp_team]));return {...identify(x,scope),opponentName:o?.displayName,opponentKey:o?.memberKey}});
    if(my!==token)return;
    // Each player's best team per week, ranked.
    const weeks={},names={};
@@ -145,15 +145,62 @@
    <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. A week counts as won once it ends.</p>
    ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><small>Week ${wkNo(w)}</small><b>${esc(playerName(c))}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
+ // Head-to-head: every series counts for both players. Rival cards for you, a grid for everyone, scoreboard results.
  function tabSeries(){
-  const s=data.series,rec={};
-  for(const x of s){const t=rec[playerKey(x)]=rec[playerKey(x)]||{name:playerName(x),w:0,l:0,device:x.device};x.w>x.l?t.w++:t.l++}
-  const rows=Object.values(rec).sort((a,b)=>(b.w-b.l)-(a.w-a.l)||b.w-a.w);
+  const s=data.series;
+  const oppKey=x=>x.opponentKey||'device:'+x.opp_device,oppName=x=>x.opponentName||x.opp_team;
+  const names={},devices={},teams={};
+  const note=(k,n,d,t,when)=>{if(!names[k])names[k]=n;if(d&&!devices[k])devices[k]=d;if(t&&(!teams[k]||when>teams[k].when))teams[k]={t,when}};
+  for(const w in data.weeks)for(const x of data.weeks[w])note(playerKey(x),playerName(x),x.device,x.team,Date.parse(x.created_at));
+  const pair={},tot={},last={};
+  const bump=(a,b,won,x)=>{pair[a]=pair[a]||{};const p=pair[a][b]=pair[a][b]||{w:0,l:0,hist:[]};won?p.w++:p.l++;p.hist.push(won);tot[a]=tot[a]||{w:0,l:0};won?tot[a].w++:tot[a].l++;if(!p.last)p.last=x};
+  for(const x of s){
+   const a=playerKey(x),b=oppKey(x),aw=x.w>x.l;
+   note(a,playerName(x),x.device,null,0);note(b,oppName(x),x.opp_device,null,0);
+   bump(a,b,aw,x);bump(b,a,!aw,x);
+  }
+  const mineKey=k=>isMine(devices[k]);
+  const me=Object.keys(names).find(mineKey);
   const day=d=>new Date(d).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  const pct=k=>{const t=tot[k];return t?(t.w+.5)/(t.w+t.l+1):0};
+  const order=Object.keys(tot).sort((a,b)=>pct(b)-pct(a)||tot[b].w-tot[a].w||names[a].localeCompare(names[b]));
+  const tone=r=>r.w>r.l?'up':r.w<r.l?'down':'even';
+  const ini=n=>esc((String(n).replace(/[^A-Za-z0-9]/g,'').slice(0,2)||'?').toUpperCase());
+  // How a series went, from the winner's side: game-by-game and a short headline when it earns one.
+  const story=x=>{
+   const g=(x.games||[]).map(([a,b])=>a>b),aw=x.w>x.l,win=g.map(v=>v===aw);
+   let wn=0,ls=0,down3=false,run=0,closer=0;
+   for(const v of win){v?wn++:ls++;if(ls-wn>=2&&ls>=2)down3=true;run=v?run+1:0}
+   closer=run;const n=g.length,lo=Math.min(x.w,x.l);
+   const tag=lo===0?'Sweep':down3?'Comeback':n===7?'Game 7':closer>=3&&lo>0?`${closer} straight to close`:'';
+   return {win,tag};
+  };
+  // Your rivals: everyone you've played, plus league mates you haven't.
+  let rivals='';
+  if(me){
+   const mine=pair[me]||{};
+   const others=[...new Set([...Object.keys(mine),...Object.keys(names).filter(k=>k!==me&&teams[k])])].filter(k=>k!==me&&!mineKey(k));
+   others.sort((a,b)=>(mine[b]?Date.parse(mine[b].last.created_at):0)-(mine[a]?Date.parse(mine[a].last.created_at):0)||names[a].localeCompare(names[b]));
+   rivals=others.length?`<h3 class="lg-h">Your rivals</h3><div class="h2h-rivals">${others.map(k=>{
+    const r=mine[k];
+    if(!r)return `<article class="h2h-card new"><span class="h2h-av">${ini(names[k])}</span><div class="h2h-who"><b>${esc(names[k])}</b><small>No series yet</small></div><button type="button" class="btn h2h-play" data-rival="${esc(k)}">Challenge</button></article>`;
+    const t=tone(r),lx=r.last,st=story(lx),youWon=(playerKey(lx)===me)===(lx.w>lx.l);
+    const head=t==='up'?(r.l?'You lead the series':'Undefeated against them'):t==='down'?(r.w?`${esc(names[k])} leads`:'Still looking for a win'):(r.w+r.l>=2?'Tied · rubber match next':'Tied');
+    return `<article class="h2h-card ${t}"><span class="h2h-av">${ini(names[k])}</span><div class="h2h-who"><b>${esc(names[k])}</b><small>${head}</small></div><strong class="h2h-rec">${r.w}–${r.l}</strong>
+     <p class="h2h-last"><span>Last: ${youWon?'won':'lost'} ${Math.max(lx.w,lx.l)}–${Math.min(lx.w,lx.l)}${st.tag==='Sweep'||st.tag==='Game 7'?' · '+esc(st.tag.toLowerCase()):''} · ${day(lx.created_at)}</span><i class="h2h-dots" aria-label="Last ${Math.min(r.hist.length,5)} series">${r.hist.slice(0,5).reverse().map(v=>`<b class="${v?'w':'l'}"></b>`).join('')}</i></p>
+     <button type="button" class="btn h2h-play" data-rival="${esc(k)}">Rematch</button></article>`}).join('')}</div>`:'';
+  }
+  // League grid: each row's record against each column.
+  const grid=order.length>=2?`<h3 class="lg-h">League grid</h3><div class="h2h-gridwrap"><table class="h2h-grid"><thead><tr><th></th>${order.map(k=>`<th scope="col" title="${esc(names[k])}">${ini(names[k])}</th>`).join('')}<th scope="col">Total</th></tr></thead><tbody>${order.map(a=>`<tr class="${mineKey(a)?'me':''}"><th scope="row">${esc(names[a])}</th>${order.map(b=>{if(a===b)return '<td class="self" aria-hidden="true"></td>';const r=pair[a]?.[b];return r?`<td class="${tone(r)}" aria-label="${esc(names[a])} ${r.w}–${r.l} against ${esc(names[b])}">${r.w}–${r.l}</td>`:'<td class="none">–</td>'}).join('')}<td class="tot">${tot[a].w}–${tot[a].l}</td></tr>`).join('')}</tbody></table></div><p class="h2h-key"><span><i class="up"></i>Leads</span><span><i class="even"></i>Tied</span><span><i class="down"></i>Trails</span></p>`:'';
+  // Latest results as scoreboards, winner on top.
+  const results=s.length?`<h3 class="lg-h">Latest results</h3><ul class="h2h-results">${s.slice(0,12).map(x=>{
+   const aw=x.w>x.l,st=story(x);
+   const A={n:playerName(x),t:x.team,k:playerKey(x),g:x.w},B={n:oppName(x),t:x.opp_team,k:oppKey(x),g:x.l};
+   const [W,L]=aw?[A,B]:[B,A];
+   const line=(p,win)=>`<div class="h2h-line${win?' win':''}"><span><b>${esc(p.n)}</b>${p.t&&p.t!==p.n?`<small>${esc(p.t)}</small>`:''}</span><em>${p.g}</em></div>`;
+   return `<li class="${mineKey(W.k)||mineKey(L.k)?'me':''}">${line(W,true)}${line(L,false)}<div class="h2h-foot"><i class="h2h-bars">${st.win.map(v=>`<b class="${v?'w':'l'}"></b>`).join('')}</i><small>${st.tag?`<strong>${esc(st.tag)}</strong> · `:''}${day(x.created_at)}</small></div></li>`}).join('')}</ul>`:'';
   return `<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>`+
-   (rows.length?`<table class="lg-table"><thead><tr><th></th><th class="l">Player</th><th>Series won</th><th>Lost</th></tr></thead><tbody>${rows.map((t,i)=>`<tr class="${isMine(t.device)?'me':''}"><td><span class="rk${medal(i)}">${i+1}</span></td><th scope="row" class="l">${esc(t.name)}</th><td class="pts">${t.w}</td><td>${t.l}</td></tr>`).join('')}</tbody></table>
-   <h3 class="lg-h">Latest results</h3><ul class="lg-series">${s.slice(0,15).map(x=>{const won=x.w>x.l;return `<li class="${isMine(x.device)?'me':''}"><span><b>${esc(playerName(x))}</b> ${won?'beat':'lost to'} <b>${esc(x.opponentName||x.opp_team)}</b></span><em>${Math.max(x.w,x.l)}–${Math.min(x.w,x.l)}</em><small>${[(x.games||[]).map(g=>g[0]>g[1]?'W':'L').join(' '),day(x.created_at)].filter(Boolean).join(' · ')}</small></li>`}).join('')}</ul>`
-   :'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
+   (s.length||rivals?rivals+grid+results:'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
  }
  function draw(){
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
@@ -174,6 +221,7 @@
   if($('lgShare'))$('lgShare').onclick=()=>standings(cur);
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
   if(cur&&$('lgRivalPick'))$('lgRivalPick').onclick=()=>pickRival(cur.code);
+  if(cur)document.querySelectorAll('#lg .h2h-play').forEach(b=>b.onclick=()=>pickRival(cur.code,b.dataset.rival));
   if(cur&&data&&!data.error&&tab==='week'&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
