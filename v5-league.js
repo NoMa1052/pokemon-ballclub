@@ -249,7 +249,7 @@
  function logoEditor(cur){
   const g=edit.g,mon=g.e.k==='mon',q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
   const sw=(list,key)=>list.map(c=>`<button type="button" class="lg-sw${g[key]===c?' on':''}" data-${key}="${c}" style="--sw:${c}" aria-label="${c}" aria-pressed="${g[key]===c}"></button>`).join('');
-  return `<section class="lg-edit" aria-label="Edit league logo"><div class="lg-edit-top">${crestSVG(g,'big')}<div><b>League logo</b><small>Everyone in ${esc(cur.name)} sees it.</small></div></div>
+  return `<section class="lg-edit" aria-label="Edit league logo"><div class="lg-edit-top">${crestSVG(g,'big')}<div><b>League logo</b><small>Anyone in ${esc(cur.name)} can change it.</small></div></div>
    <h4>Shape</h4><div class="lg-shapes">${Object.keys(SHAPES).map(k=>`<button type="button" data-shape="${k}" class="${g.s===k?'on':''}" aria-label="${k}" aria-pressed="${g.s===k}">${crestSVG({...g,s:k,e:{k:'txt',v:''}},'mini')}</button>`).join('')}</div>
    <h4>Color</h4><div class="lg-sws">${sw(COLORS,'c')}</div>
    <h4>Trim</h4><div class="lg-sws">${sw(TRIMS,'t')}</div>
@@ -281,7 +281,7 @@
    try{const r=await fetch(LB_URL.replace(/ballclub_scores$/,'rpc/ballclub_set_league_logo'),{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json'}),body:JSON.stringify({c:cur.code,l:body})});
     if(!r.ok){let m='';try{m=(await r.json()).message||''}catch(e){}throw Error(m)}
     info[cur.code]={...info[cur.code],logo:body,canEdit:true};store.set(logoKey(cur.code),JSON.stringify(body));edit=null;note='Logo saved.';draw();
-   }catch(e){edit.msg=/owner/i.test(e.message)?'Only the league owner can change the logo.':/sign in/i.test(e.message)?'Sign in to change the logo.':'Couldn\'t save the logo. Try again.';draw()}
+   }catch(e){edit.msg=/member/i.test(e.message)?'Only league members can change the logo.':/sign in/i.test(e.message)?'Sign in to change the logo.':'Couldn\'t save the logo. Try again.';draw()}
   };
  }
 
