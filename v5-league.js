@@ -318,12 +318,13 @@
  // ---- Season tab: the points race ----
  function tabSeason2(){
   const PTS=[5,3,2],table={},wks=Object.keys(data.weeks).sort();
-  for(const w of wks)data.weeks[w].forEach((x,i)=>{const t=table[playerKey(x)]=table[playerKey(x)]||{device:x.device,name:data.names[playerKey(x)],pts:0,won:0,played:0,best:0};t.pts+=PTS[i]||1;t.played++;if(i===0&&w!==weekKey())t.won++;t.best=Math.max(t.best,x.wins)});
-  const rows=Object.values(table).sort((a,b)=>b.pts-a.pts||b.best-a.best);
+  for(const w of wks)data.weeks[w].forEach((x,i)=>{const t=table[playerKey(x)]=table[playerKey(x)]||{device:x.device,name:data.names[playerKey(x)],pts:0,live:0,won:0,played:0,best:0};const p=PTS[i]||1;t.best=Math.max(t.best,x.wins);if(w===weekKey()){t.live=p;return}t.pts+=p;t.played++;if(i===0)t.won++});
+  // Only finished weeks count. This week's spot shows as a pending +N until Monday.
+  const rows=Object.values(table).sort((a,b)=>b.pts-a.pts||b.won-a.won||b.live-a.live||b.best-a.best);
   if(!rows.length)return '<p class="lg-empty">The season race fills in as weeks are played.</p>';
   const max=Math.max(...rows.map(r=>r.pts),1),past=wks.filter(w=>w!==weekKey()).reverse().slice(0,8);
-  return `<section class="lg-race">${rows.map((t,i)=>`<div class="rr${isMine(t.device)?' me':''}"><span class="rk${medal(i)}">${i+1}</span><div class="rr-mid"><div class="rr-top"><b>${esc(t.name)}</b>${t.won?`<i class="crown" title="${t.won} ${t.won===1?'week':'weeks'} won">${'★'.repeat(Math.min(t.won,5))}</i>`:''}</div><span class="bar"><i style="width:${Math.max(4,t.pts/max*100)}%"></i></span><small>${t.won} ${t.won===1?'week':'weeks'} won · ${t.played} played · best ${t.best}–${162-t.best}</small></div><em>${t.pts}</em></div>`).join('')}</section>
-   <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. A week counts as won once it ends.</p>
+  return `<section class="lg-race">${rows.map((t,i)=>`<div class="rr${isMine(t.device)?' me':''}"><span class="rk${medal(i)}">${i+1}</span><div class="rr-mid"><div class="rr-top"><b>${esc(t.name)}</b>${t.won?`<i class="crown" title="${t.won} ${t.won===1?'week':'weeks'} won">${'★'.repeat(Math.min(t.won,5))}</i>`:''}</div><span class="bar"><i style="width:${Math.max(4,t.pts/max*100)}%"></i></span><small>${t.won} ${t.won===1?'week':'weeks'} won · ${t.played} played · best ${t.best}–${162-t.best}</small></div><span class="rr-pts"><em>${t.pts}</em>${t.live?`<i class="rr-live" title="If this week ended now">+${t.live}</i>`:''}</span></div>`).join('')}</section>
+   <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. Points count once the week ends. The <b class="rr-live-k">+</b> is where you stand this week.</p>
    ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><span class="crown2" aria-hidden="true"></span><small>Week ${wkNo(w)}</small><b>${esc(playerName(c))}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
  function draw(){
