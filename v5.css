@@ -1461,3 +1461,5 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .lg-race .rr-live{padding:3px 6px;border-radius:5px;border:1px dashed #6f86ad;font:700 11px/1 var(--f-data);font-style:normal;color:#c5d0e2;white-space:nowrap}
 .lg-race .rr.me .rr-live{border-color:#ffcb05;color:#ffcb05}
 .lg-race+.hint .rr-live-k{display:inline-block;padding:0 4px;border:1px dashed #6f86ad;border-radius:4px;font-weight:700}
+.bg-you{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:rgba(255,203,5,.08);border:1px solid rgba(255,203,5,.35);font-size:13.5px;color:#e3e9f3}
+.bg-you b{color:#ffcb05}

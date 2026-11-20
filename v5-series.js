@@ -9,6 +9,7 @@
  function remember(){if(run?.result&&ready()){store.set(LAST,JSON.stringify(FULL.map(s=>run.slots[s].id)));if(run.submitted?.team)store.set(LAST+'-name',run.submitted.team)}}
  const SERIES_URL=LB_URL.replace(/ballclub_scores$/,'ballclub_series');
  const myName=()=>{remember();return (ready()&&run.submitted?.team)||store.get(LAST+'-name')||''};
+ const slotsOf=ids=>{if(!Array.isArray(ids)||ids.length!==16)return null;const o=Object.fromEntries(ids.map((id,i)=>[FULL[i],BYID.get(id)]));return FULL.every(s=>o[s])?o:null};
  function team(){
   if(ready())return run.slots;
   try{const ids=JSON.parse(store.get(LAST)||'null');if(Array.isArray(ids)&&ids.length===16){const o=Object.fromEntries(ids.map((id,i)=>[FULL[i],BYID.get(id)]));if(FULL.every(s=>o[s]))return o}}catch(e){}
@@ -33,7 +34,7 @@
  function start(rival){
   stop();
   const them=Object.fromEntries(rival.roster.map((id,i)=>[FULL[i],BYID.get(id)]).filter(x=>x[1]));
-  const mineSlots=team();if(!mineSlots)return;
+  const mineSlots=rival.myRoster?slotsOf(rival.myRoster):team();if(!mineSlots)return;
   S={rival,mine:Ballgame.club(mineSlots,'Your club'),theirs:Ballgame.club(them,rival.team),r:rngFrom((Math.random()*2**32)>>>0),no:0,w:0,l:0,results:[],game:null,fast:false,auto:false,asked:'',saved:false};
   shell();pre();
  }
@@ -52,7 +53,7 @@
   if(typeof leagueCode!=='string')leagueCode=null;
   stop();S=null;shell();
   const stage=$('bgStage'),my=++pickToken;
-  if(!team()){stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Finish a season with a 16-player team first. That team plays the series.</p></div>';return}
+  if(!team()&&!leagueCode){stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Finish a season with a 16-player team first. That team plays the series.</p></div>';return}
   stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Loading clubs…</p></div>';
   let leagues=[];try{leagues=(JSON.parse(store.get('pbc5-leagues')||'[]')||[]).filter(x=>x&&window.leagueCodes?.().includes(x.code))}catch(e){}
   if(leagueCode)leagues=leagues.filter(l=>l.code===leagueCode);
@@ -62,10 +63,10 @@
    if((typeof isMyDevice==='function'?isMyDevice(x.device):x.device===me())||!Array.isArray(x.roster)||x.roster.length!==16||seen.has(key))return false;
    seen.add(key);return true;
   })};
-  // Your side of a league series has to be one of your weekly teams in that league (same roster).
-  const mine=team(),sig=r=>JSON.stringify([...r].sort((a,b)=>a-b)),mySig=mine?sig(FULL.map(s=>mine[s].id)):'',weeklyMine={};
-  const myWeekly=async code=>{try{const r=await fetch(`${LB_URL}?select=team,roster,device&mode=eq.pack&size=eq.16&week=not.is.null&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});if(!r.ok)return null;
-   return (await r.json()).find(x=>(typeof isMyDevice==='function'?isMyDevice(x.device):x.device===me())&&Array.isArray(x.roster)&&sig(x.roster)===mySig)||null}catch(e){return null}};
+  // In a league, your side is your most recent weekly team there, whatever you played since.
+  const weeklyMine={};
+  const myWeekly=async code=>{try{const r=await fetch(`${LB_URL}?select=team,roster,device,week&mode=eq.pack&size=eq.16&week=not.is.null&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});if(!r.ok)return null;
+   return (await r.json()).find(x=>(typeof isMyDevice==='function'?isMyDevice(x.device):x.device===me())&&slotsOf(x.roster))||null}catch(e){return null}};
   let groups;
   try{groups=await Promise.all([...leagues.map(async l=>{const [rows,w]=await Promise.all([get('&week=not.is.null&leagues=cs.%7B'+l.code+'%7D'),myWeekly(l.code)]);weeklyMine[l.code]=w;return [l.name,best(rows,l.code),l.code]}),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
   catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" id="bgRetry">Try again</button></div>';const retry=$('bgRetry');if(retry&&my===pickToken)retry.onclick=()=>pickRival(leagueCode);return}
@@ -73,9 +74,11 @@
   const recs=book(),flat=[],keys=[];
   const html=(leagues.length?'':'<p class="bg-noleague">Join a league to play series that count. <button type="button" class="btn" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></p>')+groups.map(([name,rows,code])=>{
    if(!rows.length)return code?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`:'';
-   const counts=code&&weeklyMine[code],note=!code?'<p class="hint">Just for fun. These results are not posted anywhere.</p>':counts?'':'<p class="bg-exh">Your last finished team isn\'t one of your weekly teams in this league, so these play as exhibitions and won\'t count. Play the weekly challenge to get a league team.</p>';
-   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(counts?{...opponent(x,code),myTeam:counts.team}:opponent(x,null))-1;keys[i]=code?(x.league_players?.[code]?.key||'device:'+x.device):null;const r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
-  stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7. League series post to your league; exhibitions don't.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
+   const counts=code&&weeklyMine[code],wk=counts?.week?.match(/W(\d+)/)?.[1];
+   const note=!code?'<p class="hint">Just for fun. These results are not posted anywhere.</p>':counts?`<p class="bg-you">You play as <b>${esc(counts.team)}</b>, your ${wk?'Week '+(+wk)+' ':''}league team.</p>`:team()?'<p class="bg-exh">You don\'t have a weekly team in this league yet, so these play as exhibitions with your last finished team and won\'t count. Play the weekly challenge to get a league team.</p>':'<p class="bg-exh">Play the weekly challenge to get a league team, then come back for a series.</p>';
+   if(code&&!counts&&!team())return `<h4>${esc(name)}</h4>${note}`;
+   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(counts?{...opponent(x,code),myTeam:counts.team,myRoster:counts.roster}:opponent(x,null))-1;keys[i]=code?(x.league_players?.[code]?.key||'device:'+x.device):null;const r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+  stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">${leagueCode&&weeklyMine[leagueCode]?'Best of 7 between league teams. The result posts to your league.':'Your last finished team plays a best of 7. League series post to your league; exhibitions don\'t.'}</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
   // Rematch from the league page: start right away against that player's best league team.
   if(rivalKey&&weeklyMine[leagueCode]){const i=keys.indexOf(rivalKey);if(i>=0)start(flat[i])}
