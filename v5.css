@@ -1251,3 +1251,35 @@ body.rv-open>.wrap{visibility:visible!important}
 }
 @media (max-width:999px){#lgBody.editing>.lg-seg,#lgBody.editing>.lg-panel{display:none}}
 @media (min-width:1000px){#lgBody .lg-pod{max-width:560px;margin:0 auto}#lgBody .lg-pod.n2{max-width:380px}}
+
+/* ---- Records leaderboard: trading-card rows ---- */
+#lb .lb-cards{gap:10px!important}
+#lb .lb-cards li{position:relative;overflow:hidden;border-radius:14px!important;background:#132a52!important;border:1px solid #2c4470!important;box-shadow:none!important}
+#lb .lb-cards li.gold{border:2px solid transparent!important;background:linear-gradient(#132a52,#132a52) padding-box,linear-gradient(120deg,#fff3b0,#d6a414 30%,#fff3b0 50%,#b8860b 75%,#ffe58a) border-box!important}
+#lb .lb-cards li.me{box-shadow:0 0 0 2px #ffcb05!important}
+#lb .lb-cards summary{position:relative;display:grid!important;grid-template-columns:92px minmax(0,1fr) auto!important;gap:10px!important;align-items:center;min-height:96px!important;padding:0 14px 0 0!important;background:linear-gradient(105deg,color-mix(in srgb,var(--c1) 70%,#0b1b38) 0%,color-mix(in srgb,var(--c2) 45%,#0b1b38) 38%,#132a52 64%)}
+#lb .lb-cards .lbc-art{position:relative;align-self:stretch;display:grid;place-items:center;min-height:96px}
+#lb .lb-cards .lbc-art img{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45))}
+#lb .lb-cards .lbc-art img.px{image-rendering:pixelated}
+#lb .lb-cards .lbc-rk{position:absolute;left:6px;top:6px;min-width:24px;height:24px;padding:0 5px;border-radius:7px;background:rgba(5,12,26,.78);display:grid;place-items:center;font:700 13px/1 var(--f-data);color:#fff}
+#lb .lb-cards .lbc-rk.m1{background:#ffcb05;color:#10254a}#lb .lb-cards .lbc-rk.m2{background:#d7deea;color:#10254a}#lb .lb-cards .lbc-rk.m3{background:#c98a5a;color:#10254a}
+#lb .lb-cards .lbc-mid{display:grid;gap:3px;min-width:0}
+#lb .lb-cards .lbc-mid b{font:600 17px/1.1 var(--f-data);color:#f4eedc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lb .lb-cards .lbc-mid small{font-size:11.5px;color:#c5d0e2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#lb .lb-cards .lbc-st{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+#lb .lb-cards .lbc-st span{padding:3px 6px;border-radius:5px;background:rgba(5,12,26,.58);font:600 11px/1 var(--f-data);letter-spacing:.04em;color:#f4eedc}
+#lb .lb-cards .lbc-st span.g{background:#ffcb05;color:#10254a}
+#lb .lb-cards .lbc-rec{position:relative;z-index:1;text-align:center;font:700 23px/1 var(--f-data);color:#f4eedc;font-variant-numeric:tabular-nums}
+#lb .lb-cards .lbc-rec small{display:block;margin-top:4px;font:600 9.5px/1 var(--f-data);letter-spacing:.14em;text-transform:uppercase;color:#a9b8d0}
+#lb .lb-cards .lbc-rib{position:absolute;right:-31px;top:11px;transform:rotate(35deg);background:linear-gradient(90deg,#d6a414,#ffe58a,#d6a414);color:#3b2a00;font:700 8.5px/1 var(--f-data);letter-spacing:.16em;text-transform:uppercase;padding:4px 32px;pointer-events:none}
+#lb .lb-cards li.gold .lbc-rec{margin-top:10px}
+#lb .lb-cards .you{margin-left:6px}
+#lb .lb-cards details[open] summary{border-bottom:1px solid #2c4470}
+#lb .lb-cards details>.lb-line{margin:10px 14px 0!important;padding:0!important}
+.lb-pin{position:sticky;bottom:10px;z-index:3;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;margin:12px 0 0;padding:11px 14px;border:0;border-radius:14px;background:#ffcb05;color:#10254a;text-align:left;box-shadow:0 6px 16px rgba(0,0,0,.45);cursor:pointer;font:inherit}
+.lb-pin i{font:700 22px/1 var(--f-data);font-style:normal;opacity:.65}
+.lb-pin small{display:block;margin-bottom:3px;font:700 10px/1 var(--f-data);letter-spacing:.14em;text-transform:uppercase;opacity:.75}
+.lb-pin b{display:block;font:600 16px/1.1 var(--f-data);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-pin em{font:700 22px/1 var(--f-data);font-style:normal}
+@media (min-width:1000px){.lb-pin{max-width:420px;margin-left:auto}}
+#lb .lb-cards details{padding:0!important;border:0!important;background:none!important}
