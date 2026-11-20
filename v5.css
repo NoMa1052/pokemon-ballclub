@@ -1145,3 +1145,4 @@ body.rv-open>.wrap{visibility:visible!important}
 .rs-cap{margin:10px 0 2px;text-align:center;font-size:12px;color:#8fa6cc}
 .rs{padding:2px 12px 10px}
 .lg-rows details>.hint,.lg-rows details>.lb-line{padding:0 12px}
+.bg-exh{margin:0 0 8px;padding:10px 12px;border-radius:10px;border:1px dashed #b98a2e;background:#2a2410;color:#ffe3a3;font-size:13.5px;line-height:1.4}

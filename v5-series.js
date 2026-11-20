@@ -62,19 +62,23 @@
    if((typeof isMyDevice==='function'?isMyDevice(x.device):x.device===me())||!Array.isArray(x.roster)||x.roster.length!==16||seen.has(key))return false;
    seen.add(key);return true;
   })};
+  // Your side of a league series has to be one of your weekly teams in that league (same roster).
+  const mine=team(),sig=r=>JSON.stringify([...r].sort((a,b)=>a-b)),mySig=mine?sig(FULL.map(s=>mine[s].id)):'',weeklyMine={};
+  const myWeekly=async code=>{try{const r=await fetch(`${LB_URL}?select=team,roster,device&mode=eq.pack&size=eq.16&week=not.is.null&leagues=cs.%7B${code}%7D&order=created_at.desc&limit=600`,{headers:lbHead()});if(!r.ok)return null;
+   return (await r.json()).find(x=>(typeof isMyDevice==='function'?isMyDevice(x.device):x.device===me())&&Array.isArray(x.roster)&&sig(x.roster)===mySig)||null}catch(e){return null}};
   let groups;
-  try{groups=await Promise.all([...leagues.map(async l=>[l.name,best(await get('&week=not.is.null&leagues=cs.%7B'+l.code+'%7D'),l.code),l.code]),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
+  try{groups=await Promise.all([...leagues.map(async l=>{const [rows,w]=await Promise.all([get('&week=not.is.null&leagues=cs.%7B'+l.code+'%7D'),myWeekly(l.code)]);weeklyMine[l.code]=w;return [l.name,best(rows,l.code),l.code]}),...(leagueCode?[]:[(async()=>['Exhibition · top clubs',best(await get('')).slice(0,12),null])()])])}
   catch(e){if(my===pickToken&&$('bgStage'))stage.innerHTML='<div class="bg-pre"><h3>Pick a rival</h3><p class="hint">Couldn\'t reach the leaderboard. Check your connection and try again.</p><button type="button" class="btn" id="bgRetry">Try again</button></div>';const retry=$('bgRetry');if(retry&&my===pickToken)retry.onclick=()=>pickRival(leagueCode);return}
   if(my!==pickToken||!$('bgStage'))return;
   const recs=book(),flat=[],keys=[];
   const html=(leagues.length?'':'<p class="bg-noleague">Join a league to play series that count. <button type="button" class="btn" onclick="document.getElementById(\'bgClose\').click();document.getElementById(\'lgBtn\').click()">Open League</button></p>')+groups.map(([name,rows,code])=>{
    if(!rows.length)return code?`<h4>${esc(name)}</h4><p class="hint">Nobody else in this league has posted a team yet. Send them the code.</p>`:'';
-   const note=code?'':'<p class="hint">Just for fun. These results are not posted anywhere.</p>';
-   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(opponent(x,code))-1;keys[i]=code?(x.league_players?.[code]?.key||'device:'+x.device):null;const r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
+   const counts=code&&weeklyMine[code],note=!code?'<p class="hint">Just for fun. These results are not posted anywhere.</p>':counts?'':'<p class="bg-exh">Your last finished team isn\'t one of your weekly teams in this league, so these play as exhibitions and won\'t count. Play the weekly challenge to get a league team.</p>';
+   return `<h4>${esc(name)}</h4>${note}<ul class="bg-rivals">${rows.map(x=>{const i=flat.push(counts?{...opponent(x,code),myTeam:counts.team}:opponent(x,null))-1;keys[i]=code?(x.league_players?.[code]?.key||'device:'+x.device):null;const r=recs[x.device+'|'+x.team];return `<li><button type="button" data-i="${i}"><span><b>${esc(x.league_players?.[code]?.name||x.team)}</b><small>${x.league_players?.[code]?.name?esc(x.team)+' · ':''}${x.wins}–${162-x.wins} · ${esc(x.grade)}${r?` · you are ${r.w}–${r.l} in series`:''}</small></span><em>Play</em></button></li>`}).join('')}</ul>`}).join('');
   stage.innerHTML=`<div class="bg-pre bg-choose"><h3>Pick a rival</h3><p class="hint">Your last finished team plays a best of 7. League series post to your league; exhibitions don't.</p>${html||'<p class="hint">No clubs to play yet.</p>'}</div>`;
   stage.querySelectorAll('.bg-rivals button').forEach(b=>b.onclick=()=>start(flat[+b.dataset.i]));
   // Rematch from the league page: start right away against that player's best league team.
-  if(rivalKey){const i=keys.indexOf(rivalKey);if(i>=0)start(flat[i])}
+  if(rivalKey&&weeklyMine[leagueCode]){const i=keys.indexOf(rivalKey);if(i>=0)start(flat[i])}
  };
  function stop(){clearTimeout(timer);timer=0}
  function leave(){
@@ -275,13 +279,13 @@
   const msg=$('bgMsg'),codes=S.rival.league&&typeof leagueCodes==='function'&&leagueCodes().includes(S.rival.league)?[S.rival.league]:[];
   // Only series against a league mate post, and only to that league.
   if(!codes.length){if(msg&&S)msg.textContent='Exhibition: not posted anywhere.';return}
-  let name=myName();
+  let name=S.rival.myTeam||myName();
   // No name saved on this phone yet: use the name of the last team this device posted.
   if(!name){try{const r=await fetch(`${LB_URL}?select=team&device=eq.${encodeURIComponent(me())}&order=created_at.desc&limit=1`,{headers:lbHead()});if(r.ok){name=((await r.json())[0]||{}).team||'';if(name)store.set(LAST+'-name',name)}}catch(e){}}
   if(S!==completed)return;
   if(!name){if(msg)msg.textContent='Post a team once to give your club a name. Then your series results show in your league.';return}
   const row={device:me(),team:name.slice(0,40),opp_device:S.rival.device||null,opp_team:String(S.rival.team).slice(0,40),w:S.w,l:S.l,games:S.results.map(x=>[x.me,x.opp]),leagues:codes,box:seriesBox()};
-  try{const r=await fetch(SERIES_URL,{method:'POST',headers:codes.length&&window.Account?await Account.postHeaders({'Content-Type':'application/json',Prefer:'return=minimal'}):lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok)throw 0;
+  try{const r=await fetch(SERIES_URL,{method:'POST',headers:codes.length&&window.Account?await Account.postHeaders({'Content-Type':'application/json',Prefer:'return=minimal'}):lbHead({'Content-Type':'application/json',Prefer:'return=minimal'}),body:JSON.stringify(row)});if(!r.ok){let m='';try{m=(await r.json()).message||''}catch(e){}if(/league matchup/i.test(m)){if(msg)msg.textContent='Exhibition: only weekly league teams count in the league.';return}throw 0}
    if(msg&&S)msg.textContent='Posted to your league.'}
   catch(e){if(msg&&S)msg.textContent="Couldn't post this series to your league."}
  }
@@ -301,7 +305,9 @@
    }
    if(rows.length<500)break;
   }
-  return series.filter(row=>opponents.get(JSON.stringify([row.opp_device,row.opp_team]))<=Date.parse(row.created_at)&&!reportedExhibition(row));
+  // A league series needs both clubs to be weekly league teams; anything else was an exhibition.
+  const weekly=(device,team,at)=>opponents.get(JSON.stringify([device,team]))<=at;
+  return series.filter(row=>{const at=Date.parse(row.created_at);return weekly(row.opp_device,row.opp_team,at)&&weekly(row.device,row.team,at)&&!reportedExhibition(row)});
  };
  // Two confirmed leaderboard exhibitions from before match source was recorded.
  // Match the historical series, allowing the displayed date to cross UTC midnight.
