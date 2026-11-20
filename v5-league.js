@@ -161,7 +161,7 @@
   return html+club(o[0])+club(o[1]);
  }
  // Head-to-head: every series counts for both players. Rival cards for you, a grid for everyone, scoreboard results.
- function tabSeries(){
+ function h2hParts(){
   const s=data.series;
   const oppKey=x=>x.opponentKey||'device:'+x.opp_device,oppName=x=>x.opponentName||x.opp_team;
   const names={},devices={},teams={};
@@ -215,21 +215,137 @@
    const line=(p,win)=>`<div class="h2h-line${win?' win':''}"><span><b>${esc(p.n)}</b>${p.t&&p.t!==p.n?`<small>${esc(p.t)}</small>`:''}</span><em>${p.g}</em></div>`;
    const head=`${line(W,true)}${line(L,false)}<div class="h2h-foot"><i class="h2h-bars">${st.win.map(v=>`<b class="${v?'w':'l'}"></b>`).join('')}</i><small>${st.tag?`<strong>${esc(st.tag)}</strong> · `:''}${day(x.created_at)}</small></div>`,box=seriesBoxHTML(x,[A,B],aw?0:1);
    return `<li class="${mineKey(W.k)||mineKey(L.k)?'me':''}">${box?`<details class="h2h-res"><summary>${head}<span class="h2h-open">Box score</span></summary><div class="h2h-box">${box}</div></details>`:head}</li>`}).join('')}</ul>`:'';
-  return `<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>`+
-   (s.length||rivals?rivals+grid+results:'<p class="lg-empty">No series yet. Play a league mate in a best of 7 and the result shows here for everyone.</p>');
+  return {rivals,grid,results,any:s.length>0};
+ }
+ const pickBtn='<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>';
+ function tabRivals(){const h=h2hParts();return pickBtn+(h.rivals||h.grid?h.rivals+h.grid:'<p class="lg-empty">No series yet. Play a league mate in a best of 7. Your record against each player shows here.</p>')}
+ function tabResults(){const h=h2hParts();return h.results||'<p class="lg-empty">No series yet. Results from best-of-7 series between league teams show here, with box scores.</p>'}
+
+ // ---- League logo ----
+ const SHAPES={shield:'M8 6h84v50c0 22-18 36-42 46C26 92 8 78 8 56Z',circle:'M50 4a48 48 0 1 0 0.01 0Z',banner:'M10 4h80v94L50 80 10 98Z',diamond:'M50 2 98 52 50 102 2 52Z'};
+ const COLORS=['#e2350d','#1d3866','#2f6fe0','#2f8f4e','#6b3fa0','#d9a514','#1b1b1f','#138a8a','#e07a1f','#d1477a'],TRIMS=['#f4eedc','#ffcb05','#ffffff','#111111','#e2350d','#9fd8ff'];
+ const initials=n=>(String(n||'?').match(/[A-Za-z0-9]+/g)||['?']).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+ const defLogo=name=>({s:'shield',c:'#e2350d',t:'#f4eedc',e:{k:'txt',v:initials(name)}});
+ const logoKey=c=>'pbc7-logo-'+c;
+ const info={};
+ const logoOf=l=>{if(!l)return null;const i=info[l.code];if(i&&i.logo)return i.logo;try{return JSON.parse(store.get(logoKey(l.code))||'null')||defLogo(l.name)}catch(e){return defLogo(l.name)}};
+ function crestSVG(g,cls=''){
+  g=g||defLogo('?');const d=SHAPES[g.s]||SHAPES.shield,v=String(g.e?.v||'');
+  const em=g.e?.k==='mon'&&BYID.get(+v)?`<image href="${SPRITE_URL(+v,false)}" x="14" y="16" width="72" height="72" style="image-rendering:pixelated"/>`
+   :`<text x="50" y="${g.s==='diamond'?60:58}" text-anchor="middle" dominant-baseline="middle" font-family="Graduate,Rockwell,Georgia,serif" font-size="${v.length>2?28:v.length>1?38:50}" fill="${g.t}">${esc(v)}</text>`;
+  return `<svg class="crest ${cls}" viewBox="0 0 100 104" aria-hidden="true"><path d="${d}" fill="${g.c}" stroke="${g.t}" stroke-width="5" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#0005" stroke-width="1.5" transform="translate(50 52) scale(.84) translate(-50 -52)"/>${em}</svg>`;
+ }
+ async function loadInfo(code){
+  try{
+   const [a,b]=await Promise.all([fetch(`${LEAGUE_URL}?select=code,logo&code=eq.${code}`,{headers:lbHead()}),
+    window.Account?.user?fetch(LB_URL.replace(/ballclub_scores$/,'rpc/ballclub_league_can_edit'),{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json'}),body:JSON.stringify({c:code})}):null]);
+   const row=a.ok?(await a.json())[0]:null,can=b&&b.ok?await b.json():false;
+   info[code]={logo:row?.logo||null,canEdit:can===true};
+   if(row?.logo)store.set(logoKey(code),JSON.stringify(row.logo));
+  }catch(e){info[code]=info[code]||{}}
+  if(scope===code)draw();
+ }
+ let edit=null;
+ function logoEditor(cur){
+  const g=edit.g,mon=g.e.k==='mon',q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
+  const sw=(list,key)=>list.map(c=>`<button type="button" class="lg-sw${g[key]===c?' on':''}" data-${key}="${c}" style="--sw:${c}" aria-label="${c}" aria-pressed="${g[key]===c}"></button>`).join('');
+  return `<section class="lg-edit" aria-label="Edit league logo"><div class="lg-edit-top">${crestSVG(g,'big')}<div><b>League logo</b><small>Everyone in ${esc(cur.name)} sees it.</small></div></div>
+   <h4>Shape</h4><div class="lg-shapes">${Object.keys(SHAPES).map(k=>`<button type="button" data-shape="${k}" class="${g.s===k?'on':''}" aria-label="${k}" aria-pressed="${g.s===k}">${crestSVG({...g,s:k,e:{k:'txt',v:''}},'mini')}</button>`).join('')}</div>
+   <h4>Color</h4><div class="lg-sws">${sw(COLORS,'c')}</div>
+   <h4>Trim</h4><div class="lg-sws">${sw(TRIMS,'t')}</div>
+   <h4>Emblem</h4><div class="lg-emk"><button type="button" data-emk="txt" aria-pressed="${!mon}" class="${mon?'':'on'}">Letters</button><button type="button" data-emk="mon" aria-pressed="${mon}" class="${mon?'on':''}">Pokémon</button></div>
+   ${mon?`<input id="lgMonQ" placeholder="Search Gen 1–4 Pokémon" autocomplete="off" value="${esc(q)}"><div class="lg-mons">${hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>')}</div>`
+    :`<input id="lgTxt" maxlength="3" autocomplete="off" autocapitalize="characters" value="${esc(g.e.v)}" aria-label="Letters, up to 3">`}
+   ${edit.msg?`<p class="lg-note" role="status">${esc(edit.msg)}</p>`:''}
+   <div class="lg-edit-btns"><button type="button" class="btn primary" id="lgLogoSave">Save logo</button><button type="button" class="btn" id="lgLogoCancel">Cancel</button></div></section>`;
+ }
+ function wireEditor(cur){
+  const box=document.querySelector('#lg .lg-edit');if(!box)return;
+  const preview=()=>{const top=box.querySelector('.lg-edit-top svg');if(top)top.outerHTML=crestSVG(edit.g,'big')};
+  const monList=()=>{const q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
+   box.querySelector('.lg-mons').innerHTML=hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+edit.g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>');
+   wireMons()};
+  const wireMons=()=>box.querySelectorAll('[data-mon]').forEach(b=>b.onclick=()=>{edit.g.e={k:'mon',v:b.dataset.mon};edit.lastMon=b.dataset.mon;box.querySelectorAll('[data-mon]').forEach(x=>x.classList.toggle('on',x===b));preview()});
+  box.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{edit.g.s=b.dataset.shape;draw()});
+  box.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{edit.g.c=b.dataset.c;draw()});
+  box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{edit.g.t=b.dataset.t;draw()});
+  box.querySelectorAll('[data-emk]').forEach(b=>b.onclick=()=>{const k=b.dataset.emk;if(k===edit.g.e.k)return;edit.g.e=k==='mon'?{k:'mon',v:edit.lastMon||''}:{k:'txt',v:edit.lastTxt||initials(cur.name)};draw()});
+  wireMons();
+  if($('lgMonQ'))$('lgMonQ').oninput=e=>{edit.q=e.target.value;monList()};
+  if($('lgTxt'))$('lgTxt').oninput=e=>{const v=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);if(e.target.value!==v)e.target.value=v;edit.g.e={k:'txt',v};edit.lastTxt=v;preview()};
+  $('lgLogoCancel').onclick=()=>{edit=null;draw()};
+  $('lgLogoSave').onclick=async()=>{
+   const g=edit.g;if(g.e.k==='txt'&&!g.e.v){edit.msg='Add 1 to 3 letters or numbers.';draw();return}
+   if(g.e.k==='mon'&&!g.e.v){edit.msg='Pick a Pokémon.';draw();return}
+   const body={s:g.s,c:g.c,t:g.t,e:{k:g.e.k,v:String(g.e.v)}};
+   try{const r=await fetch(LB_URL.replace(/ballclub_scores$/,'rpc/ballclub_set_league_logo'),{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json'}),body:JSON.stringify({c:cur.code,l:body})});
+    if(!r.ok){let m='';try{m=(await r.json()).message||''}catch(e){}throw Error(m)}
+    info[cur.code]={...info[cur.code],logo:body,canEdit:true};store.set(logoKey(cur.code),JSON.stringify(body));edit=null;note='Logo saved.';draw();
+   }catch(e){edit.msg=/owner/i.test(e.message)?'Only the league owner can change the logo.':/sign in/i.test(e.message)?'Sign in to change the logo.':'Couldn\'t save the logo. Try again.';draw()}
+  };
+ }
+
+ // ---- Week tab: your status, the podium, the rest of the table ----
+ let podSel=null;
+ function weekFrac(){const d=new Date(),day=(d.getUTCDay()||7)-1;return Math.min(1,(day*864e5+(d-Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())))/(7*864e5))}
+ function youCard(rows){
+  const s=weeklyState(),row=postedWeekly(s.w),i=rows.findIndex(x=>isMine(x.device));
+  if(row){
+   const lead=rows[0],me2=rows[i]||row,ord=n=>n+(['th','st','nd','rd'][(n%100-20)%10]||['th','st','nd','rd'][n%100]||'th');
+   const head=i===0?(rows.length>1?'You\'re leading this week':'You\'re first in this week'):i>0?`You're ${ord(i+1)} this week`:'Your weekly team';
+   const sub=i===0&&rows[1]?`${me2.wins-rows[1].wins} ${me2.wins-rows[1].wins===1?'win':'wins'} ahead of ${esc(playerName(rows[1]))}`:i>0?`${lead.wins-me2.wins} ${lead.wins-me2.wins===1?'win':'wins'} behind ${esc(playerName(lead))}`:'';
+   return `<section class="lg-you"><div><b>${head}</b><small>${sub?sub+' · ':''}${esc(me2.team)} ${me2.wins}–${162-me2.wins}</small></div><button type="button" class="btn" id="lgMyTeam" aria-expanded="${podSel==='me'}">My team</button>${podSel==='me'?`<div class="lg-you-team">${lineupHTML(me2.roster)}</div>`:''}</section>`;
+  }
+  if(!s.done&&(personal.pending||personal.error))return `<section class="lg-you"><div><b>Your weekly challenge</b><small>${personal.error?'Couldn’t check your weekly result.':'Checking your weekly result…'}</small></div>${personal.error?'<button type="button" class="btn" id="lgCheckWeek">Try again</button>':''}</section>`;
+  const btn=s.done?(s.posted?'View my team':'Post your team'):s.started?'Resume':'Play this week';
+  const line=s.done?`You went ${s.wins}–${162-s.wins}${s.posted?'':'. Post it to count.'}`:s.started?`In progress: pick ${Math.min(16,s.picks+1)} of 16.`:'Same packs for everyone. One attempt.';
+  return `<section class="lg-you cta"><div><b>${s.done?'Your weekly challenge':`Week ${wkNo(s.w)} challenge`}</b><small>${line}</small></div><button type="button" class="btn primary" id="lgPlay">${btn}</button></section>`;
+ }
+ function teamPanel(x,code){
+  const theirs=!isMine(x.device);
+  return `<div class="lg-pod-team"><p class="hint">${esc(x.team)} · Team rating ${x.ovr} · Grade ${esc(x.grade)}</p>${lineupHTML(x.roster)}${theirs?`<button type="button" class="btn lg-pod-play" data-rival="${esc(playerKey(x))}">Play a series vs ${esc(playerName(x))}</button>`:''}</div>`;
+ }
+ function tabWeek2(cur){
+  const rows=data.weeks[weekKey()]||[],n=wkNo(weekKey());
+  const top=rows.slice(0,3),order=[1,0,2].filter(i=>top[i]);
+  const pod=top.length?`<div class="lg-pod n${top.length}">${order.map(i=>{const x=top[i];return `<button type="button" class="pc p${i+1}${isMine(x.device)?' me':''}${podSel===i?' sel':''}" data-pod="${i}" aria-expanded="${podSel===i}">${typeof starTok==='function'?starTok(x.roster):''}<b>${esc(playerName(x))}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>${esc(x.team)}</small><em>${x.wins}–${162-x.wins}</em><span class="blk">${i+1}</span></button>`}).join('')}</div>`
+   :'<p class="lg-empty in">Nobody has posted this week yet. Play the challenge, then post your team.</p>';
+  const sel=typeof podSel==='number'&&top[podSel]?teamPanel(top[podSel],cur.code):'';
+  const rest=rows.slice(3);
+  const restHTML=rest.length?`<ol class="lg-rows lg-rest" start="4">${rest.map((x,j)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk">${j+4}</span>${typeof starTok==='function'?starTok(x.roster):''}<span class="tm"><b>${esc(playerName(x))}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>${esc(x.team)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${teamPanel(x,cur.code)}</details></li>`).join('')}</ol>`:'';
+  return youCard(rows)+`<section class="lg-wk"><div class="lg-wk-t"><span>Week ${n}</span><b>${weekLeft()}</b></div><div class="lg-clock" aria-hidden="true"><i style="width:${Math.round(weekFrac()*100)}%"></i></div>${pod}${sel}${top.length?'<p class="lg-tap">Tap a team to see its roster</p>':''}</section>${restHTML}${rows.length?'<button type="button" class="btn lg-share" id="lgShare">Share weekly standings</button>':''}`;
+ }
+ // ---- Season tab: the points race ----
+ function tabSeason2(){
+  const PTS=[5,3,2],table={},wks=Object.keys(data.weeks).sort();
+  for(const w of wks)data.weeks[w].forEach((x,i)=>{const t=table[playerKey(x)]=table[playerKey(x)]||{device:x.device,name:data.names[playerKey(x)],pts:0,won:0,played:0,best:0};t.pts+=PTS[i]||1;t.played++;if(i===0&&w!==weekKey())t.won++;t.best=Math.max(t.best,x.wins)});
+  const rows=Object.values(table).sort((a,b)=>b.pts-a.pts||b.best-a.best);
+  if(!rows.length)return '<p class="lg-empty">The season race fills in as weeks are played.</p>';
+  const max=Math.max(...rows.map(r=>r.pts),1),past=wks.filter(w=>w!==weekKey()).reverse().slice(0,8);
+  return `<section class="lg-race">${rows.map((t,i)=>`<div class="rr${isMine(t.device)?' me':''}"><span class="rk${medal(i)}">${i+1}</span><div class="rr-mid"><div class="rr-top"><b>${esc(t.name)}</b>${t.won?`<i class="crown" title="${t.won} ${t.won===1?'week':'weeks'} won">${'★'.repeat(Math.min(t.won,5))}</i>`:''}</div><span class="bar"><i style="width:${Math.max(4,t.pts/max*100)}%"></i></span><small>${t.won} ${t.won===1?'week':'weeks'} won · ${t.played} played · best ${t.best}–${162-t.best}</small></div><em>${t.pts}</em></div>`).join('')}</section>
+   <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. A week counts as won once it ends.</p>
+   ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><span class="crown2" aria-hidden="true"></span><small>Week ${wkNo(w)}</small><b>${esc(playerName(c))}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
  function draw(){
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
-  const hero=cur?`<section class="lg-hero"><small>Your league</small><h2>${esc(cur.name)}</h2><p>Invite code <b>${cur.code}</b></p><div><button type="button" class="btn primary" id="lgInvite">Invite friends</button>${ls.length>1||ls.length<3?`<button type="button" class="btn" id="lgSwitch">Manage leagues</button>`:''}</div></section>`
+  if(cur&&!info[cur.code]){info[cur.code]={};loadInfo(cur.code)}
+  const players=data&&!data.error?new Set(Object.values(data.weeks).flat().map(playerKey)).size:0,can=cur&&info[cur.code]?.canEdit;
+  const hero=cur?`<section class="lg2-hd"><button type="button" class="lg-crest${can?' can':''}" id="lgCrest" ${can?'aria-label="Edit league logo"':'tabindex="-1" aria-hidden="true"'}>${crestSVG(logoOf(cur))}${can?'<i class="lg-pen" aria-hidden="true">Edit</i>':''}</button><div class="lg2-t"><small>Your league · Code ${cur.code}</small><h2>${esc(cur.name)}</h2><p>Week ${wkNo(weekKey())} · ${weekLeft()}${players?` · ${players} player${players===1?'':'s'}`:''}</p></div></section><div class="lg2-btns"><button type="button" class="btn primary" id="lgInvite">Invite friends</button><button type="button" class="btn" id="lgSwitch">Manage leagues</button></div>`
    :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
   const picker=form?`<div class="lg-form">${ls.length?`<div class="lg-chips" role="group" aria-label="Your leagues">${ls.map(x=>`<button type="button" data-scope="${x.code}" aria-pressed="${scope===x.code}">${esc(x.name)}</button>`).join('')}</div>`:''}${ls.length<3?`<label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div>`:'<p class="hint">You can be in 3 leagues. Leave one to join another.</p>'}${cur?`<button type="button" class="btn quiet" id="lgLeave">Leave ${esc(cur.name)}</button>`:''}</div>`:'';
-  const tabs=cur?`<div class="lg-tabs" role="tablist">${[['week','This week'],['season','Season points'],['series','Head-to-head']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
-  const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':(!cur||tab==='week')?tabWeek():tab==='season'?tabSeason():tabSeries();
-  body.innerHTML=hero+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+tabs+(!cur||tab==='week'?weeklyCard():'')+`<div id="lgList" class="lg-panel">${content}</div>`;
+  const tabs=cur?`<div class="lg-seg" role="tablist">${[['week','Week'],['season','Season'],['rivals','Rivals'],['results','Results']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
+  const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':tab==='season'?tabSeason2():tab==='rivals'?tabRivals():tab==='results'?tabResults():tabWeek2(cur);
+  const editor=cur&&edit&&edit.code===cur.code?logoEditor(cur):'';
+  body.innerHTML=hero+editor+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`:weeklyCard());
+  body.classList.toggle('editing',!!editor);if(editor)wireEditor(cur)
+  if($('lgCrest')&&can)$('lgCrest').onclick=()=>{edit=edit?null:{code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw()};
+  body.querySelectorAll('[data-pod]').forEach(b=>b.onclick=()=>{const i=+b.dataset.pod;podSel=podSel===i?null:i;draw()});
+  if($('lgMyTeam'))$('lgMyTeam').onclick=()=>{podSel=podSel==='me'?null:'me';draw()};
+  if(cur)body.querySelectorAll('.lg-pod-play').forEach(b=>b.onclick=()=>pickRival(cur.code,b.dataset.rival));
   if($('lgPlay'))$('lgPlay').onclick=playWeekly;
   if($('lgCheckWeek'))$('lgCheckWeek').onclick=load;
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';form=null;load()});
-  body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;draw()});
+  body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;podSel=null;draw()});
   if($('lgSwitch'))$('lgSwitch').onclick=()=>{form=!form;note='';draw();$('lgCode')?.focus()};
   if($('lgJoin')){$('lgJoin').onclick=()=>join($('lgCode').value);$('lgCode').onkeydown=e=>{if(e.key==='Enter')join($('lgCode').value)}}
   if($('lgMake')){$('lgMake').onclick=()=>make($('lgName').value);$('lgName').onkeydown=e=>{if(e.key==='Enter')make($('lgName').value)}}
@@ -238,7 +354,6 @@
   if($('lgLeave'))$('lgLeave').onclick=()=>{keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()};
   if(cur&&$('lgRivalPick'))$('lgRivalPick').onclick=()=>pickRival(cur.code);
   if(cur)document.querySelectorAll('#lg .h2h-play').forEach(b=>b.onclick=()=>pickRival(cur.code,b.dataset.rival));
-  if(cur&&data&&!data.error&&tab==='week'&&typeof wireRivalSeries==='function')wireRivalSeries($('lgList'),data.weeks[weekKey()]||[],cur?.code);
  }
  async function lookup(code){const r=await fetch(`${LEAGUE_URL}?select=code,name&code=eq.${code}`,{headers:lbHead()});if(!r.ok)throw 0;return (await r.json())[0]||null}
  const intentKey='pbc-league-intent';
