@@ -33,8 +33,8 @@
   const d=dex(),own=new Set(d.nums),shiny=new Set(d.shiny),all=allMons();
   const legs=all.filter(m=>m.leg),gotLegs=legs.filter(m=>own.has(m.num)).length,got=all.filter(m=>own.has(m.num)).length;
   const tab=g=>{const list=all.filter(m=>m.gen===g),n=list.filter(m=>own.has(m.num)).length;return `<button type="button" role="tab" data-dex-region="${g}" aria-selected="${dexRegion===g}"><b>${REGIONS[g-1]}</b><small>${n}/${list.length}</small></button>`};
-  return `<section class="pdx" aria-label="Pokédex">
-   <div class="pdx-top"><span class="pdx-lens" aria-hidden="true"></span><span class="pdx-leds" aria-hidden="true"><i></i><i></i><i></i></span><b>Pokédex</b></div>
+  return `<details class="pdx c2-sec" data-sec="dex"${window.clubOpen?.('dex')||''}>
+   <summary class="pdx-top" aria-label="Pokédex, ${got} of ${all.length} caught"><span class="pdx-lens" aria-hidden="true"></span><span class="pdx-leds" aria-hidden="true"><i></i><i></i><i></i></span><b>Pokédex</b><em>${got}/${all.length}</em><i class="c2-chev" aria-hidden="true"></i></summary>
    <div class="pdx-screen">
     <div class="pdx-head"><div class="pdx-count"><b>${got}</b><small>of ${all.length}<br>caught</small></div><div class="pdx-chips"><em>${gotLegs}/${legs.length} legendaries</em><em>${shiny.size} shin${shiny.size===1?'y':'ies'}</em></div></div>
     <div class="pdx-bar" aria-hidden="true"><i style="width:${(100*got/all.length).toFixed(1)}%"></i></div>
@@ -42,7 +42,7 @@
     <div class="pdx-grid">${dexGrid(dexRegion)}</div>
    </div>
    <div class="pdx-foot"><span class="pdx-dpad" aria-hidden="true"></span><small>Caught means rostered in a finished season. Tap one for its card.</small><span class="pdx-ab" aria-hidden="true"><i></i><i></i></span></div>
-  </section>`;
+  </details>`;
  };
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);record();return v};
  if(run?.result)record();
