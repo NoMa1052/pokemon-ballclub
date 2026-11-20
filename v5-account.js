@@ -2,7 +2,7 @@
    so posted teams, leagues, Clubhouse history, collection and series records follow you. */
 (() => {
  const BASE_URL=LB_URL.replace(/\/rest\/v1\/.*$/,''),AUTH=BASE_URL+'/auth/v1',PROFILES=BASE_URL+'/rest/v1/ballclub_profiles';
- const SKEY='pbc6-session',DKEY='pbc6-devices',SYNCED=['pbc3-clubhouse-v1','pbc5-dex','pbc5-rivals','pbc5-leagues','pbc2-team'];
+ const SKEY='pbc6-session',DKEY='pbc6-devices',AKEY='pbc7-avatar',SYNCED=['pbc3-clubhouse-v1','pbc5-dex','pbc5-rivals','pbc5-leagues','pbc2-team'];
  const $=id=>document.getElementById(id),dev=()=>deviceId().slice(0,16);
  const json=(k,d)=>{try{const v=JSON.parse(store.get(k)||'null');return v??d}catch(e){return d}};
  let session=json(SKEY,null),devices=json(DKEY,[]),status='',busy=false,pushTimer=0,applying=false;
@@ -45,8 +45,9 @@
   const leagueOwner=store.get('pbc-leagues-owner');
   if(leagueOwner&&leagueOwner!==session.user.id)mine.leagues=[];
   store.set('pbc-leagues-owner',session.user.id);
-  const want=remote.screen_name||session.user.name||session.user.want||undefined;
-  const merged={user_id:session.user.id,...(want?{screen_name:want}:{}),devices:uniq([...(remote.devices||[]),...devices,dev()]).slice(-40),team:mine.team||remote.team||null,
+  const want=remote.screen_name||session.user.name||session.user.want||undefined,av=remote.avatar||+store.get(AKEY)||null;
+  if(av)store.set(AKEY,String(av));
+  const merged={user_id:session.user.id,...(want?{screen_name:want}:{}),...(av?{avatar:av}:{}),devices:uniq([...(remote.devices||[]),...devices,dev()]).slice(-40),team:mine.team||remote.team||null,
    clubhouse:mergeClub(mine.clubhouse,remote.clubhouse),dex:mergeDex(mine.dex,remote.dex),rivals:mergeRivals(mine.rivals,remote.rivals),leagues:mergeLeagues(mine.leagues,remote.leagues),updated_at:new Date().toISOString()};
   applying=true;
   try{
@@ -83,17 +84,11 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
  async function setName(name){const t=await token();if(!t)throw new Error('Sign in again first.');
   await call(`${PROFILES}?user_id=eq.${session.user.id}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({screen_name:name})},t);
   session.user.name=name;save()}
+ async function setAvatar(n){store.set(AKEY,String(n));const t=await token();if(t)await call(`${PROFILES}?user_id=eq.${session.user.id}`,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({avatar:n})},t)}
  async function signOut(){const t=session?.access_token;session=null;devices=[];save();status='Signed out. Your saved history stays on this browser.';refresh();if(t)call(AUTH+'/logout',{method:'POST'},t).catch(()=>{})}
  const recover=email=>call(AUTH+'/recover',{method:'POST',body:JSON.stringify({email})});
 
  // ---- UI ----
- function cardHTML(){
-  if(session){const n=session.user.name,label=n||session.user.email,ini=esc((label||'?').trim().charAt(0).toUpperCase());
-   return `<section class="acct on"><span class="acct-av" aria-hidden="true">${ini}</span><div class="acct-txt"><small>Signed in</small><b>${esc(label)}</b><span>${esc(status||(n?'Synced on every device you sign in on.':'Pick a screen name to finish your profile.'))}</span></div><div class="acct-btns">${n?'':'<button type="button" class="btn primary sm" data-acct="name">Add name</button>'}<button type="button" class="btn sm" data-acct="out">Sign out</button></div></section>`}
-  return `<section class="acct"><span class="acct-av off" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 12a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9Zm0 2c-4.4 0-8 2.2-8 5v1.5h16V19c0-2.8-3.6-5-8-5Z"/></svg></span><div class="acct-txt"><small>Optional</small><b>Save across devices</b><span>${esc(status||'Keep your teams, leagues and Clubhouse on any phone or computer.')}</span></div><div class="acct-btns"><button type="button" class="btn primary sm" data-acct="open">Sign in</button></div></section>`;
- }
- const base=window.clubhouseHTML;
- if(typeof base==='function')window.clubhouseHTML=()=>{const h=cardHTML();status='';return h+base()};
  function refresh(){const c=document.querySelector('#lb .records-clubhouse');if(c&&typeof clubhouseHTML==='function')c.innerHTML=clubhouseHTML()}
  function close(){$('acct')?.remove()}
  const F={
@@ -105,11 +100,13 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
    foot:'New here? <button class="acct-link" type="button" data-mode="up">Create an account</button>'},
   up:{title:'Create account',fields:F.name+F.email+F.pass(true),submit:'up',btns:'<button class="btn primary" type="submit">Create account</button>',
    foot:'Have an account? <button class="acct-link" type="button" data-mode="in">Sign in</button>',fine:'Your screen name is your profile name. Team names stay separate, so post any name you like each run. Your email is only for signing in.'},
+  pass:{title:'Change password',fields:F.pass(true)+'<label>Type it again<input id="acctPass2" type="password" autocomplete="new-password" minlength="6" required></label>',submit:'pass',btns:'<button class="btn primary" type="submit">Save password</button>'},
   name:{title:'Pick a screen name',fields:F.name,submit:'name',btns:'<button class="btn primary" type="submit">Save</button>',fine:'3 to 20 letters or numbers. Spaces, dots, dashes and underscores are fine in the middle.'},
   reset:{title:'Set a new password',fields:F.pass(true),submit:'newpass',btns:'<button class="btn primary" type="submit">Save password</button>'}};
  function open(mode='in',note=''){
+  if(mode==='manage')return manage(note);
   close();const M=MODES[mode]||MODES.in,el=document.createElement('div');el.id='acct';el.className='sheet acct-sheet';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acctTitle');
-  el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">${M.title}</h2><button class="btn" id="acctClose">Close</button></div><div class="sheet-body">
+  el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">${mode==='name'&&session?.user?.name?'Change screen name':M.title}</h2><button class="btn" id="acctClose">Close</button></div><div class="sheet-body">
    <form id="acctForm" novalidate>${M.fields}<p class="acct-msg" id="acctMsg" role="status">${esc(note)}</p>${M.btns}</form>
    ${M.foot?`<p class="acct-switch">${M.foot}</p>`:''}${M.fine?`<p class="acct-fine">${M.fine}</p>`:''}</div></div>`;
   document.body.appendChild(el);const cancel=()=>{close();document.dispatchEvent(new Event('ballclub-account-cancel'))};$('acctClose').onclick=cancel;
@@ -123,7 +120,8 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
     if(what==='in')await signIn(email,pass);
     else if(what==='up'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');if(await signUp(email,pass,name)==='confirm')msg('Check your email for a confirmation link, then come back and sign in.')}
     else if(what==='forgot'){recover(email).catch(()=>{});msg('Password reset emails aren\'t set up yet. Ask Nolan to reset it for you.')}
-    else if(what==='name'){if(!(await nameFree(name)))return msg('That screen name is taken. Try another.');await setName(name);status='Screen name saved.';close();refresh();document.dispatchEvent(new Event('ballclub-signed-in'))}
+    else if(what==='name'){if(name.toLowerCase()===(session?.user?.name||'').toLowerCase()&&name===session.user.name){manage();return}if(name.toLowerCase()!==(session?.user?.name||'').toLowerCase()&&!(await nameFree(name)))return msg('That screen name is taken. Try another.');const had=!!session?.user?.name;await setName(name);status='Screen name saved.';refresh();if(had)manage('Screen name saved.');else{close();document.dispatchEvent(new Event('ballclub-signed-in'))}}
+    else if(what==='pass'){if(pass!==($('acctPass2')?.value||''))return msg('Those passwords don\'t match.');const t=await token();if(!t)return msg('Sign in again first.');await call(AUTH+'/user',{method:'PUT',body:JSON.stringify({password:pass})},t);manage('Password changed.')}
     else if(what==='newpass'){const t=await token();await call(AUTH+'/user',{method:'PUT',body:JSON.stringify({password:pass})},t);await sync();status='Password updated. You are signed in.';close();refresh()}
    }catch(e){msg(friendly(e))}finally{busy=false}
   };
@@ -131,9 +129,45 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   el.querySelectorAll('[data-do]').forEach(b=>b.onclick=()=>run(b.dataset.do));
   el.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const v=$('acctEmail')?.value;open(b.dataset.mode);if(v&&$('acctEmail'))$('acctEmail').value=v});
   el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();cancel()}});
+  if(mode==='name'&&session?.user?.name&&$('acctName'))$('acctName').value=session.user.name;
+  if(mode==='name'||mode==='pass')$('acctClose').textContent='Back',$('acctClose').onclick=()=>manage();
   (el.querySelector('input')||$('acctClose')).focus();
  }
- document.addEventListener('click',e=>{const b=e.target.closest?.('[data-acct]');if(!b)return;if(b.dataset.acct==='open')open();else if(b.dataset.acct==='name')open('name');else signOut()});
+ // ---- the Account screen: picture, screen name, password, sign out ----
+ let pick=null;
+ const avatarNum=()=>+store.get(AKEY)||null;
+ function manage(note=''){
+  if(!session)return open('in');
+  close();const u=session.user,av=avatarNum()||(typeof favoriteMon==='function'?favoriteMon():null)||25,m=BYID.get(av);
+  const el=document.createElement('div');el.id='acct';el.className='sheet acct-sheet acct-manage';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acctTitle');
+  const leagues=json('pbc5-leagues',[]).length,devs=uniq([...devices,dev()]).length;
+  const q=pick?.q||'',hits=q.length>=2?MONS.filter(x=>x.id<=493&&x.name.toLowerCase().includes(q.toLowerCase())).slice(0,12):[];
+  const tc=m?[TYPE_COLORS[m.types[0]]||'#5f7fb6',TYPE_COLORS[m.types[1]]||TYPE_COLORS[m.types[0]]||'#5f7fb6']:['#5f7fb6','#5f7fb6'];
+  el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">Account</h2><button class="btn" id="acctClose">Done</button></div><div class="sheet-body">
+   <div class="am-me"><button type="button" class="am-av" id="amAv" style="--c1:${tc[0]};--c2:${tc[1]}" aria-label="Change profile Pokémon">${m?`<img src="${ART_URL(m.num,false)}" alt="" onerror="this.onerror=null;this.src='${SPRITE_URL(m.num,false)}'">`:''}<i>Edit</i></button><b>${esc(u.name||'No screen name yet')}</b><small>Signed in · ${esc(u.email||'')}</small></div>
+   ${note?`<p class="am-note" role="status">${esc(note)}</p>`:''}
+   ${pick?`<section class="am-pick" aria-label="Pick a profile Pokémon"><label for="amQ">Profile Pokémon</label><input id="amQ" placeholder="Search Gen 1–4 Pokémon" autocomplete="off" value="${esc(q)}"><div class="am-mons">${hits.map(x=>`<button type="button" data-av="${x.id}"><img src="${SPRITE_URL(x.id,false)}" alt="">${esc(x.name)}</button>`).join('')||`<p class="hint">${q.length>=2?'No match.':'Type at least 2 letters.'}</p>`}</div><button type="button" class="btn" id="amPickX">Cancel</button></section>`:''}
+   <div class="am-list">
+    <div class="am-r"><div><small>Screen name</small><b>${esc(u.name||'Not set')}</b></div><button type="button" class="am-btn" data-am="name">${u.name?'Change':'Add'}</button></div>
+    <div class="am-r"><div><small>Profile Pokémon</small><b>${m?esc(m.name):'None'}${avatarNum()?'':' <em>(most drafted)</em>'}</b></div><button type="button" class="am-btn" data-am="pic">Change</button></div>
+    <div class="am-r"><div><small>Password</small><b>••••••••</b></div><button type="button" class="am-btn" data-am="pass">Change</button></div>
+    <div class="am-r"><div><small>Synced</small><b>${devs} device${devs===1?'':'s'} · ${leagues} league${leagues===1?'':'s'}</b></div></div>
+   </div>
+   <button type="button" class="btn am-out" data-am="out">Sign out</button>
+   <p class="acct-fine">Your seasons, badges, collection and leagues are saved to this account.</p></div></div>`;
+  document.body.appendChild(el);
+  const done=()=>{pick=null;close();refresh()};$('acctClose').onclick=done;
+  el.addEventListener('keydown',e=>{if(e.key==='Escape'){e.stopPropagation();done()}});
+  el.querySelectorAll('[data-am]').forEach(b=>b.onclick=()=>{const k=b.dataset.am;if(k==='name')open('name');else if(k==='pass')open('pass');else if(k==='pic'){pick={q:''};manage();$('amQ')?.focus()}else{pick=null;close();signOut()}});
+  $('amAv').onclick=()=>{pick={q:''};manage();$('amQ')?.focus()};
+  if($('amPickX'))$('amPickX').onclick=()=>{pick=null;manage()};
+  const wire=()=>el.querySelectorAll('[data-av]').forEach(b=>b.onclick=async()=>{const n=BYID.get(+b.dataset.av)?.num||+b.dataset.av;pick=null;try{await setAvatar(n);manage('Profile Pokémon saved.')}catch(e){manage('Saved on this device. It syncs next time you\'re online.')}refresh()});
+  wire();
+  if($('amQ'))$('amQ').oninput=e=>{pick.q=e.target.value;const q=pick.q,hits=q.length>=2?MONS.filter(x=>x.id<=493&&x.name.toLowerCase().includes(q.toLowerCase())).slice(0,12):[];
+   el.querySelector('.am-mons').innerHTML=hits.map(x=>`<button type="button" data-av="${x.id}"><img src="${SPRITE_URL(x.id,false)}" alt="">${esc(x.name)}</button>`).join('')||`<p class="hint">${q.length>=2?'No match.':'Type at least 2 letters.'}</p>`;wire()};
+  if(!pick)$('acctClose').focus();
+ }
+ document.addEventListener('click',e=>{const b=e.target.closest?.('[data-acct]');if(!b)return;const k=b.dataset.acct;if(k==='open')open();else if(k==='name')open('name');else if(k==='manage')manage();else signOut()});
 
  // A password-reset email link returns here with a short-lived session in the address.
  (function fromEmail(){
@@ -148,5 +182,5 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   const access=await token();
   if(!access)throw new Error('Sign in again to post to your league.');
   return lbHead({...extra,Authorization:'Bearer '+access});
- },sync,open};
+ },sync,open,manage,avatar:avatarNum,takeStatus(){const s=status;status='';return s}};
 })();

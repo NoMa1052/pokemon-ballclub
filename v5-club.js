@@ -45,12 +45,11 @@
     <ellipse cx="34" cy="16" rx="52" ry="30" fill="#fff" opacity=".24"/></g>
     <path d="${d}" fill="none" stroke="${mix(dark,'#000000',.4)}" stroke-width="2.500" stroke-linejoin="round"/></g></svg>`;
  }
- let caseOpen=false;
  function caseHTML(ach,earned){
-  const got=ach.filter(a=>earned.has(a[0]));
-  return `<details class="ch-sec ch-log ch-case"${caseOpen?' open':''}><summary><h3>Badge case<em>${got.length} of ${ach.length}</em></h3><span class="case-mini">${got.map(a=>`<i>${badgeSVG(a[0])}</i>`).join('')||'<small>No badges yet. Finish a season to earn your first.</small>'}</span></summary>
-   <div class="case-tray">${ach.map(([k,name])=>`<button type="button" class="bdg${earned.has(k)?' on':''}" data-badge="${k}" aria-label="${esc(name)}${earned.has(k)?', earned':', locked'}. Tap for details"><span class="bdg-art">${badgeSVG(k)}</span><span class="bdg-n">${name}</span></button>`).join('')}</div>
-   <p class="case-hint">Tap a badge to see how to earn it.</p></details>`;
+  const got=ach.filter(a=>earned.has(a[0])).length;
+  return `<section class="bcase" aria-label="Badge case, ${got} of ${ach.length} earned"><div class="bcase-lid"><span>Badge case</span><i class="bcase-clasp" aria-hidden="true"></i><em>${got} of ${ach.length}</em></div>
+   <div class="bcase-tray">${ach.map(([k,name])=>`<button type="button" class="bslot${earned.has(k)?' on':''}" data-badge="${k}" aria-label="${esc(name)}${earned.has(k)?', earned':', locked'}. Tap for details"><span class="bwell">${badgeSVG(k)}</span><span class="bname">${name}</span></button>`).join('')}</div>
+   <p class="bcase-hint">Tap a badge to see how to earn it.</p></section>`;
  }
  function closeBadge(){const p=document.getElementById('bdgPop');if(p){p.remove();p._from?.focus?.()}}
  function showBadge(k,from){
@@ -59,7 +58,6 @@
   p.innerHTML=`<div class="bdg-card${on?' on':''}"><span class="bdg-big">${badgeSVG(k)}</span><em class="${on?'':'lk'}">${on?'Earned':'Locked'}</em><h3 id="bdgPopT">${a[1]}</h3><p>${a[2]}</p><button type="button" class="btn" id="bdgPopX">Close</button></div>`;
   document.body.appendChild(p);p.addEventListener('click',e=>{if(e.target===p||e.target.id==='bdgPopX')closeBadge()});document.getElementById('bdgPopX').focus();
  }
- document.addEventListener('toggle',e=>{if(e.target.classList?.contains('ch-case'))caseOpen=e.target.open},true);
  document.addEventListener('click',e=>{const b=e.target.closest?.('[data-badge]');if(b)showBadge(b.dataset.badge,b)});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('bdgPop')){e.stopPropagation();e.preventDefault();closeBadge()}},true);
  const TEXT={hundred:'100',elite:'150',perfect:'162',allgens:'1–4',leglineup:'×3',ironman:'50',shinyhunt:'10'};
@@ -91,22 +89,37 @@
    return hit;
   }catch(e){return false}
  };
+ const aceOf=r=>{let b=null,bv=-1;FULL.forEach((s,i)=>{const m=BYID.get(r?.[i]);if(m){const v=posOvr(m,s);if(v>bv){bv=v;b=m}}});return b};
+ const mostDrafted=hist=>{const c=new Map();hist.forEach(h=>(h.roster||[]).forEach(id=>{const m=BYID.get(id);if(!m)return;const o=c.get(m.num)||{m:BYID.get(m.num)||m,n:0};o.n++;c.set(m.num,o)}));return [...c.values()].sort((a,b)=>b.n-a.n||a.m.num-b.m.num)};
+ window.favoriteMon=()=>{try{return mostDrafted(Clubhouse.read().history.filter(h=>h.board==='pack-16'))[0]?.m.num||null}catch(e){return null}};
+ const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18.4 13a6.6 6.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a6.4 6.4 0 0 0-1.7-1L14 3.5h-4l-.4 2.5a6.4 6.4 0 0 0-1.7 1l-2.4-1-2 3.4L5.6 11a6.6 6.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a6.4 6.4 0 0 0 1.7 1l.4 2.5h4l.4-2.5a6.4 6.4 0 0 0 1.7-1l2.4 1 2-3.4zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
+ const artImg=(m,cls='')=>`<img class="${cls}" src="${ART_URL(m.num,m.shiny)}" alt="" decoding="async" onerror="this.onerror=null;this.src='${SPRITE_URL(m.num,m.shiny)}';this.classList.add('px')">`;
+ const colors=m=>{const a=TYPE_COLORS[m?.types?.[0]]||'#5f7fb6';return [a,TYPE_COLORS[m?.types?.[1]]||a]};
  window.clubhouseHTML=()=>{
   try{Clubhouse.sweep()}catch(e){}
   const b=Clubhouse.read(),hist=b.history.filter(h=>h.board==='pack-16'),bd=b.boards['pack-16'];
-  if(!bd)return `<div class="ch"><section class="ch-hero ch-empty"><small>My Clubhouse</small><b>No banners yet</b><p>Finish a season to hang your first one. Your best seasons, trophies and collection live here.</p></section>${typeof collectionHTML==='function'?`<section class="ch-sec"><h3>Collection</h3>${collectionHTML()}</section>`:''}</div>`;
-  const best=bd.best||hist[0]||{wins:bd.bestWins},avg=hist.length?Math.round(hist.reduce((a,h)=>a+h.wins,0)/hist.length):bd.bestWins,hundreds=hist.filter(h=>h.wins>=100).length;
+  const user=window.Account?.user||null,note=window.Account?.takeStatus?.()||'',favs=mostDrafted(hist);
+  const av=BYID.get((user&&window.Account.avatar?.())||favs[0]?.m.num||25),[c1,c2]=colors(av);
+  const best=bd?(bd.best||hist[0]||{wins:bd.bestWins}):null,titles=bd?.championships||0;
+  const avg=hist.length?Math.round(hist.reduce((a,h)=>a+h.wins,0)/hist.length):bd?.bestWins||0,hundreds=hist.filter(h=>h.wins>=100).length;
   const earned=new Set(b.unlocked),ach=Clubhouse.achievements;
-  const badge=([k,name,desc])=>`<div class="ch-badge${earned.has(k)?' on':''}"><span class="medal">${TEXT[k]?`<b>${TEXT[k]}</b>`:`<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]||ICON.first}</svg>`}</span><p><b>${name}</b><small>${desc}</small></p></div>`;
+  const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
+  const card=`<section class="c2-tc" style="--c1:${c1};--c2:${c2}"><div class="c2-tc-top"><small>My Clubhouse</small>${user?`<button type="button" class="c2-gear" data-acct="manage">${GEAR}Account</button>`:'<button type="button" class="c2-gear" data-acct="open">Sign in</button>'}</div>
+   <h2>${esc(user?.name||'Your club')}</h2><p>${bd?`${plural(bd.seasons,'season')} · ${plural(titles,'title')}`:'Finish a season to start your record.'}</p>
+   ${!user?'<p class="c2-sub">Sign in to keep your Clubhouse on every device.</p>':''}${note?`<p class="c2-note" role="status">${esc(note)}</p>`:''}
+   ${av?artImg(av,'c2-tc-art'):''}
+   ${bd?`<div class="c2-stats"><div>Best<b>${best.wins}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${titles}</b></div></div>`:'<div class="c2-stats c2-stats-0"></div>'}</section>`;
+  let bestHTML='';
+  if(best?.roster){const a=aceOf(best.roster),[b1,b2]=colors(a),d=best.rs!=null&&best.ra!=null?best.rs-best.ra:null;
+   bestHTML=`<h3 class="c2-h">Best season</h3><details class="c2-best${best.wins===162?' perfect':''}" style="--c1:${b1};--c2:${b2}"><summary aria-label="Best season, ${best.wins} wins. View roster"><span class="c2-best-art">${a?artImg(a):''}</span><span class="c2-best-mid"><b>${esc(best.team||'Best season')}</b><small>${best.date?day(best.date):''}${best.champ?' · World champions':''}</small><span class="c2-chips">${best.rating?`<span class="${best.rating>=97?'g':''}">${best.rating} OVR</span>`:''}${best.grade?`<span>${esc(best.grade)}</span>`:''}${d!=null?`<span>${d>=0?'+':''}${d}</span>`:''}</span></span><span class="c2-best-rec">${best.wins}–${162-best.wins}<small>Best</small></span></summary>${lineupHTML(best.roster)}</details>`}
+  const favHTML=favs.length?`<h3 class="c2-h">Most drafted</h3><div class="c2-favs">${favs.slice(0,5).map(x=>`<button type="button" data-history-mon="${x.m.id}" aria-label="${esc(x.m.name)}, drafted in ${x.n} seasons. Open card">${artImg(x.m)}<b>${esc(x.m.name)}</b><small>×${x.n}</small></button>`).join('')}</div>`:'';
   const lineup=h=>FULL.map((s,i)=>{const m=BYID.get(h.roster[i]);return m?`<button type="button" data-history-mon="${m.id}" aria-label="Inspect ${esc(m.name)} card">${tok(m)}<i>${lbl(s)}</i><em>${posOvr(m,s)}</em></button>`:''}).join('');
-  const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r">${h.team?`<em>${esc(h.team)}</em>`:''}<b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary><p class="ch-mvp">${h.mvp?`MVP ${esc(h.mvp.name)}: ${h.mvp.hr} HR, ${h.mvp.ops.toFixed(3).replace(/^0/,'')} OPS${h.rs?` · ${h.rs} runs scored, ${h.ra} allowed`:''}`:''}</p>${lineupHTML(h.roster)}</details>`};
-  return `<div class="ch">
-   <section class="ch-hero"><div class="ch-hero-top"><small>Best season${best.team?' · '+esc(best.team):''}</small><div class="ch-rec"><b>${best.wins}–${162-best.wins}</b>${best.grade?`<span class="ch-stamp"><b>${best.grade}</b><small>GRADE</small></span>`:''}</div></div>
-    <div class="ch-stats"><div>Seasons<b>${bd.seasons}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${bd.championships||0}</b></div></div></section>
-   ${caseHTML(ach,earned)}
-   <details class="ch-sec ch-log"><summary><h3>Season log<em>${hist.length} season${hist.length===1?'':'s'}</em></h3></summary>${hist.map(season).join('')}</details>
-   ${typeof rivalriesHTML==='function'?`<div class="ch-sec ch-riv">${rivalriesHTML()}</div>`:''}
-   ${typeof collectionHTML==='function'?`<section class="ch-sec"><h3>Collection</h3>${collectionHTML()}</section>`:''}
-  </div>`;
+  const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r">${h.team?`<em>${esc(h.team)}</em>`:''}<b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary><div class="ch-lineup">${lineup(h)}</div></details>`};
+  let rv={w:0,l:0};try{Object.values(JSON.parse(store.get('pbc5-rivals')||'{}')).forEach(x=>{rv.w+=+x?.w||0;rv.l+=+x?.l||0})}catch(e){}
+  const log=hist.length?`<details class="ch-sec ch-log c2-row"><summary><h3>Season log<em>${plural(hist.length,'season')}</em></h3></summary>${hist.map(season).join('')}</details>`:'';
+  const riv=typeof rivalriesHTML==='function'?`<details class="ch-sec ch-log c2-row c2-riv"><summary><h3>Rival series<em>${rv.w+rv.l?`${rv.w}–${rv.l}`:'None yet'}</em></h3></summary>${rivalriesHTML()}</details>`:'';
+  const dexHTML=typeof collectionHTML==='function'?collectionHTML():'';
+  return `<div class="c2"><div class="c2-l">${card}${bestHTML?`<div class="c2-o2">${bestHTML}</div>`:''}${favHTML?`<div class="c2-o3">${favHTML}</div>`:''}<div class="c2-o5">${log}${riv}</div></div>
+   <div class="c2-r"><div class="c2-o4">${caseHTML(ach,earned)}</div><div class="c2-o6">${dexHTML}</div></div></div>`;
  };
 })();
