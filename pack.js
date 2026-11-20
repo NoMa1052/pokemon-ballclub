@@ -10,14 +10,15 @@ const BODY="M9 35 C2 80 0 118 0 148 C0 182 2 222 9 261 H191 C198 222 200 182 200
 const wrinkles=(y,dir)=>{let d1="",d2="";for(let i=0;i<44;i++){const x=6+i*4.4+((i*53)%7)/3,len=2.5+((i*37)%7)*.8,lean=(x-100)/100*3+((i*29)%5-2)*.4;
   const seg=`M${x.toFixed(1)} ${y} l${lean} ${len*dir} `;if(i%2)d1+=seg;else d2+=seg}return `<path d="${d1}" stroke="#fff" stroke-opacity=".09" stroke-width="1.4" stroke-linecap="round"/><path d="${d2}" stroke="#000" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>`};
 let tornPackSource=null;
-// Two packs: Classic Series draws Gen 1-4, Crossover Series draws Gen 1-8. Each pick you choose which one to open.
+// Three packs: Classic Series draws Gen 1-4, New Era Gen 5-8, Crossover Series Gen 1-8. Each pick you choose which one to open.
 const ERA_ON=typeof NEW_ERA!=='undefined'&&NEW_ERA;
-const packEra=()=>ERA_ON&&typeof run!=='undefined'&&run&&run.packEra==='new'?'new':'classic';
-const inEra=m=>!ERA_ON||packEra()==='new'||m.gen<=4;
+const PACKS={classic:{name:'Classic Series',gens:'Gen 1–4',art:'pack-foil-v4.webp',seam:12.8,has:m=>m.gen<=4},new:{name:'New Era',gens:'Gen 5–8',art:'pack-new-era.webp',seam:12.8,has:m=>m.gen>=5},cross:{name:'Crossover Series',gens:'Gen 1–8',art:'pack-crossover.webp',seam:9.9,has:()=>true}};
+const packEra=()=>ERA_ON&&typeof run!=='undefined'&&run&&PACKS[run.packEra]?run.packEra:'classic';
+const inEra=m=>!ERA_ON||PACKS[packEra()].has(m);
 // Where the wrapper tears: just under each pack's crimped top.
-const seamPct=()=>packEra()==='new'?9.9:12.8;
+const seamPct=()=>PACKS[packEra()].seam;
 function packArt(opened=false){
- return '<svg class="pk-art"'+(opened?` style="clip-path:polygon(0 ${seamPct()}%,100% ${seamPct()}%,100% 100%,0 100%)"`:'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="'+(packEra()==='new'?'pack-crossover.webp':'pack-foil-v4.webp')+'" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
+ return '<svg class="pk-art"'+(opened?` style="clip-path:polygon(0 ${seamPct()}%,100% ${seamPct()}%,100% 100%,0 100%)"`:'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="'+(PACKS[packEra()].art)+'" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
 }
 
 // Tilt: the pack leans toward your finger or cursor and a glare follows it.
@@ -84,7 +85,7 @@ function eraSwitch(pk){
  if(!ERA_ON||!isPack()||document.getElementById('eraSwitch'))return;
  const box=document.getElementById('throwBox');if(!box)return;const era=packEra(),lock=!!run.eraLock;
  const opt=(k,name,gens,img)=>`<button type="button" role="radio" aria-checked="${era===k}" data-era="${k}" class="era-opt${era===k?' on':''}"${lock&&era!==k?' disabled':''}><img src="${img}" alt=""><span><b>${name}</b><small>${gens}</small></span></button>`;
- box.insertAdjacentHTML('beforebegin',`<div class="era-switch" id="eraSwitch" role="radiogroup" aria-label="Choose a pack">${opt('classic','Classic Series','Gen 1–4','pack-foil-v4.webp')}${opt('new','Crossover Series','Gen 1–8','pack-crossover.webp')}</div>${lock?'<p class="era-note">Super Rod casts into the same pack.</p>':''}`);
+ box.insertAdjacentHTML('beforebegin',`<div class="era-switch" id="eraSwitch" role="radiogroup" aria-label="Choose a pack">${Object.entries(PACKS).map(([k,p])=>opt(k,p.name,p.gens,p.art)).join('')}</div>${lock?'<p class="era-note">Super Rod casts into the same pack.</p>':''}`);
  document.getElementById('eraSwitch').addEventListener('click',e=>{const b=e.target.closest('[data-era]');if(!b||b.disabled||run.spin||b.dataset.era===packEra())return;run.packEra=b.dataset.era;saveRun();render()});
 }
 const decoratePack=()=>{const pk=document.getElementById('spinBtn');if(!pk||!pk.classList.contains('pack'))return;eraSwitch(pk);
