@@ -429,5 +429,5 @@ if(ERA_SANDBOX&&typeof fetch==='function'){
     if(/\.supabase\.co\//.test(url)&&m!=='GET'&&!/rpc\/ballclub_name_free/.test(url))
       return Promise.resolve(new Response(JSON.stringify({message:'New Era test: saving to the live game is turned off.',code:'era_test'}),{status:403,headers:{'content-type':'application/json'}}));
     return real(u,o)};
-  addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.className='era-banner';b.innerHTML='<b>New Era test</b><span>Gen 5–8 preview. Nothing here posts to the live game.</span>';document.body.appendChild(b)});
+  addEventListener('DOMContentLoaded',()=>{const b=document.createElement('div');b.className='era-banner';b.innerHTML='<b>Crossover test</b><span>Gen 1–8 preview. Nothing here posts to the live game.</span>';document.body.appendChild(b)});
 }
