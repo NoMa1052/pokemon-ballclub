@@ -306,7 +306,8 @@
  // Say where a posted team counts, before and after posting.
  const baseSubmit=submitHTML;
  submitHTML=function(){
-  const done=run.submitted,codes=done?(done.leagues||[]):leagueCodes(),names=mine().filter(x=>codes.includes(x.code)).map(x=>x.name);
+  // Only weekly challenge teams count in a league; free play posts to the leaderboard alone.
+  const done=run.submitted,codes=done?(done.leagues||[]):run.week?leagueCodes():[],names=mine().filter(x=>codes.includes(x.code)).map(x=>x.name);
   const where=['Leaderboard',...((done?done.week:run.week)?['Weekly challenge']:[]),...names];
   return baseSubmit()+`<p class="post-where">${done?'Counts on':'Posts to'}: ${where.map(esc).join(' · ')}</p>`;
  };
