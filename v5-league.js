@@ -365,9 +365,17 @@
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
   if(cur&&!info[cur.code]){info[cur.code]={};loadInfo(cur.code)}
   const can=cur&&info[cur.code]?.canEdit;
-  const hero=cur?`<section class="lg2-hd"><button type="button" class="lg-crest${can?' can':''}" id="lgCrest" ${can?'aria-label="Edit league logo"':'tabindex="-1" aria-hidden="true"'}>${crestSVG(logoOf(cur))}${can?'<i class="lg-pen" aria-hidden="true">Edit</i>':''}</button><div class="lg2-t"><h2><button type="button" class="lg2-name" id="lgSwitch" aria-expanded="${!!form}" aria-label="${esc(cur.name)}. Switch, join or leave leagues">${esc(cur.name)}<i class="lg2-chev" aria-hidden="true"></i></button></h2><p>Week ${wkNo(weekKey())} · ${weekLeft()}</p></div>${membersRow(cur)}</section>`
+  const hero=cur?`<section class="lg2-hd"><span class="lg-crest" aria-hidden="true">${crestSVG(logoOf(cur))}</span><div class="lg2-t"><h2><button type="button" class="lg2-name" id="lgSwitch" aria-expanded="${!!form}" aria-label="${esc(cur.name)}. Switch, join or leave leagues">${esc(cur.name)}<i class="lg2-chev" aria-hidden="true"></i></button></h2><p>Week ${wkNo(weekKey())} · ${weekLeft()}</p></div>${membersRow(cur)}</section>`
    :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
-  const picker=form?`<div class="lg-form">${ls.length?`<div class="lg-chips" role="group" aria-label="Your leagues">${ls.map(x=>`<button type="button" data-scope="${x.code}" aria-pressed="${scope===x.code}">${esc(x.name)}</button>`).join('')}</div>`:''}${ls.length<3?`<label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div>`:'<p class="hint">You can be in 3 leagues. Leave one to join another.</p>'}${cur?`<button type="button" class="btn quiet" id="lgLeave">Leave ${esc(cur.name)}</button>`:''}</div>`:'';
+  const IC={inv:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',pen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>',join:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>',make:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',out:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>'};
+  const full=ls.length>=3,row=(act,ic,label,extra='',cls='')=>`<button type="button" class="lgm-row${cls}" data-lgm="${act}">${IC[ic]}<span>${label}</span>${extra}</button>`;
+  const field=(id,ph,btn,max,cap)=>`<div class="lgm-field"><input id="${id}" maxlength="${max}" autocomplete="off" ${cap?'autocapitalize="characters" ':''}placeholder="${ph}" enterkeyhint="go"><button type="button" class="btn primary" id="${id==='lgCode'?'lgJoin':'lgMake'}">${btn}</button></div>`;
+  const picker=form?`<div class="lg-menu" role="menu" aria-label="League options">
+   ${ls.length>1?`<p class="lgm-cap">Your leagues</p>${ls.map(x=>`<button type="button" class="lgm-row lgm-lg" data-scope="${x.code}" aria-current="${scope===x.code}">${crestSVG(logoOf(x),'mini')}<span>${esc(x.name)}</span>${scope===x.code?IC.ok:''}</button>`).join('')}<hr>`:''}
+   ${cur?(can?row('logo','pen','Edit league logo'):'')+row('invite','inv','Invite friends',`<small>${cur.code}</small>`):''}
+   ${full?'<p class="lgm-hint">You can be in 3 leagues. Leave one to join another.</p>':(form==='join'||!cur?`<div class="lgm-open">${IC.join}<span>Join with a code</span></div>${field('lgCode','5-letter code','Join',5,true)}`:row('join','join','Join with a code'))+(form==='make'||!cur?`<div class="lgm-open">${IC.make}<span>Start a league</span></div>${field('lgName','League name','Create',24,false)}`:row('make','make','Start a league'))}
+   ${cur?row('leave','out',form==='leave'?`Tap again to leave ${esc(cur.name)}`:`Leave ${esc(cur.name)}`,'',' danger'):''}
+  </div>`:'';
   const tabs=cur?`<div class="lg-seg" role="tablist">${[['week','Week'],['season','Season'],['rivals','Rivals'],['results','Results']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
   const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':tab==='season'?tabSeason2():tab==='rivals'?tabRivals():tab==='results'?tabResults():tabWeek2(cur);
   const editor=cur&&edit&&edit.code===cur.code?logoEditor(cur):'';
@@ -382,7 +390,12 @@
   if($('lgCheckWeek'))$('lgCheckWeek').onclick=load;
   body.querySelectorAll('[data-scope]').forEach(b=>b.onclick=()=>{scope=b.dataset.scope;note='';form=null;load()});
   body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;podSel=null;draw()});
-  if($('lgSwitch'))$('lgSwitch').onclick=()=>{form=!form;note='';draw();$('lgCode')?.focus()};
+  if($('lgSwitch'))$('lgSwitch').onclick=()=>{form=form?null:'menu';note='';draw()};
+  body.querySelectorAll('[data-lgm]').forEach(b=>b.onclick=()=>{const k=b.dataset.lgm;
+   if(k==='logo'){form=null;edit={code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw()}
+   else if(k==='invite'){form=null;draw();invite(cur)}
+   else if(k==='join'||k==='make'){form=k;draw();$(k==='join'?'lgCode':'lgName')?.focus()}
+   else if(k==='leave'){if(form!=='leave'){form='leave';draw();return}keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()}});
   if($('lgJoin')){$('lgJoin').onclick=()=>join($('lgCode').value);$('lgCode').onkeydown=e=>{if(e.key==='Enter')join($('lgCode').value)}}
   if($('lgMake')){$('lgMake').onclick=()=>make($('lgName').value);$('lgName').onkeydown=e=>{if(e.key==='Enter')make($('lgName').value)}}
   if($('lgInvite'))$('lgInvite').onclick=()=>invite(cur);
