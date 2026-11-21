@@ -347,7 +347,7 @@
   const s=weeklyState(),row=postedWeekly(s.w),rows=data&&!data.error?(data.weeks[weekKey()]||[]):[],i=rows.findIndex(x=>isMine(x.device));
   const ord=n=>n+(['th','st','nd','rd'][(n%100-20)%10]||['th','st','nd','rd'][n%100]||'th');
   let b,sm,btn;
-  if(row){const me2=rows[i]||row,lead=rows[0];
+  if(row&&cur){const me2=rows[i]||row,lead=rows[0];
    b=i===0?(rows.length>1?'Leading this week':'1st this week'):i>0?`${ord(i+1)} this week`:'Posted this week';
    const gap=i>0&&lead?lead.wins-me2.wins:i===0&&rows[1]?me2.wins-rows[1].wins:null;
    sm=`${gap!=null?`${gap} ${i===0?'ahead':'back'} · `:''}${me2.wins}–${162-me2.wins}`;
@@ -356,7 +356,7 @@
    b='Your weekly challenge';sm=personal.error?'Couldn’t check your weekly result.':'Checking your weekly result…';
    btn=personal.error?'<button type="button" class="btn" id="lgCheckWeek">Try again</button>':'';
   }else{
-   b=`Week ${wkNo(s.w)} challenge`;sm=s.done?`You went ${s.wins}–${162-s.wins}${s.posted?'':'. Post it to count.'}`:s.started?`In progress: pick ${Math.min(16,s.picks+1)} of 16`:'Same packs for everyone. One try.';
+   b=`Week ${wkNo(s.w)} challenge`;sm=s.done?`You went ${s.wins}–${162-s.wins}${s.posted?'':'. Post it to count.'}`:s.started?`In progress: pick ${Math.min(16,s.picks+1)} of 16`:cur?'Same packs for everyone. One try.':`One try · ${weekLeft()}`;
    btn=`<button type="button" class="btn primary" id="lgPlay">${s.done?(s.posted?'View my team':'Post your team'):s.started?'Resume':'Play this week'}</button>`;
   }
   return `<div class="lg-bar" role="region" aria-label="Your week"><div class="lg-bar-t"><b>${b}</b><small>${sm}</small></div>${btn}</div>`;
@@ -366,11 +366,14 @@
   if(cur&&!info[cur.code]){info[cur.code]={};loadInfo(cur.code)}
   const can=cur&&info[cur.code]?.canEdit;
   const hero=cur?`<section class="lg2-hd"><span class="lg-crest" aria-hidden="true">${crestSVG(logoOf(cur))}</span><div class="lg2-t"><h2><button type="button" class="lg2-name" id="lgSwitch" aria-expanded="${!!form}" aria-label="${esc(cur.name)}. Switch, join or leave leagues">${esc(cur.name)}<i class="lg2-chev" aria-hidden="true"></i></button></h2><p>Week ${wkNo(weekKey())} · ${weekLeft()}</p></div>${membersRow(cur)}</section>`
-   :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
+   :`<section class="lg-start"><h2>Play with friends</h2><p>Everyone in a league drafts from the same packs each week. Best team wins the week.</p>
+    <div class="lgs-opt"><label for="lgCode"><b>Got a code from a friend?</b></label><div class="lgs-f"><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5-letter code" enterkeyhint="go"><button type="button" class="btn primary" id="lgJoin">Join</button></div></div>
+    <div class="lgs-or" aria-hidden="true"><span>or</span></div>
+    <div class="lgs-opt"><label for="lgName"><b>Start your own</b><small>You get a code to send your friends.</small></label><div class="lgs-f"><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name" enterkeyhint="go"><button type="button" class="btn" id="lgMake">Create</button></div></div></section>`;
   const IC={inv:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',pen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/></svg>',join:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>',make:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',out:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>',ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>'};
   const full=ls.length>=3,row=(act,ic,label,extra='',cls='')=>`<button type="button" class="lgm-row${cls}" data-lgm="${act}">${IC[ic]}<span>${label}</span>${extra}</button>`;
   const field=(id,ph,btn,max,cap)=>`<div class="lgm-field"><input id="${id}" maxlength="${max}" autocomplete="off" ${cap?'autocapitalize="characters" ':''}placeholder="${ph}" enterkeyhint="go"><button type="button" class="btn primary" id="${id==='lgCode'?'lgJoin':'lgMake'}">${btn}</button></div>`;
-  const picker=form?`<div class="lg-menu" role="menu" aria-label="League options">
+  const picker=form&&cur?`<div class="lg-menu" role="menu" aria-label="League options">
    ${ls.length>1?`<p class="lgm-cap">Your leagues</p>${ls.map(x=>`<button type="button" class="lgm-row lgm-lg" data-scope="${x.code}" aria-current="${scope===x.code}">${crestSVG(logoOf(x),'mini')}<span>${esc(x.name)}</span>${scope===x.code?IC.ok:''}</button>`).join('')}<hr>`:''}
    ${cur?(can?row('logo','pen','Edit league logo'):'')+row('invite','inv','Invite friends',`<small>${cur.code}</small>`):''}
    ${full?'<p class="lgm-hint">You can be in 3 leagues. Leave one to join another.</p>':(form==='join'||!cur?`<div class="lgm-open">${IC.join}<span>Join with a code</span></div>${field('lgCode','5-letter code','Join',5,true)}`:row('join','join','Join with a code'))+(form==='make'||!cur?`<div class="lgm-open">${IC.make}<span>Start a league</span></div>${field('lgName','League name','Create',24,false)}`:row('make','make','Start a league'))}
@@ -379,7 +382,7 @@
   const tabs=cur?`<div class="lg-seg" role="tablist">${[['week','Week'],['season','Season'],['rivals','Rivals'],['results','Results']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
   const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':tab==='season'?tabSeason2():tab==='rivals'?tabRivals():tab==='results'?tabResults():tabWeek2(cur);
   const editor=cur&&edit&&edit.code===cur.code?logoEditor(cur):'';
-  body.innerHTML=hero+editor+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`+(editor||form?'':actionBar(cur)):weeklyCard());
+  body.innerHTML=hero+editor+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`+(editor||form?'':actionBar(cur)):`<p class="lgs-cap">No league needed</p>`+actionBar(null));
   if($('lgSeries'))$('lgSeries').onclick=()=>pickRival(cur.code);
   body.classList.toggle('editing',!!editor);if(editor)wireEditor(cur)
   if($('lgCrest')&&can)$('lgCrest').onclick=()=>{edit=edit?null:{code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw()};
