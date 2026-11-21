@@ -110,7 +110,7 @@
   const avg=hist.length?Math.round(hist.reduce((a,h)=>a+h.wins,0)/hist.length):bd?.bestWins||0,hundreds=hist.filter(h=>h.wins>=100).length;
   const earned=new Set(b.unlocked),ach=Clubhouse.achievements;
   const plural=(n,w)=>`${n} ${w}${n===1?'':'s'}`;
-  const card=`<section class="c2-tc" style="--c1:${c1};--c2:${c2}"><div class="c2-tc-top"><small>My Clubhouse</small>${user?`<button type="button" class="c2-gear" data-acct="manage">${GEAR}Account</button>`:'<button type="button" class="c2-gear" data-acct="open">Sign in</button>'}</div>
+  const card=`<section class="c2-tc" style="--c1:${c1};--c2:${c2}"><div class="c2-tc-top"><small>My Clubhouse</small>${user?`<button type="button" class="c2-gear icon" data-acct="manage" aria-label="Account settings" title="Account">${GEAR}</button>`:'<button type="button" class="c2-gear" data-acct="open">Sign in</button>'}</div>
    <h2>${esc(user?.name||'Your club')}</h2><p>${bd?`${plural(bd.seasons,'season')} · ${plural(titles,'title')}`:'Finish a season to start your record.'}</p>
    ${!user?'<p class="c2-sub">Sign in to keep your Clubhouse on every device.</p>':''}${note?`<p class="c2-note" role="status">${esc(note)}</p>`:''}
    ${av?artImg(av,'c2-tc-art'):''}

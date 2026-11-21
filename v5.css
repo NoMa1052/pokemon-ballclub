@@ -1537,3 +1537,10 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .lg-bar .btn{min-height:38px!important;padding:0 14px!important;border-radius:10px!important;font-size:14px!important;box-shadow:none!important;transform:none!important}
 .lg-bar .btn{margin:0!important}
 .lg-share{justify-self:end;align-self:flex-end;min-height:36px!important;margin:0!important;padding:0 4px!important;border:0!important;background:none!important;box-shadow:none!important;color:#a9b8d0!important;font:600 13.5px/1 "Barlow",sans-serif!important;text-decoration:underline;text-underline-offset:3px}
+/* trainer card: small gear, art sits between the gear and the stats bar */
+.c2-tc{min-height:244px}
+.c2-gear.icon{width:38px;height:38px;min-height:38px;padding:0;justify-content:center;border-radius:50%;background:rgba(5,12,26,.45);border-color:rgba(255,255,255,.18)}
+.c2-gear.icon svg{width:18px;height:18px}
+.c2-tc-art{top:52px;right:10px;width:auto;max-width:44%;height:calc(100% - 52px - 66px);object-fit:contain;object-position:right bottom}
+.c2-tc h2,.c2-tc p{max-width:56%}
+.c2-tc{min-height:266px}.c2-tc-art{max-width:48%}
