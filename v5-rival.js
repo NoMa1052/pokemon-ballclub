@@ -15,7 +15,11 @@
   return d;
  }
  function add(d,mons){for(const m of mons){if(!d.nums.includes(m.num))d.nums.push(m.num);if(m.shiny&&!d.shiny.includes(m.num))d.shiny.push(m.num)}}
- function record(){if(!run?.result)return;const d=dex(),before=d.nums.length+d.shiny.length;add(d,Object.values(run.slots).filter(Boolean));if(d.nums.length+d.shiny.length!==before)store.set(DEX,JSON.stringify(d))}
+ function record(){if(!run?.result)return;const d=dex(),before=d.nums.length+d.shiny.length,fin=Object.values(run.slots).filter(Boolean);
+  // Earlier forms count too: anything that evolved into a Pokémon still on the roster when the season ends.
+  const ancestorOf=(m,f)=>{let a=EVOLUTION_PARENT[f.num];for(let i=0;i<4&&a;i++,a=EVOLUTION_PARENT[a])if(a===m.num)return true;return false};
+  const earlier=(run.evoFrom||[]).map(id=>BYID.get(id)).filter(m=>m&&fin.some(f=>ancestorOf(m,f)));
+  add(d,[...fin,...earlier]);if(d.nums.length+d.shiny.length!==before)store.set(DEX,JSON.stringify(d))}
  // The collection is a Pokédex: one region at a time, every number in order, rostered Pokémon shown.
  let dexRegion=1;
  const allMons=()=>[...new Map(MONS.filter(m=>!m.shiny&&m.id<SHINY_ID&&!m.baseId).map(m=>[m.num,m])).values()].sort((a,b)=>a.num-b.num);
@@ -45,6 +49,7 @@
    <div class="pdx-foot"><span class="pdx-dpad" aria-hidden="true"></span><small>Caught means rostered in a finished season. Tap one for its card.</small><span class="pdx-ab" aria-hidden="true"><i></i><i></i></span></div>
   </details>`;
  };
+ window.recordDex=record;
  const prevFinish=finish;finish=function(){const v=prevFinish.apply(this,arguments);record();return v};
  if(run?.result)record();
 })();

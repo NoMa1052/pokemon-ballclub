@@ -53,6 +53,7 @@ function applyDevelopment(cardId,slot){
   const option=developmentOptions(card).find(o=>o.slot===slot);if(!option)return false;
   const snapshot=handSnapshot(),before=teamOvr(),{owned,next,kind}=option,sp=run.spin;
   run.slots[slot]=next;run.picks=run.picks.map(id=>id===owned.id?next.id:id);
+  if(next.num!==owned.num)run.evoFrom=[...(run.evoFrom||[]),owned.id];
   sp.usedIds=[...(sp.usedIds||[]),cardId];
   const extra=run.doubleArmed&&!run.second&&run.picks.length<run.size;
   if(extra){run.doubles--;run.doubleArmed=false;run.second=true}else{run.spin=null;run.second=false;run.doubleArmed=false}

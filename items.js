@@ -15,7 +15,7 @@ function candyGroups(options){
 }
 function applyCandy(slot,nextId){
  const o=candyOptions().find(o=>o.slot===slot&&o.next.id===nextId);if(!o)return false;
- const snapshot=handSnapshot(),before=teamOvr();run.slots[slot]=o.next;run.picks=run.picks.map(id=>id===o.owned.id?o.next.id:id);run.candies=0;run.handUndo=snapshot;
+ const snapshot=handSnapshot(),before=teamOvr();run.slots[slot]=o.next;run.picks=run.picks.map(id=>id===o.owned.id?o.next.id:id);if(o.next.num!==o.owned.num)run.evoFrom=[...(run.evoFrom||[]),o.owned.id];run.candies=0;run.handUndo=snapshot;
  run.handFeedback={name:o.next.name,old:posOvr(o.owned,slot),rating:posOvr(o.next,slot),before,after:teamOvr(),development:o.evolve?'evolve':'train'};
  sortStaff();saveRun();return true;
 }
