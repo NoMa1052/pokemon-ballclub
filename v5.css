@@ -1619,3 +1619,39 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 
 /* Descenders (g, y, p, j) were clipped where tight line-height meets overflow:hidden. Extra bottom padding widens the clip box without moving anything. */
 .penhead small,.lblist .tm,.signed .who b,.dc-row span,.dc-star b,.move-spot small,.box-name b,#draft .undo-chip>span,#season .season-award b,#season .posted-info b,.candy-sheet .candy-tile b,.candy-sheet .cr-name b,#draft .pk-undo em,#season .season-award em,#season .season-award .aw-who b,.pick-tray b,.sr-race span,.bg-club b,.bg-rivals b,.sc-list b,.lg-rows .tm b,.field-deciding #fieldFlow h3,.sc-row b,.dex-grid span i,.pk-hud small,.ch-season .r em,.acct b,.acct .acct-txt b,.h2h-who b,.h2h-last span,.h2h-line span,.rs-chip b,.lg-pod .pc b,.lg-pod .pc small,.lg-race .rr-top b,#lb .lb-cards .lbc-mid b,#lb .lb-cards .lbc-mid small,.lb-pin b,.c2-best-mid b,.c2-favs b,.c2-row>summary .c2-meta,.c2-fav-n b,.lg-bar-t small,.c3-mc b,.c3-tv em{padding-bottom:.22em!important;margin-bottom:-.22em!important}
+
+/* ---- Clubhouse tiles as objects ---- */
+/* Badge case: steel case, navy lid with gold clasp, velvet tray holding every badge */
+.c3-tile.o-case{justify-content:flex-start;gap:6px;padding:5px;border:0;background:linear-gradient(145deg,#d9dee6,#8a94a3 40%,#e8ecf1 62%,#7b8596);box-shadow:0 6px 14px rgba(0,0,0,.4),inset 0 1px 0 #fff}
+.oc-lid{position:relative;display:flex;justify-content:space-between;align-items:center;padding:9px 10px 11px;border-radius:11px 11px 3px 3px;background:linear-gradient(180deg,#1d3866,#10254a);outline:1px dashed rgba(255,232,160,.35);outline-offset:-4px}
+.oc-lid small{color:#f4eedc!important}
+.oc-lid em{font:700 12px/1 var(--f-data);font-style:normal;color:#ffcb05}
+.oc-clasp{position:absolute;left:50%;bottom:-8px;width:26px;height:12px;transform:translateX(-50%);border-radius:3px 3px 7px 7px;background:linear-gradient(180deg,#ffe58a,#c9a227 55%,#8a6a10);box-shadow:0 2px 3px rgba(0,0,0,.5);z-index:1}
+.oc-tray{flex:1;display:grid;grid-template-columns:repeat(5,1fr);align-content:center;gap:4px 2px;padding:10px 4px 6px;border-radius:3px 3px 11px 11px;background:radial-gradient(120% 90% at 50% 0%,#7a1426,#4d0a17 55%,#33060f);box-shadow:inset 0 3px 8px rgba(0,0,0,.6)}
+.oc-tray span{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 40%,#2a040b,#5e1024);box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
+.oc-tray svg{width:82%;height:82%}
+.oc-tray span:not(.on) svg{filter:grayscale(1) brightness(.35);opacity:.3}
+.oc-tray span.on svg{filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+/* Pokédex: red device, lens and lights, green screen, d-pad */
+.c3-tile.o-dex{justify-content:space-between;gap:7px;padding:9px 10px 10px;border:0;background:linear-gradient(160deg,#e3350d,#b8260a 65%,#9a1f08);box-shadow:0 6px 14px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -3px 0 rgba(0,0,0,.25)}
+.od-top{display:flex;align-items:center;gap:5px;padding-bottom:7px;border-bottom:2px solid rgba(0,0,0,.25)}
+.od-lens{width:24px;height:24px;margin-right:4px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#bfe9ff,#2f8fe0 45%,#14548f);border:2.5px solid #f4f4f4;box-shadow:0 2px 3px rgba(0,0,0,.4)}
+.od-led{width:7px;height:7px;border-radius:50%;border:1px solid rgba(0,0,0,.35)}.od-led.r{background:#ff5a4f}.od-led.y{background:#ffd84d}.od-led.g{background:#56c96b}
+.od-screen{display:flex;flex-direction:column;flex:1;justify-content:center;padding:7px 9px 8px;border-radius:7px;background:#dfe9d8;border:3px solid #ececec;box-shadow:inset 0 2px 4px rgba(0,0,0,.3);color:#163522}
+.od-screen small{color:#3b5a45!important;font-size:9.5px!important}
+.od-screen b{margin-top:4px;font:700 26px/1 var(--f-data);color:#163522}
+.od-screen em{margin-top:2px;font-style:normal;font-size:11px;color:#3b5a45}
+.od-bar{display:block;height:5px;margin-top:6px;border-radius:3px;background:#b8c8b0;overflow:hidden}.od-bar i{display:block;height:100%;background:#2e7d46}
+.od-bot{display:flex;align-items:center;gap:6px}
+.od-pad{width:22px;height:22px;margin-right:auto;background:linear-gradient(#232323,#232323) center/8px 22px no-repeat,linear-gradient(#232323,#232323) center/22px 8px no-repeat;opacity:.85}
+.od-ab{width:11px;height:11px;border-radius:50%;background:#232323;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+/* Season log: scorebook page with a pencil bar chart of recent seasons, gold for titles */
+.c3-tile.o-log{background:#f2ead3;border-color:#d9cba6;color:#10254a;background-image:repeating-linear-gradient(0deg,transparent 0 17px,rgba(29,56,102,.12) 17px 18px)}
+.c3-tile.o-log small{color:#c8102e}
+.c3-tile.o-log em{color:#55617a}
+.ol-chart{position:absolute;left:12px;right:12px;top:30px;height:44px;display:flex;align-items:flex-end;gap:3px;border-bottom:2px solid #10254a}
+.ol-chart i{flex:1;max-width:14px;border-radius:2px 2px 0 0;background:#3b5a8f;opacity:.85}
+.ol-chart i.t{background:#d6a414;opacity:1;position:relative}
+.ol-chart i.t::after{content:"★";position:absolute;left:50%;top:-12px;transform:translateX(-50%);font-size:9px;line-height:1;color:#c8102e}
+.c3-tile.o-log .ol-chart{position:static;height:36px;margin:16px 0 8px;flex:none}
+.c3-tile.o-log .c3-tv b{font-size:24px}
