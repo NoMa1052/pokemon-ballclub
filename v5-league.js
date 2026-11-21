@@ -367,7 +367,7 @@
   const all=[...list.values()],shown=all.slice(0,6),more=all.length-shown.length;
   const bubble=m=>{const p=m.avatar&&BYID.get(+m.avatar),[c1,c2]=p?[TYPE_COLORS[p.types[0]]||'#5f7fb6',TYPE_COLORS[p.types[1]]||TYPE_COLORS[p.types[0]]||'#5f7fb6']:[];
    return `<span class="lg2-av${m.me?' me':''}" title="${esc(m.name||'')}" style="${p?`background:radial-gradient(circle at 35% 30%,color-mix(in srgb,${c1} 80%,#fff),${c2})`:`background:hsl(${hue(m.key)} 45% 32%)`}">${p?`<img src="${SPRITE_URL(p.num,false)}" alt="">`:esc(String(m.name||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase()||'?')}</span>`};
-  return `<div class="lg2-mem"><span class="lg2-avs">${shown.map(bubble).join('')}${more>0?`<span class="lg2-av more">+${more}</span>`:''}</span><button type="button" class="lg2-add" id="lgInvite" aria-label="Invite friends to ${esc(cur.name)}">+</button><span class="lg2-mem-t">${all.length?`${all.length} player${all.length===1?'':'s'} · `:''}<b>Invite</b></span></div>`;
+  return `<div class="lg2-mem"><span class="lg2-avs">${shown.map(bubble).join('')}${more>0?`<span class="lg2-av more">+${more}</span>`:''}</span><button type="button" class="lg2-add" id="lgInvite" aria-label="Invite friends to ${esc(cur.name)}">+</button><span class="lg2-mem-t">${all.length?`${all.length} player${all.length===1?'':'s'}`:''}</span></div>`;
  }
  // ---- One action, always at the bottom: play the week, or play a series once you've posted ----
  function actionBar(cur){
