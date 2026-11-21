@@ -218,7 +218,7 @@
   return {rivals,grid,results,any:s.length>0};
  }
  const pickBtn='<button type="button" class="btn primary lg-pick" id="lgRivalPick">Play a league series</button>';
- function tabRivals(){const h=h2hParts();return pickBtn+(h.rivals||h.grid?h.rivals+h.grid:'<p class="lg-empty">No series yet. Play a league mate in a best of 7. Your record against each player shows here.</p>')}
+ function tabRivals(){const h=h2hParts();return (h.rivals||h.grid?h.rivals+h.grid:'<p class="lg-empty">No series yet. Play a league mate in a best of 7. Your record against each player shows here.</p>')}
  function tabResults(){const h=h2hParts();return h.results||'<p class="lg-empty">No series yet. Results from best-of-7 series between league teams show here, with box scores.</p>'}
 
  // ---- League logo ----
@@ -237,10 +237,12 @@
  }
  async function loadInfo(code){
   try{
-   const [a,b]=await Promise.all([fetch(`${LEAGUE_URL}?select=code,logo&code=eq.${code}`,{headers:lbHead()}),
-    window.Account?.user?fetch(LB_URL.replace(/ballclub_scores$/,'rpc/ballclub_league_can_edit'),{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json'}),body:JSON.stringify({c:code})}):null]);
-   const row=a.ok?(await a.json())[0]:null,can=b&&b.ok?await b.json():false;
-   info[code]={logo:row?.logo||null,canEdit:can===true};
+   const rpc=n=>LB_URL.replace(/ballclub_scores$/,'rpc/'+n);
+   const [a,b,m]=await Promise.all([fetch(`${LEAGUE_URL}?select=code,logo&code=eq.${code}`,{headers:lbHead()}),
+    window.Account?.user?fetch(rpc('ballclub_league_can_edit'),{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json'}),body:JSON.stringify({c:code})}):null,
+    fetch(rpc('ballclub_league_avatars'),{method:'POST',headers:{...lbHead(),'Content-Type':'application/json'},body:JSON.stringify({c:code})}).catch(()=>null)]);
+   const row=a.ok?(await a.json())[0]:null,can=b&&b.ok?await b.json():false,members=m&&m.ok?await m.json():[];
+   info[code]={logo:row?.logo||null,canEdit:can===true,members:Array.isArray(members)?members:[]};
    if(row?.logo)store.set(logoKey(code),JSON.stringify(row.logo));
   }catch(e){info[code]=info[code]||{}}
   if(scope===code)draw();
@@ -313,7 +315,7 @@
   const sel=typeof podSel==='number'&&top[podSel]?teamPanel(top[podSel],cur.code):'';
   const rest=rows.slice(3);
   const restHTML=rest.length?`<ol class="lg-rows lg-rest" start="4">${rest.map((x,j)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk">${j+4}</span>${typeof starTok==='function'?starTok(x.roster):''}<span class="tm"><b>${esc(playerName(x))}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>${esc(x.team)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${teamPanel(x,cur.code)}</details></li>`).join('')}</ol>`:'';
-  return youCard(rows)+`<section class="lg-wk"><div class="lg-wk-t"><span>Week ${n}</span><b>${weekLeft()}</b></div><div class="lg-clock" aria-hidden="true"><i style="width:${Math.round(weekFrac()*100)}%"></i></div>${pod}${sel}${top.length?'<p class="lg-tap">Tap a team to see its roster</p>':''}</section>${restHTML}${rows.length?'<button type="button" class="btn lg-share" id="lgShare">Share weekly standings</button>':''}`;
+  return `<section class="lg-wk"><div class="lg-wk-t"><span>Week ${n}</span><b>${weekLeft()}</b></div><div class="lg-clock" aria-hidden="true"><i style="width:${Math.round(weekFrac()*100)}%"></i></div>${pod}${sel}${top.length?'<p class="lg-tap">Tap a team to see its roster</p>':''}</section>${restHTML}${rows.length?'<button type="button" class="btn lg-share" id="lgShare">Share weekly standings</button>':''}`;
  }
  // ---- Season tab: the points race ----
  function tabSeason2(){
@@ -327,17 +329,50 @@
    <p class="hint">Each week: 5 points for first, 3 for second, 2 for third, 1 for playing. Points count once the week ends. The <b class="rr-live-k">+</b> is where you stand this week.</p>
    ${past.length?`<h3 class="lg-h">Past champions</h3><ul class="lg-past">${past.map(w=>{const c=data.weeks[w][0];return `<li><span class="crown2" aria-hidden="true"></span><small>Week ${wkNo(w)}</small><b>${esc(playerName(c))}</b><span>${c.wins}–${162-c.wins}</span></li>`}).join('')}</ul>`:''}`;
  }
+ // ---- Members row: profile Pokémon when set, initials otherwise ----
+ const hue=k=>{let h=0;for(const c of String(k))h=(h*31+c.charCodeAt(0))%360;return h};
+ function membersRow(cur){
+  const list=new Map(),add=(key,name,extra={})=>{if(!key)return;const o=list.get(key)||{key,name};list.set(key,{...o,...(name?{name}:{}),...extra})};
+  const week=data&&!data.error?(data.weeks[weekKey()]||[]):[];
+  week.forEach(x=>add(playerKey(x),playerName(x),{me:isMine(x.device)}));
+  if(data&&!data.error)Object.values(data.weeks).flat().forEach(x=>add(playerKey(x),playerName(x),{me:isMine(x.device)||list.get(playerKey(x))?.me}));
+  (info[cur.code]?.members||[]).forEach(m=>add(m.key,m.name,{avatar:m.avatar}));
+  const all=[...list.values()],shown=all.slice(0,6),more=all.length-shown.length;
+  const bubble=m=>{const p=m.avatar&&BYID.get(+m.avatar),[c1,c2]=p?[TYPE_COLORS[p.types[0]]||'#5f7fb6',TYPE_COLORS[p.types[1]]||TYPE_COLORS[p.types[0]]||'#5f7fb6']:[];
+   return `<span class="lg2-av${m.me?' me':''}" title="${esc(m.name||'')}" style="${p?`background:radial-gradient(circle at 35% 30%,color-mix(in srgb,${c1} 80%,#fff),${c2})`:`background:hsl(${hue(m.key)} 45% 32%)`}">${p?`<img src="${SPRITE_URL(p.num,false)}" alt="">`:esc(String(m.name||'?').replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase()||'?')}</span>`};
+  return `<div class="lg2-mem"><span class="lg2-avs">${shown.map(bubble).join('')}${more>0?`<span class="lg2-av more">+${more}</span>`:''}</span><button type="button" class="lg2-add" id="lgInvite" aria-label="Invite friends to ${esc(cur.name)}">+</button><span class="lg2-mem-t">${all.length?`${all.length} player${all.length===1?'':'s'} · `:''}<b>Invite</b></span></div>`;
+ }
+ // ---- One action, always at the bottom: play the week, or play a series once you've posted ----
+ function actionBar(cur){
+  const s=weeklyState(),row=postedWeekly(s.w),rows=data&&!data.error?(data.weeks[weekKey()]||[]):[],i=rows.findIndex(x=>isMine(x.device));
+  const ord=n=>n+(['th','st','nd','rd'][(n%100-20)%10]||['th','st','nd','rd'][n%100]||'th');
+  let b,sm,btn;
+  if(row){const me2=rows[i]||row,lead=rows[0];
+   b=i===0?(rows.length>1?'Leading this week':'1st this week'):i>0?`${ord(i+1)} this week`:'Posted this week';
+   const gap=i>0&&lead?lead.wins-me2.wins:i===0&&rows[1]?me2.wins-rows[1].wins:null;
+   sm=`${gap!=null?`${gap} win${gap===1?'':'s'} ${i===0?'ahead':'back'} · `:''}${esc(me2.team)} ${me2.wins}–${162-me2.wins}`;
+   btn=`<button type="button" class="btn primary" id="lgSeries">Play a series</button>`;
+  }else if(!s.done&&(personal.pending||personal.error)){
+   b='Your weekly challenge';sm=personal.error?'Couldn’t check your weekly result.':'Checking your weekly result…';
+   btn=personal.error?'<button type="button" class="btn" id="lgCheckWeek">Try again</button>':'';
+  }else{
+   b=`Week ${wkNo(s.w)} challenge`;sm=s.done?`You went ${s.wins}–${162-s.wins}${s.posted?'':'. Post it to count.'}`:s.started?`In progress: pick ${Math.min(16,s.picks+1)} of 16`:'Same packs for everyone. One try.';
+   btn=`<button type="button" class="btn primary" id="lgPlay">${s.done?(s.posted?'View my team':'Post your team'):s.started?'Resume':'Play this week'}</button>`;
+  }
+  return `<div class="lg-bar" role="region" aria-label="Your week"><div class="lg-bar-t"><b>${b}</b><small>${sm}</small></div>${btn}</div>`;
+ }
  function draw(){
   const body=$('lgBody'),ls=mine(),cur=ls.find(x=>x.code===scope);
   if(cur&&!info[cur.code]){info[cur.code]={};loadInfo(cur.code)}
-  const players=data&&!data.error?new Set(Object.values(data.weeks).flat().map(playerKey)).size:0,can=cur&&info[cur.code]?.canEdit;
-  const hero=cur?`<section class="lg2-hd"><button type="button" class="lg-crest${can?' can':''}" id="lgCrest" ${can?'aria-label="Edit league logo"':'tabindex="-1" aria-hidden="true"'}>${crestSVG(logoOf(cur))}${can?'<i class="lg-pen" aria-hidden="true">Edit</i>':''}</button><div class="lg2-t"><small>Your league · Code ${cur.code}</small><h2>${esc(cur.name)}</h2><p>Week ${wkNo(weekKey())} · ${weekLeft()}${players?` · ${players} player${players===1?'':'s'}`:''}</p></div></section><div class="lg2-btns"><button type="button" class="btn primary" id="lgInvite">Invite friends</button><button type="button" class="btn" id="lgSwitch">Manage leagues</button></div>`
+  const can=cur&&info[cur.code]?.canEdit;
+  const hero=cur?`<section class="lg2-hd"><button type="button" class="lg-crest${can?' can':''}" id="lgCrest" ${can?'aria-label="Edit league logo"':'tabindex="-1" aria-hidden="true"'}>${crestSVG(logoOf(cur))}${can?'<i class="lg-pen" aria-hidden="true">Edit</i>':''}</button><div class="lg2-t"><h2><button type="button" class="lg2-name" id="lgSwitch" aria-expanded="${!!form}" aria-label="${esc(cur.name)}. Switch, join or leave leagues">${esc(cur.name)}<i class="lg2-chev" aria-hidden="true"></i></button></h2><p>Week ${wkNo(weekKey())} · ${weekLeft()}</p></div>${membersRow(cur)}</section>`
    :`<section class="lg-hero none"><small>No league yet</small><h2>Play with friends</h2><p>Start a league, send the code, and everyone is ranked on the same weekly packs.</p><div><button type="button" class="btn primary" id="lgSwitch">Start or join a league</button></div></section>`;
   const picker=form?`<div class="lg-form">${ls.length?`<div class="lg-chips" role="group" aria-label="Your leagues">${ls.map(x=>`<button type="button" data-scope="${x.code}" aria-pressed="${scope===x.code}">${esc(x.name)}</button>`).join('')}</div>`:''}${ls.length<3?`<label for="lgCode">Join with a code</label><div><input id="lgCode" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="5 characters"><button type="button" class="btn" id="lgJoin">Join</button></div><label for="lgName">Or start a league</label><div><input id="lgName" maxlength="24" autocomplete="off" placeholder="League name"><button type="button" class="btn" id="lgMake">Create</button></div>`:'<p class="hint">You can be in 3 leagues. Leave one to join another.</p>'}${cur?`<button type="button" class="btn quiet" id="lgLeave">Leave ${esc(cur.name)}</button>`:''}</div>`:'';
   const tabs=cur?`<div class="lg-seg" role="tablist">${[['week','Week'],['season','Season'],['rivals','Rivals'],['results','Results']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
   const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':tab==='season'?tabSeason2():tab==='rivals'?tabRivals():tab==='results'?tabResults():tabWeek2(cur);
   const editor=cur&&edit&&edit.code===cur.code?logoEditor(cur):'';
-  body.innerHTML=hero+editor+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`:weeklyCard());
+  body.innerHTML=hero+editor+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`+(editor||form?'':actionBar(cur)):weeklyCard());
+  if($('lgSeries'))$('lgSeries').onclick=()=>pickRival(cur.code);
   body.classList.toggle('editing',!!editor);if(editor)wireEditor(cur)
   if($('lgCrest')&&can)$('lgCrest').onclick=()=>{edit=edit?null:{code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw()};
   body.querySelectorAll('[data-pod]').forEach(b=>b.onclick=()=>{const i=+b.dataset.pod;podSel=podSel===i?null:i;draw()});

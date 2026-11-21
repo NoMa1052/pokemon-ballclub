@@ -1463,3 +1463,35 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .lg-race+.hint .rr-live-k{display:inline-block;padding:0 4px;border:1px dashed #6f86ad;border-radius:4px;font-weight:700}
 .bg-you{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:rgba(255,203,5,.08);border:1px solid rgba(255,203,5,.35);font-size:13.5px;color:#e3e9f3}
 .bg-you b{color:#ffcb05}
+
+/* ---- League v3: name switches leagues, members row invites, underline tabs, one action bar ---- */
+.lg2-hd{row-gap:0}
+.lg2-t h2{margin:0}
+.lg2-name{display:inline-flex;align-items:center;gap:8px;max-width:100%;padding:0;border:0;background:none;color:#f4eedc;font:400 27px/1.08 var(--f-display);text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.lg2-name:focus-visible{outline:2px solid #ffcb05;outline-offset:3px;border-radius:6px}
+.lg2-chev{flex:none;width:9px;height:9px;margin-top:-4px;border-right:2.5px solid #ffcb05;border-bottom:2.5px solid #ffcb05;transform:rotate(45deg);transition:transform .15s}
+.lg2-name[aria-expanded="true"] .lg2-chev{transform:rotate(-135deg);margin-top:4px}
+.lg2-t p{margin-top:5px}
+.lg2-mem{grid-column:1/-1;display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)}
+.lg2-avs{display:flex;padding-left:2px}
+.lg2-av{display:grid;place-items:center;width:36px;height:36px;margin-right:-9px;border-radius:50%;border:2px solid #17305b;overflow:hidden;color:#fff;font:700 12px/1 var(--f-data);letter-spacing:.02em}
+.lg2-av img{width:40px;height:40px;image-rendering:pixelated}
+.lg2-av.me{box-shadow:0 0 0 2px #ffcb05;position:relative;z-index:1}
+.lg2-av.more{background:#0b1b38;color:#cdd7e8;font-size:11px}
+.lg2-add{display:grid;place-items:center;width:36px;height:36px;margin-left:12px;padding:0;border-radius:50%;border:2px dashed #8fa3c6;background:none;color:#e3e9f3;font:600 20px/1 Barlow,sans-serif;cursor:pointer}
+.lg2-add:focus-visible{outline:2px solid #ffcb05;outline-offset:2px}
+.lg2-mem-t{font-size:13.5px;color:#cdd7e8}.lg2-mem-t b{color:#ffcb05;font-weight:600}
+/* tabs as an underline row */
+.lg-seg{display:flex!important;gap:22px;padding:0 4px!important;border-radius:0!important;background:none!important;border:0!important;border-bottom:1px solid #223b66!important}
+.lg-seg button{flex:none;min-height:44px;padding:0!important;border-radius:0!important;background:none!important;color:#9fb0cc!important;font:700 15px/1 "Barlow",sans-serif!important;position:relative}
+.lg-seg button[aria-selected="true"]{color:#f4eedc!important}
+.lg-seg button[aria-selected="true"]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:2px;background:#ffcb05}
+/* the action bar */
+.lg-bar{position:sticky;bottom:0;z-index:5;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;margin:4px -2px 0;padding:10px 10px 10px 14px;border-radius:18px;background:rgba(8,20,40,.96);border:1px solid #2c4470;box-shadow:0 -8px 20px rgba(5,12,26,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.lg-bar-t{min-width:0}
+.lg-bar-t b{display:block;font:600 16px/1.15 var(--f-data);color:#f4eedc}
+.lg-bar-t small{display:block;margin-top:3px;font-size:12.5px;line-height:1.3;color:#a9b8d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg-bar .btn{margin:0;min-height:46px;white-space:nowrap}
+@media (min-width:900px){#lgBody>.lg-bar{grid-column:1/-1}}
+.lg2-name{overflow-wrap:break-word;word-break:normal;font-size:clamp(21px,6.4vw,27px)}
+@media (min-width:900px){.lg2-name{font-size:27px}}
