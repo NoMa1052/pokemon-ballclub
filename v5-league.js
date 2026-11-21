@@ -132,7 +132,7 @@
   const rank=rows.findIndex(x=>isMine(x.device))+1;
   const players=rows.length+' player'+(rows.length===1?'':'s');
   const heading=scope==='all'?'':`<h3 class="lg-h">Week ${wkNo(weekKey())} standings</h3><p class="hint">${rank?'Your rank: #'+rank+' of '+rows.length:players+' this week'}</p>`;
-  const share=scope==='all'?'':'<button type="button" class="btn" id="lgShare">Share weekly standings</button>';
+  const share=scope==='all'?'':'<button type="button" class="btn" id="lgShare">Share standings</button>';
   return heading+weekRows(rows)+'<p class="hint">Tap a team to see its roster.</p>'+share;
  }
  function tabSeason(){
@@ -315,7 +315,7 @@
   const sel=typeof podSel==='number'&&top[podSel]?teamPanel(top[podSel],cur.code):'';
   const rest=rows.slice(3);
   const restHTML=rest.length?`<ol class="lg-rows lg-rest" start="4">${rest.map((x,j)=>`<li class="${isMine(x.device)?'me':''}"><details><summary><span class="rk">${j+4}</span>${typeof starTok==='function'?starTok(x.roster):''}<span class="tm"><b>${esc(playerName(x))}${isMine(x.device)?'<i class="you">You</i>':''}</b><small>${esc(x.team)}</small></span><span class="rec">${x.wins}–${162-x.wins}</span></summary>${teamPanel(x,cur.code)}</details></li>`).join('')}</ol>`:'';
-  return `<section class="lg-wk"><div class="lg-wk-t"><span>Week ${n}</span><b>${weekLeft()}</b></div><div class="lg-clock" aria-hidden="true"><i style="width:${Math.round(weekFrac()*100)}%"></i></div>${pod}${sel}${top.length?'<p class="lg-tap">Tap a team to see its roster</p>':''}</section>${restHTML}${rows.length?'<button type="button" class="btn lg-share" id="lgShare">Share weekly standings</button>':''}`;
+  return `<section class="lg-wk"><div class="lg-wk-t"><span>Week ${n}</span><b>${weekLeft()}</b></div><div class="lg-clock" aria-hidden="true"><i style="width:${Math.round(weekFrac()*100)}%"></i></div>${pod}${sel}${top.length?'<p class="lg-tap">Tap a team to see its roster</p>':''}</section>${restHTML}${rows.length?'<button type="button" class="btn lg-share" id="lgShare">Share standings</button>':''}`;
  }
  // ---- Season tab: the points race ----
  function tabSeason2(){
@@ -350,7 +350,7 @@
   if(row){const me2=rows[i]||row,lead=rows[0];
    b=i===0?(rows.length>1?'Leading this week':'1st this week'):i>0?`${ord(i+1)} this week`:'Posted this week';
    const gap=i>0&&lead?lead.wins-me2.wins:i===0&&rows[1]?me2.wins-rows[1].wins:null;
-   sm=`${gap!=null?`${gap} win${gap===1?'':'s'} ${i===0?'ahead':'back'} · `:''}${esc(me2.team)} ${me2.wins}–${162-me2.wins}`;
+   sm=`${gap!=null?`${gap} ${i===0?'ahead':'back'} · `:''}${me2.wins}–${162-me2.wins}`;
    btn=`<button type="button" class="btn primary" id="lgSeries">Play a series</button>`;
   }else if(!s.done&&(personal.pending||personal.error)){
    b='Your weekly challenge';sm=personal.error?'Couldn’t check your weekly result.':'Checking your weekly result…';
