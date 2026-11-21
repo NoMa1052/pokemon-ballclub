@@ -1687,3 +1687,7 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .lg-icons svg{width:100%;height:100%}
 .lg-edit.full .lg-edit-btns{position:sticky;bottom:0;z-index:4;margin:14px -2px 0;padding:10px;border-radius:16px;background:rgba(8,20,40,.97);border:1px solid #2c4470;box-shadow:0 -8px 16px rgba(5,12,26,.45)}
 @media (min-width:900px){.lg-edit.full{max-width:560px;margin:0 auto}}
+/* leaderboard cards: rank sits beside the team name, not on the art */
+#lb .lb-cards .lbc-top{display:flex;align-items:center;gap:8px;min-width:0}
+#lb .lb-cards .lbc-top b{min-width:0}
+#lb .lb-cards .lbc-rk{position:static;flex:none;min-width:24px;height:24px;font-size:13px}
