@@ -222,18 +222,36 @@
  function tabResults(){const h=h2hParts();return h.results||'<p class="lg-empty">No series yet. Results from best-of-7 series between league teams show here, with box scores.</p>'}
 
  // ---- League logo ----
- const SHAPES={shield:'M8 6h84v50c0 22-18 36-42 46C26 92 8 78 8 56Z',circle:'M50 4a48 48 0 1 0 0.01 0Z',banner:'M10 4h80v94L50 80 10 98Z',diamond:'M50 2 98 52 50 102 2 52Z'};
- const COLORS=['#e2350d','#1d3866','#2f6fe0','#2f8f4e','#6b3fa0','#d9a514','#1b1b1f','#138a8a','#e07a1f','#d1477a'],TRIMS=['#f4eedc','#ffcb05','#ffffff','#111111','#e2350d','#9fd8ff'];
+ const SHAPES={shield:'M8 6h84v50c0 22-18 36-42 46C26 92 8 78 8 56Z',circle:'M50 4a48 48 0 1 0 0.01 0Z',banner:'M10 4h80v94L50 80 10 98Z',diamond:'M50 2 98 52 50 102 2 52Z',plate:'M8 6h84v54L50 100 8 60Z',hex:'M50 3 93 27v50L50 101 7 77V27Z',square:'M18 6h64a12 12 0 0 1 12 12v68a12 12 0 0 1-12 12H18A12 12 0 0 1 6 86V18A12 12 0 0 1 18 6Z'};
+ const SHAPE_NAMES={shield:'Shield',circle:'Circle',banner:'Banner',diamond:'Diamond',plate:'Home plate',hex:'Hexagon',square:'Square'};
+ const COLORS=['#e2350d','#7a1426','#d1477a','#e07a1f','#d9a514','#2f8f4e','#138a8a','#2f6fe0','#1d3866','#6b3fa0','#5a3a1c','#8a94a3','#1b1b1f','#f4eedc'],TRIMS=['#f4eedc','#ffffff','#ffcb05','#e2350d','#9fd8ff','#8a94a3','#1d3866','#111111'];
+ const ACCENTS=['#f4eedc','#ffffff','#ffcb05','#e2350d','#7a1426','#2f6fe0','#1d3866','#2f8f4e','#8a94a3','#111111'];
+ const PATTERNS=[['solid','Solid'],['stripes','Pinstripes'],['split','Split'],['ring','Ring'],['seams','Seams']];
+ const ICONS={ball:(t,c)=>`<circle cx="50" cy="54" r="22" fill="${t}"/><path d="M36 37c7 10 7 24 0 34M64 37c-7 10-7 24 0 34" fill="none" stroke="${c}" stroke-width="2.6" stroke-dasharray="3 2.4"/>`,
+  bat:t=>`<g transform="rotate(35 50 54)" fill="${t}"><path d="M44.5 20q5.5-5 11 0l-2 46h-7z"/><rect x="47" y="65" width="6" height="18" rx="2"/><ellipse cx="50" cy="85" rx="6" ry="2.6"/></g>`,
+  star:t=>`<path d="M50 28l7.6 15.6 17.2 2.5-12.4 12.1 2.9 17.1L50 67.2l-15.3 8.1 2.9-17.1-12.4-12.1 17.2-2.5z" fill="${t}"/>`,
+  crown:t=>`<g fill="${t}"><path d="M27 70 30 38l11 14 9-20 9 20 11-14 3 32z"/><rect x="27" y="72" width="46" height="7" rx="2"/></g>`,
+  bolt:t=>`<path d="M57 24 33 59h15l-6 25 25-37H52l7-23z" fill="${t}"/>`,
+  flame:t=>`<path d="M50 24c3 10 14 16 16 30 2 14-7 24-16 24s-18-10-16-22c1-8 6-11 7-17 3 5 4 8 7 9 0-9-1-15 2-24z" fill="${t}"/>`,
+  pokeball:(t,c)=>`<circle cx="50" cy="54" r="21" fill="none" stroke="${t}" stroke-width="5"/><path d="M29 54h42" stroke="${t}" stroke-width="5"/><circle cx="50" cy="54" r="7" fill="${c}" stroke="${t}" stroke-width="4"/>`};
+ const ICON_NAMES={ball:'Baseball',bat:'Bat',star:'Star',crown:'Crown',bolt:'Lightning',flame:'Flame',pokeball:'Poké Ball'};
  const initials=n=>(String(n||'?').match(/[A-Za-z0-9]+/g)||['?']).slice(0,2).map(w=>w[0]).join('').toUpperCase();
  const defLogo=name=>({s:'shield',c:'#e2350d',t:'#f4eedc',e:{k:'txt',v:initials(name)}});
  const logoKey=c=>'pbc7-logo-'+c;
  const info={};
  const logoOf=l=>{if(!l)return null;const i=info[l.code];if(i&&i.logo)return i.logo;try{return JSON.parse(store.get(logoKey(l.code))||'null')||defLogo(l.name)}catch(e){return defLogo(l.name)}};
+ let crestN=0;
  function crestSVG(g,cls=''){
-  g=g||defLogo('?');const d=SHAPES[g.s]||SHAPES.shield,v=String(g.e?.v||'');
-  const em=g.e?.k==='mon'&&BYID.get(+v)?`<image href="${SPRITE_URL(+v,false)}" x="14" y="16" width="72" height="72" style="image-rendering:pixelated"/>`
-   :`<text x="50" y="${g.s==='diamond'?60:58}" text-anchor="middle" dominant-baseline="middle" font-family="Graduate,Rockwell,Georgia,serif" font-size="${v.length>2?28:v.length>1?38:50}" fill="${g.t}">${esc(v)}</text>`;
-  return `<svg class="crest ${cls}" viewBox="0 0 100 104" aria-hidden="true"><path d="${d}" fill="${g.c}" stroke="${g.t}" stroke-width="5" stroke-linejoin="round"/><path d="${d}" fill="none" stroke="#0005" stroke-width="1.5" transform="translate(50 52) scale(.84) translate(-50 -52)"/>${em}</svg>`;
+  g=g||defLogo('?');const d=SHAPES[g.s]||SHAPES.shield,v=String(g.e?.v||''),id='lgc'+(++crestN),p=g.p||'solid',a=g.a||g.t;
+  const inner='translate(50 52) scale(.84) translate(-50 -52)',dy=g.s==='plate'?-6:g.s==='banner'?-4:g.s==='diamond'?2:0;
+  const fill=p==='stripes'?`<g clip-path="url(#${id})">${Array.from({length:9},(_,i)=>`<rect x="${5+i*11}" y="0" width="3.4" height="104" fill="${a}"/>`).join('')}</g>`
+   :p==='split'?`<path clip-path="url(#${id})" d="M100 0V104H0z" fill="${a}"/>`
+   :p==='seams'?`<g clip-path="url(#${id})" fill="none" stroke="${a}" stroke-width="2.6" stroke-dasharray="4 3"><path d="M20 0c15 26 15 78 0 104"/><path d="M80 0c-15 26-15 78 0 104"/></g>`:'';
+  const ring=p==='ring'?`<path d="${d}" fill="none" stroke="${a}" stroke-width="6" transform="${inner}"/>`:`<path d="${d}" fill="none" stroke="#0005" stroke-width="1.5" transform="${inner}"/>`;
+  const em=g.e?.k==='mon'&&BYID.get(+v)?`<image href="${SPRITE_URL(+v,false)}" x="14" y="${16+dy}" width="72" height="72" style="image-rendering:pixelated"/>`
+   :g.e?.k==='ico'&&ICONS[v]?`<g transform="translate(0 ${dy})">${ICONS[v](g.t,g.c)}</g>`
+   :`<text x="50" y="${58+dy}" text-anchor="middle" dominant-baseline="middle" font-family="Graduate,Rockwell,Georgia,serif" font-size="${v.length>2?28:v.length>1?38:50}" fill="${g.t}" stroke="#0006" stroke-width="${p==='solid'||p==='ring'?0:1.2}" paint-order="stroke">${esc(v)}</text>`;
+  return `<svg class="crest ${cls}" viewBox="0 0 100 104" aria-hidden="true"><defs><clipPath id="${id}"><path d="${d}"/></clipPath></defs><path d="${d}" fill="${g.c}"/>${fill}<path d="${d}" fill="none" stroke="${g.t}" stroke-width="5" stroke-linejoin="round"/>${ring}${em}</svg>`;
  }
  async function loadInfo(code){
   try{
@@ -249,17 +267,23 @@
  }
  let edit=null;
  function logoEditor(cur){
-  const g=edit.g,mon=g.e.k==='mon',q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
-  const sw=(list,key)=>list.map(c=>`<button type="button" class="lg-sw${g[key]===c?' on':''}" data-${key}="${c}" style="--sw:${c}" aria-label="${c}" aria-pressed="${g[key]===c}"></button>`).join('');
-  return `<section class="lg-edit" aria-label="Edit league logo"><div class="lg-edit-top">${crestSVG(g,'big')}<div><b>League logo</b><small>Anyone in ${esc(cur.name)} can change it.</small></div></div>
-   <h4>Shape</h4><div class="lg-shapes">${Object.keys(SHAPES).map(k=>`<button type="button" data-shape="${k}" class="${g.s===k?'on':''}" aria-label="${k}" aria-pressed="${g.s===k}">${crestSVG({...g,s:k,e:{k:'txt',v:''}},'mini')}</button>`).join('')}</div>
-   <h4>Color</h4><div class="lg-sws">${sw(COLORS,'c')}</div>
-   <h4>Trim</h4><div class="lg-sws">${sw(TRIMS,'t')}</div>
-   <h4>Emblem</h4><div class="lg-emk"><button type="button" data-emk="txt" aria-pressed="${!mon}" class="${mon?'':'on'}">Letters</button><button type="button" data-emk="mon" aria-pressed="${mon}" class="${mon?'on':''}">Pokémon</button></div>
-   ${mon?`<input id="lgMonQ" placeholder="Search Gen 1–4 Pokémon" autocomplete="off" value="${esc(q)}"><div class="lg-mons">${hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>')}</div>`
+  const g=edit.g,k=g.e.k,q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
+  const sw=(list,key,cur0)=>list.map(c=>`<button type="button" class="lg-sw${cur0===c?' on':''}" data-${key}="${c}" style="--sw:${c}" aria-label="${c}" aria-pressed="${cur0===c}"></button>`).join('');
+  const seg=(list,key,val)=>`<div class="lg-emk n${list.length}">${list.map(([v,l])=>`<button type="button" data-${key}="${v}" aria-pressed="${val===v}" class="${val===v?'on':''}">${l}</button>`).join('')}</div>`;
+  const p=g.p||'solid';
+  return `<section class="lg-edit full" aria-label="Edit league logo">
+   <div class="lg-edit-top">${crestSVG(g,'big')}<div><b>League logo</b><small>Anyone in ${esc(cur.name)} can change it.</small></div></div>
+   <h4>Shape</h4><div class="lg-shapes">${Object.keys(SHAPES).map(s0=>`<button type="button" data-shape="${s0}" class="${g.s===s0?'on':''}" aria-label="${SHAPE_NAMES[s0]}" aria-pressed="${g.s===s0}">${crestSVG({...g,s:s0,e:{k:'txt',v:''}},'mini')}<span>${SHAPE_NAMES[s0]}</span></button>`).join('')}</div>
+   <h4>Color</h4><div class="lg-sws">${sw(COLORS,'c',g.c)}</div>
+   <h4>Pattern</h4><div class="lg-shapes lg-pats">${PATTERNS.map(([v,l])=>`<button type="button" data-pat="${v}" class="${p===v?'on':''}" aria-pressed="${p===v}">${crestSVG({...g,p:v,a:g.a||ACCENTS[3],e:{k:'txt',v:''}},'mini')}<span>${l}</span></button>`).join('')}</div>
+   ${p==='solid'?'':`<h4>Pattern color</h4><div class="lg-sws">${sw(ACCENTS,'a',g.a||g.t)}</div>`}
+   <h4>Trim</h4><div class="lg-sws">${sw(TRIMS,'t',g.t)}</div>
+   <h4>Emblem</h4>${seg([['txt','Letters'],['mon','Pokémon'],['ico','Icon']],'emk',k)}
+   ${k==='mon'?`<input id="lgMonQ" placeholder="Search Gen 1–4 Pokémon" autocomplete="off" value="${esc(q)}"><div class="lg-mons">${hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>')}</div>`
+    :k==='ico'?`<div class="lg-icons">${Object.keys(ICONS).map(n=>`<button type="button" data-ico="${n}" class="${g.e.v===n?'on':''}" aria-pressed="${g.e.v===n}" aria-label="${ICON_NAMES[n]}"><svg viewBox="20 22 60 64" aria-hidden="true">${ICONS[n]('#f4eedc','#1d3866')}</svg></button>`).join('')}</div>`
     :`<input id="lgTxt" maxlength="3" autocomplete="off" autocapitalize="characters" value="${esc(g.e.v)}" aria-label="Letters, up to 3">`}
    ${edit.msg?`<p class="lg-note" role="status">${esc(edit.msg)}</p>`:''}
-   <div class="lg-edit-btns"><button type="button" class="btn primary" id="lgLogoSave">Save logo</button><button type="button" class="btn" id="lgLogoCancel">Cancel</button></div></section>`;
+   <div class="lg-edit-btns"><button type="button" class="btn" id="lgLogoCancel">Cancel</button><button type="button" class="btn primary" id="lgLogoSave">Save logo</button></div></section>`;
  }
  function wireEditor(cur){
   const box=document.querySelector('#lg .lg-edit');if(!box)return;
@@ -271,7 +295,10 @@
   box.querySelectorAll('[data-shape]').forEach(b=>b.onclick=()=>{edit.g.s=b.dataset.shape;draw()});
   box.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{edit.g.c=b.dataset.c;draw()});
   box.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{edit.g.t=b.dataset.t;draw()});
-  box.querySelectorAll('[data-emk]').forEach(b=>b.onclick=()=>{const k=b.dataset.emk;if(k===edit.g.e.k)return;edit.g.e=k==='mon'?{k:'mon',v:edit.lastMon||''}:{k:'txt',v:edit.lastTxt||initials(cur.name)};draw()});
+  box.querySelectorAll('[data-pat]').forEach(b=>b.onclick=()=>{edit.g.p=b.dataset.pat;if(edit.g.p!=='solid'&&!edit.g.a)edit.g.a=ACCENTS.find(x=>x!==edit.g.c&&x!==edit.g.t)||ACCENTS[0];draw()});
+  box.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{edit.g.a=b.dataset.a;draw()});
+  box.querySelectorAll('[data-ico]').forEach(b=>b.onclick=()=>{edit.g.e={k:'ico',v:b.dataset.ico};edit.lastIco=b.dataset.ico;draw()});
+  box.querySelectorAll('[data-emk]').forEach(b=>b.onclick=()=>{const k=b.dataset.emk;if(k===edit.g.e.k)return;edit.g.e=k==='mon'?{k:'mon',v:edit.lastMon||''}:k==='ico'?{k:'ico',v:edit.lastIco||'ball'}:{k:'txt',v:edit.lastTxt||initials(cur.name)};draw()});
   wireMons();
   if($('lgMonQ'))$('lgMonQ').oninput=e=>{edit.q=e.target.value;monList()};
   if($('lgTxt'))$('lgTxt').oninput=e=>{const v=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);if(e.target.value!==v)e.target.value=v;edit.g.e={k:'txt',v};edit.lastTxt=v;preview()};
@@ -279,7 +306,7 @@
   $('lgLogoSave').onclick=async()=>{
    const g=edit.g;if(g.e.k==='txt'&&!g.e.v){edit.msg='Add 1 to 3 letters or numbers.';draw();return}
    if(g.e.k==='mon'&&!g.e.v){edit.msg='Pick a Pokémon.';draw();return}
-   const body={s:g.s,c:g.c,t:g.t,e:{k:g.e.k,v:String(g.e.v)}};
+   const body={s:g.s,c:g.c,t:g.t,...(g.p&&g.p!=='solid'?{p:g.p,a:g.a||g.t}:{}),e:{k:g.e.k,v:String(g.e.v)}};
    try{const r=await fetch(LB_URL.replace(/ballclub_scores$/,'rpc/ballclub_set_league_logo'),{method:'POST',headers:await Account.postHeaders({'Content-Type':'application/json'}),body:JSON.stringify({c:cur.code,l:body})});
     if(!r.ok){let m='';try{m=(await r.json()).message||''}catch(e){}throw Error(m)}
     info[cur.code]={...info[cur.code],logo:body,canEdit:true};store.set(logoKey(cur.code),JSON.stringify(body));edit=null;note='Logo saved.';draw();
@@ -382,7 +409,8 @@
   const tabs=cur?`<div class="lg-seg" role="tablist">${[['week','Week'],['season','Season'],['rivals','Rivals'],['results','Results']].map(([k,l])=>`<button type="button" role="tab" data-tab="${k}" aria-selected="${tab===k}">${l}</button>`).join('')}</div>`:'';
   const content=!cur?'':!data?'<p class="lg-empty">Loading…</p>':data.error?'<p class="lg-empty">Couldn\'t reach the leaderboard. Check your connection and try again.</p>':tab==='season'?tabSeason2():tab==='rivals'?tabRivals():tab==='results'?tabResults():tabWeek2(cur);
   const editor=cur&&edit&&edit.code===cur.code?logoEditor(cur):'';
-  body.innerHTML=hero+editor+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`+(editor||form?'':actionBar(cur)):`<p class="lgs-cap">No league needed</p>`+actionBar(null));
+  if(editor){body.innerHTML=editor;body.classList.add('editing');wireEditor(cur);return}
+  body.innerHTML=hero+picker+(note?`<p class="lg-note" role="status">${esc(note)}</p>`:'')+(cur?tabs+`<div id="lgList" class="lg-panel">${content}</div>`+(editor||form?'':actionBar(cur)):`<p class="lgs-cap">No league needed</p>`+actionBar(null));
   if($('lgSeries'))$('lgSeries').onclick=()=>pickRival(cur.code);
   body.classList.toggle('editing',!!editor);if(editor)wireEditor(cur)
   if($('lgCrest')&&can)$('lgCrest').onclick=()=>{edit=edit?null:{code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw()};
@@ -395,7 +423,7 @@
   body.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;podSel=null;draw()});
   if($('lgSwitch'))$('lgSwitch').onclick=()=>{form=form?null:'menu';note='';draw()};
   body.querySelectorAll('[data-lgm]').forEach(b=>b.onclick=()=>{const k=b.dataset.lgm;
-   if(k==='logo'){form=null;edit={code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw()}
+   if(k==='logo'){form=null;edit={code:cur.code,g:JSON.parse(JSON.stringify(logoOf(cur)))};note='';draw();let sc=$('lgBody');while(sc&&sc.scrollHeight<=sc.clientHeight)sc=sc.parentElement;sc?.scrollTo?.(0,0)}
    else if(k==='invite'){form=null;draw();invite(cur)}
    else if(k==='join'||k==='make'){form=k;draw();$(k==='join'?'lgCode':'lgName')?.focus()}
    else if(k==='leave'){if(form!=='leave'){form='leave';draw();return}keep(mine().filter(x=>x.code!==cur.code));note=`Left ${cur.name}.`;scope=mine()[0]?.code||'all';form=null;load()}});
