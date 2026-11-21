@@ -1544,3 +1544,58 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .c2-tc-art{top:52px;right:10px;width:auto;max-width:44%;height:calc(100% - 52px - 66px);object-fit:contain;object-position:right bottom}
 .c2-tc h2,.c2-tc p{max-width:56%}
 .c2-tc{min-height:266px}.c2-tc-art{max-width:48%}
+
+/* ---- My Clubhouse v3: trainer card, most drafted cards, four themed tiles ---- */
+.c3,.c3-l,.c3-r{display:flex;flex-direction:column;gap:10px}
+@media (min-width:1000px){.c3{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}}
+.c3-h{display:flex;justify-content:space-between;align-items:baseline;margin:10px 4px 0}
+.c3-h b{font:600 12px/1 var(--f-data);letter-spacing:.16em;text-transform:uppercase;color:#a9b8d0}
+.c3-h span{font:600 12.5px/1 "Barlow",sans-serif;color:#ffcb05}
+.c3-cards{display:flex;gap:9px;overflow-x:auto;padding:8px 2px 6px;margin:-4px -2px 0;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.c3-cards::-webkit-scrollbar{display:none}
+.c3-mc{flex:none;position:relative;width:84px;padding:5px;border:0;border-radius:10px;background:linear-gradient(160deg,var(--c1),var(--c2));box-shadow:0 4px 8px rgba(0,0,0,.4);scroll-snap-align:start;cursor:pointer;font:inherit}
+.c3-mc>span{display:grid;justify-items:center;gap:2px;padding:6px 4px 6px;border-radius:7px;background:#f4eedc}
+.c3-mc img{width:58px;height:58px;object-fit:contain;image-rendering:pixelated}
+.c3-mc b{max-width:100%;font:700 11px/1.1 var(--f-data);color:#10254a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c3-mc i{position:absolute;right:-5px;top:-6px;z-index:1;min-width:26px;height:26px;padding:0 6px;border-radius:13px;background:#ffcb05;color:#10254a;display:grid;place-items:center;font:700 11.5px/1 var(--f-data);font-style:normal;box-shadow:0 2px 4px rgba(0,0,0,.45)}
+.c3-mc:focus-visible{outline:2px solid #ffcb05;outline-offset:3px}
+.c3-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.c3-tile{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:132px;padding:12px;border-radius:16px;border:1px solid #2c4470;background:#142c55;color:#f4eedc;text-align:left;overflow:hidden;cursor:pointer;font:inherit;-webkit-tap-highlight-color:transparent;transition:transform .12s}
+.c3-tile:active{transform:scale(.98)}
+.c3-tile:focus-visible{outline:2px solid #ffcb05;outline-offset:2px}
+.c3-tile[aria-expanded="true"]{box-shadow:0 0 0 2px #ffcb05}
+.c3-tile small{position:relative;z-index:1;font:600 10.5px/1 var(--f-data);letter-spacing:.14em;text-transform:uppercase}
+.c3-tv{position:relative;z-index:1}
+.c3-tv b{display:block;font:700 28px/1 var(--f-data)}
+.c3-tv b span{font-size:15px;opacity:.75}
+.c3-tv em{display:block;margin-top:4px;font-style:normal;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c3-tile.case{background:linear-gradient(160deg,#5a0c1b,#2a0610);border-color:#7a1426}
+.c3-tile.case small,.c3-tile.case em{color:#f3c9d0}
+.c3-pins{position:absolute;right:8px;top:30px;display:flex}.c3-pins svg{width:36px;height:36px;margin-left:-9px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+.c3-tile.dex{background:linear-gradient(150deg,#c42c0b,#7a1a08);border-color:#d8432a}
+.c3-tile.dex small,.c3-tile.dex em{color:#ffe3d8}
+.c3-ring{position:absolute;right:12px;top:12px;width:48px;height:48px}
+.c3-tile.log{background:#f2ead3;border-color:#d9cba6;color:#10254a;background-image:repeating-linear-gradient(0deg,transparent 0 21px,rgba(29,56,102,.13) 21px 22px),linear-gradient(90deg,transparent 28px,rgba(200,16,46,.35) 28px 29.5px,transparent 29.5px)}
+.c3-tile.log small{color:#c8102e}.c3-tile.log em{color:#55617a}
+.c3-marks{position:absolute;right:12px;top:34px;font:700 15px/1 var(--f-data);letter-spacing:1px;color:#10254a;transform:rotate(-4deg)}
+.c3-marks i{font-style:normal;color:#c8102e}.c3-marks s{text-decoration:none}
+.c3-tile.riv{background:linear-gradient(120deg,#1d4fa8 0 49%,#0b1b38 49% 51%,#c8102e 51%);border-color:#3a5380}
+.c3-tile.riv small{color:#e3e9f3}.c3-tile.riv em{color:#f3dfe2}
+.c3-vs{position:absolute;right:14px;top:12px;width:42px;height:42px;border-radius:50%;background:#ffcb05;color:#10254a;display:grid;place-items:center;font:800 15px/1 var(--f-data);font-style:italic;box-shadow:0 3px 6px rgba(0,0,0,.4)}
+.c3-panel{animation:lgmIn .14s ease-out}
+.c3-panel[hidden]{display:none}
+.c3-p-log{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:16px;background:#132a52;border:1px solid #2c4470}
+.c3-p-rivals{padding:12px;border-radius:16px;background:#132a52;border:1px solid #2c4470}
+.c3-best{display:grid;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:center;margin-bottom:6px;padding:8px;border-radius:12px;background:linear-gradient(140deg,#3b2f10,#132a52 70%);border:1px solid #6d5a1e}
+.c3-best .c2-best-art{width:70px;height:70px}.c3-best .c2-best-art img{width:64px;height:64px}
+.c3-best-k{font:600 10px/1 var(--f-data)!important;letter-spacing:.14em;text-transform:uppercase;color:#ffcb05!important}
+.c3-case .bcase-lid{border-radius:11px 11px 4px 4px;min-height:50px}
+.c3-p-dex .pdx>summary{pointer-events:none}
+.c3-p-dex .pdx>summary .c2-chev{display:none}
+.c3,.c3-l,.c3-r{min-width:0;max-width:100%}
+.c3 .c2-tc{order:0!important}
+.records-clubhouse{min-width:0;max-width:100%}
+.c3-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+.c3-tile{min-width:0}
+.c3-cards{min-width:0;max-width:100%}
+.c3-cards{width:0;min-width:100%}

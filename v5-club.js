@@ -101,6 +101,12 @@
  const GEAR='<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M18.4 13a6.6 6.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a6.4 6.4 0 0 0-1.7-1L14 3.5h-4l-.4 2.5a6.4 6.4 0 0 0-1.7 1l-2.4-1-2 3.4L5.6 11a6.6 6.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a6.4 6.4 0 0 0 1.7 1l.4 2.5h4l.4-2.5a6.4 6.4 0 0 0 1.7-1l2.4 1 2-3.4zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>';
  const artImg=(m,cls='')=>`<img class="${cls}" src="${ART_URL(m.num,m.shiny)}" alt="" decoding="async" onerror="this.onerror=null;this.src='${SPRITE_URL(m.num,m.shiny)}';this.classList.add('px')">`;
  const colors=m=>{const a=TYPE_COLORS[m?.types?.[0]]||'#5f7fb6';return [a,TYPE_COLORS[m?.types?.[1]]||a]};
+ let tileOpen=null;
+ document.addEventListener('click',e=>{const t=e.target.closest?.('[data-ctile]');if(!t)return;const k=t.dataset.ctile,root=t.closest('.c3');if(!root)return;
+  tileOpen=tileOpen===k?null:k;
+  root.querySelectorAll('[data-ctile]').forEach(b=>b.setAttribute('aria-expanded',String(b.dataset.ctile===tileOpen)));
+  root.querySelectorAll('.c3-panel').forEach(p=>p.hidden=p.id!=='c3p-'+tileOpen);
+  if(tileOpen)root.querySelector('#c3p-'+tileOpen)?.scrollIntoView({behavior:'smooth',block:'nearest'})});
  window.clubhouseHTML=()=>{
   try{Clubhouse.sweep()}catch(e){}
   const b=Clubhouse.read(),hist=b.history.filter(h=>h.board==='pack-16'),bd=b.boards['pack-16'];
@@ -115,19 +121,33 @@
    ${!user?'<p class="c2-sub">Sign in to keep your Clubhouse on every device.</p>':''}${note?`<p class="c2-note" role="status">${esc(note)}</p>`:''}
    ${av?artImg(av,'c2-tc-art'):''}
    ${bd?`<div class="c2-stats"><div>Best<b>${best.wins}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${titles}</b></div></div>`:'<div class="c2-stats c2-stats-0"></div>'}</section>`;
-  const sec=(k,title,meta,body)=>`<details class="c2-sec c2-row" data-sec="${k}"${isOpen(k)}><summary><b>${title}</b><span class="c2-meta">${meta}</span>${CHEV}</summary><div class="c2-body">${body}</div></details>`;
-  let bestHTML='';
-  if(best?.roster){const a=aceOf(best.roster);
-   bestHTML=sec('best','Best season',`${best.wins}–${162-best.wins}`,`<div class="c2-best">${a?`<span class="c2-best-art">${artImg(a)}</span>`:''}<div class="c2-best-mid"><b>${esc(best.team||'Best season')}</b><small>${[best.date?day(best.date):'',best.champ?'World champions':''].filter(Boolean).join(' · ')}</small><small>${[best.rating?'Rating '+best.rating:'',best.grade?'Grade '+esc(best.grade):''].filter(Boolean).join(' · ')}</small></div></div>${lineupHTML(best.roster)}`)}
-  const top=favs.slice(0,5),most=top[0]?.n||1;
-  const favHTML=top.length?sec('drafted','Most drafted',esc(top[0].m.name),`<ol class="c2-favs">${top.map(x=>`<li><button type="button" data-history-mon="${x.m.id}" aria-label="${esc(x.m.name)}, drafted in ${x.n} seasons. Open card">${artImg(x.m)}<span class="c2-fav-n"><b>${esc(x.m.name)}</b><span class="c2-fav-bar"><i style="width:${Math.round(100*x.n/most)}%"></i></span></span><em>${x.n} season${x.n===1?'':'s'}</em></button></li>`).join('')}</ol>`):'';
   const lineup=h=>FULL.map((s,i)=>{const m=BYID.get(h.roster[i]);return m?`<button type="button" data-history-mon="${m.id}" aria-label="Inspect ${esc(m.name)} card">${tok(m)}<i>${lbl(s)}</i><em>${posOvr(m,s)}</em></button>`:''}).join('');
   const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r">${h.team?`<em>${esc(h.team)}</em>`:''}<b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary><div class="ch-lineup">${lineup(h)}</div></details>`};
   let rv={w:0,l:0};try{Object.values(JSON.parse(store.get('pbc5-rivals')||'{}')).forEach(x=>{rv.w+=+x?.w||0;rv.l+=+x?.l||0})}catch(e){}
-  const log=hist.length?sec('log','Season log',plural(hist.length,'season'),hist.map(season).join('')):'';
-  const riv=typeof rivalriesHTML==='function'?sec('rivals','Rival series',rv.w+rv.l?`${rv.w}–${rv.l}`:'None yet',`<div class="c2-riv">${rivalriesHTML()}</div>`):'';
-  const dexHTML=typeof collectionHTML==='function'?collectionHTML():'';
-  return `<div class="c2"><div class="c2-l">${card}${bestHTML?`<div class="c2-o2">${bestHTML}</div>`:''}${favHTML?`<div class="c2-o3">${favHTML}</div>`:''}<div class="c2-o5">${log}${riv}</div></div>
-   <div class="c2-r"><div class="c2-o4">${caseHTML(ach,earned)}</div><div class="c2-o6">${dexHTML}</div></div></div>`;
+  // Most drafted: mini trading cards
+  const top=favs.slice(0,5);
+  const cardsHTML=top.length?`<div class="c3-h"><b>Most drafted</b><span>Top ${top.length}</span></div><div class="c3-cards">${top.map(x=>{const [k1,k2]=colors(x.m);return `<button type="button" class="c3-mc" style="--c1:${k1};--c2:${k2}" data-history-mon="${x.m.id}" aria-label="${esc(x.m.name)}, drafted in ${x.n} seasons. Open card"><i>×${x.n}</i><span><img src="${SPRITE_URL(x.m.num,false)}" alt="" loading="lazy"><b>${esc(x.m.name)}</b></span></button>`}).join('')}</div>`:'';
+  // Four tiles, each opens its full view underneath
+  const got=ach.filter(a=>earned.has(a[0])).length,ds=typeof dexStats==='function'?dexStats():{got:0,total:493};
+  const ring=p=>`<svg viewBox="0 0 36 36" class="c3-ring" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="rgba(5,12,26,.55)" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(p*94.2).toFixed(1)} 94.2" transform="rotate(-90 18 18)"/></svg>`;
+  const marks=hist.slice(0,8).reverse().map(h=>h.champ?'<i>★</i>':'<s>|</s>').join('');
+  const tile=(k,cls,label,inner,big,sub,aria)=>`<button type="button" class="c3-tile ${cls}" data-ctile="${k}" aria-expanded="${tileOpen===k}" aria-controls="c3p-${k}" aria-label="${aria}"><small>${label}</small>${inner}<span class="c3-tv"><b>${big}</b><em>${sub}</em></span></button>`;
+  const tiles=`<div class="c3-tiles">
+   ${tile('badges','case','Badge case',`<span class="c3-pins" aria-hidden="true">${ach.filter(a=>earned.has(a[0])).slice(0,3).map(a=>badgeSVG(a[0])).join('')}</span>`,`${got}<span> / ${ach.length}</span>`,'badges earned',`Badge case, ${got} of ${ach.length} earned`)}
+   ${tile('dex','dex','Pokédex',ring(ds.total?ds.got/ds.total:0),`${ds.got}<span> / ${ds.total}</span>`,'caught',`Pokédex, ${ds.got} of ${ds.total} caught`)}
+   ${tile('log','log','Season log',`<span class="c3-marks" aria-hidden="true">${marks}</span>`,`${hist.length}`,best?.wins!=null&&hist.length?`seasons · best ${best.wins}–${162-best.wins}`:'seasons',`Season log, ${plural(hist.length,'season')}`)}
+   ${tile('rivals','riv','Rival series','<span class="c3-vs" aria-hidden="true">VS</span>',rv.w+rv.l?`${rv.w}–${rv.l}`:'0–0','series won–lost',`Rival series, ${rv.w} won ${rv.l} lost`)}</div>`;
+  // Full views
+  const ba=best?.roster?aceOf(best.roster):null;
+  const bestCard=best?.roster?`<div class="c3-best">${ba?`<span class="c2-best-art">${artImg(ba)}</span>`:''}<div class="c2-best-mid"><small class="c3-best-k">Best season</small><b>${esc(best.team||'Best season')} · ${best.wins}–${162-best.wins}</b><small>${[best.date?day(best.date):'',best.champ?'World champions':'',best.rating?'Rating '+best.rating:''].filter(Boolean).join(' · ')}</small></div></div>`:'';
+  OPEN.add('dex');
+  const panels={
+   badges:`<div class="bcase c3-case"><div class="bcase-lid"><span>Badge case</span><i class="bcase-clasp" aria-hidden="true"></i><em>${got} of ${ach.length}</em></div><div class="bcase-tray">${ach.map(([k,name])=>`<button type="button" class="bslot${earned.has(k)?' on':''}" data-badge="${k}" aria-label="${esc(name)}${earned.has(k)?', earned':', locked'}. Tap for details"><span class="bwell">${badgeSVG(k)}</span></button>`).join('')}</div><p class="bcase-hint">Tap a badge to see what it is and how to earn it.</p></div>`,
+   dex:typeof collectionHTML==='function'?collectionHTML():'',
+   log:hist.length?`${bestCard}${hist.map(season).join('')}`:'<p class="hint">Finish a season and it shows up here.</p>',
+   rivals:typeof rivalriesHTML==='function'?`<div class="c2-riv">${rivalriesHTML()}</div>`:''
+  };
+  const panelHTML=Object.entries(panels).map(([k,v])=>`<div class="c3-panel c3-p-${k}" id="c3p-${k}"${tileOpen===k?'':' hidden'}>${v}</div>`).join('');
+  return `<div class="c3"><div class="c3-l">${card}${cardsHTML}</div><div class="c3-r"><div class="c3-h"><b>Clubhouse</b></div>${tiles}${panelHTML}</div></div>`;
  };
 })();

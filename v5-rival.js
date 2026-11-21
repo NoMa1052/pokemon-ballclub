@@ -29,6 +29,7 @@
  document.addEventListener('click',e=>{const b=e.target.closest?.('[data-dex-region]');if(!b)return;dexRegion=+b.dataset.dexRegion;
   const box=b.closest('.pdx');if(!box)return;box.querySelectorAll('[data-dex-region]').forEach(x=>x.setAttribute('aria-selected',String(x===b)));
   const grid=box.querySelector('.pdx-grid');grid.innerHTML=dexGrid(dexRegion);grid.scrollTop=0});
+ window.dexStats=()=>{const d=dex(),own=new Set(d.nums),all=allMons();return {got:all.filter(m=>own.has(m.num)).length,total:all.length}};
  window.collectionHTML=()=>{
   const d=dex(),own=new Set(d.nums),shiny=new Set(d.shiny),all=allMons();
   const legs=all.filter(m=>m.leg),gotLegs=legs.filter(m=>own.has(m.num)).length,got=all.filter(m=>own.has(m.num)).length;
