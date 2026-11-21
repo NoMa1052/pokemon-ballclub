@@ -1616,3 +1616,6 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .lgs-or::before,.lgs-or::after{content:"";flex:1;height:1px;background:#2c4470}
 .lgs-cap{margin:18px 4px 0;font:600 11.5px/1 var(--f-data);letter-spacing:.16em;text-transform:uppercase;color:#a9b8d0}
 .lgs-cap+.lg-bar{position:static;margin-top:8px}
+
+/* Descenders (g, y, p, j) were clipped where tight line-height meets overflow:hidden. Extra bottom padding widens the clip box without moving anything. */
+.penhead small,.lblist .tm,.signed .who b,.dc-row span,.dc-star b,.move-spot small,.box-name b,#draft .undo-chip>span,#season .season-award b,#season .posted-info b,.candy-sheet .candy-tile b,.candy-sheet .cr-name b,#draft .pk-undo em,#season .season-award em,#season .season-award .aw-who b,.pick-tray b,.sr-race span,.bg-club b,.bg-rivals b,.sc-list b,.lg-rows .tm b,.field-deciding #fieldFlow h3,.sc-row b,.dex-grid span i,.pk-hud small,.ch-season .r em,.acct b,.acct .acct-txt b,.h2h-who b,.h2h-last span,.h2h-line span,.rs-chip b,.lg-pod .pc b,.lg-pod .pc small,.lg-race .rr-top b,#lb .lb-cards .lbc-mid b,#lb .lb-cards .lbc-mid small,.lb-pin b,.c2-best-mid b,.c2-favs b,.c2-row>summary .c2-meta,.c2-fav-n b,.lg-bar-t small,.c3-mc b,.c3-tv em{padding-bottom:.22em!important;margin-bottom:-.22em!important}
