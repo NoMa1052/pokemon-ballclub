@@ -14,7 +14,7 @@ const BYID=new Map(MONS.map(m=>[m.id,m]));
 const BASE=MONS.filter(m=>!m.leg);
 // Every rating is measured against the Gen 1-4 pool, so adding Gen 5 never moved an existing rating or a posted team's record.
 const REF=BASE.filter(m=>m.gen<=4);
-// Gen 5 joined the Classic pack for week 2026-W48. The weekly challenge already running kept Gen 1-4,
+// Gen 5 joined the Classic pack for week 2026-W48 (starting Monday Nov 23, midnight Eastern). The weekly challenge already running kept Gen 1-4,
 // so every player that week opened the same packs.
 const GEN5_WEEK='2026-W48';
 const inPool=(r,m)=>!(r&&r.week&&r.week<GEN5_WEEK)||m.gen<=4;

@@ -277,7 +277,7 @@ function howHTML(){
     <li><b>Shiny spark:</b> a shiny lifts every teammate that shares one of its types. Each linked teammate plays a few rating points better, shown as a gold +. Up to 5 teammates count, so one shiny is worth building around.</li></ul>
   </div></section>
   <section class="guide-topic"><h3>6. League, weekly challenge and rival series</h3><div class="guide-content"><ul>
-    <li><b>Weekly challenge:</b> tap League. Everyone opens the same pack at each pick and gets one attempt. A new challenge starts every Monday.</li>
+    <li><b>Weekly challenge:</b> tap League. Everyone opens the same pack at each pick and gets one attempt. A new challenge starts every Monday at midnight Eastern.</li>
     <li><b>Leagues:</b> start one or join with a 5-character code, then send the invite link. A league ranks its members on each week's challenge.</li>
     <li><b>Rival series:</b> after a 16-player season, tap Pick a rival and play a league mate or a top club in a best of 7. You pick each game's starter, watch the at-bats, check the box score, and decide when to go to the bullpen. Results post to your league.</li>
     <li><b>Collection:</b> in Records, under My Clubhouse. Every Pokémon you have finished a season with.</li></ul>

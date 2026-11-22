@@ -7,13 +7,31 @@
  const keep=a=>store.set(KEY,JSON.stringify(a.slice(0,3)));
  window.leagueCodes=()=>mine().map(x=>x.code);
 
- // ISO week in UTC: a new challenge starts every Monday at 00:00 UTC.
+ // ISO week on New York time: a new challenge starts every Monday at midnight Eastern (Nov 22, 2026; was 00:00 UTC).
+ const NY='America/New_York';let nyFmt=null;
+ function nyDay(d){
+  try{nyFmt=nyFmt||new Intl.DateTimeFormat('en-US',{timeZone:NY,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',hourCycle:'h23'});
+   const p={};for(const x of nyFmt.formatToParts(d))if(x.type!=='literal')p[x.type]=+x.value;p.hour%=24;return p}
+  catch(e){const u=new Date(d-5*36e5);return {year:u.getUTCFullYear(),month:u.getUTCMonth()+1,day:u.getUTCDate(),hour:u.getUTCHours()}}
+ }
+ // Timestamp of 00:00 New York time on a calendar date (given as a UTC date), handling daylight saving.
+ function nyMidnight(u){
+  const y=u.getUTCFullYear(),m=u.getUTCMonth(),dd=u.getUTCDate();
+  for(const off of [5,4]){const t=Date.UTC(y,m,dd,off),p=nyDay(new Date(t));if(p.hour===0&&p.day===dd)return t}
+  return Date.UTC(y,m,dd,5);
+ }
  function weekKey(d=new Date()){
-  const t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())),day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);
+  const p=nyDay(d),t=new Date(Date.UTC(p.year,p.month-1,p.day)),day=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-day);
   const y=t.getUTCFullYear();return y+'-W'+String(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)).padStart(2,'0');
  }
+ // Start and end of the current week as timestamps: Monday 00:00 New York time to the next Monday.
+ function weekBounds(d=new Date()){
+  const p=nyDay(d),t=new Date(Date.UTC(p.year,p.month-1,p.day)),day=t.getUTCDay()||7;
+  const mon=new Date(t);mon.setUTCDate(t.getUTCDate()-(day-1));const nxt=new Date(mon);nxt.setUTCDate(mon.getUTCDate()+7);
+  return {start:nyMidnight(mon),end:nyMidnight(nxt)};
+ }
  function weekLeft(){
-  const d=new Date(),day=d.getUTCDay()||7,end=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+8-day),h=Math.max(1,Math.round((end-d)/36e5));
+  const d=new Date(),h=Math.max(1,Math.round((weekBounds(d).end-d)/36e5));
   return h>=48?`${Math.round(h/24)} days left`:h>=24?'1 day left':`${h} hour${h===1?'':'s'} left`;
  }
  const wkStore=w=>'pbc5-weekly-'+w;
@@ -316,7 +334,7 @@
 
  // ---- Week tab: your status, the podium, the rest of the table ----
  let podSel=null;
- function weekFrac(){const d=new Date(),day=(d.getUTCDay()||7)-1;return Math.min(1,(day*864e5+(d-Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())))/(7*864e5))}
+ function weekFrac(){const d=new Date(),b=weekBounds(d);return Math.min(1,Math.max(0,(d-b.start)/(b.end-b.start)))}
  function youCard(rows){
   const s=weeklyState(),row=postedWeekly(s.w),i=rows.findIndex(x=>isMine(x.device));
   if(row){

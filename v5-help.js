@@ -57,7 +57,7 @@
   ${topic('League and weekly challenge',leaguePic()+list([
    'Tap <b>League</b> to start a league or join one with a 5-character code.',
    '<b>Weekly challenge</b>: everyone opens the same pack at each pick and gets one attempt.',
-   'Your league is ranked on that week\'s result. A new challenge starts every Monday.']))}
+   'Your league is ranked on that week\'s result. A new challenge starts every Monday at midnight Eastern.']))}
   ${topic('Rival series',seriesPic()+list([
    'After a season, tap <b>Pick a rival</b> to play a league mate in a best of 7. You can also play top clubs from Records as an exhibition.',
    'You choose each game\'s starter and decide when to go to the bullpen.',
