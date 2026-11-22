@@ -1745,3 +1745,9 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .ss-row .n{font:600 15px/1 var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
 .ss-hd .g,.ss-row .n.g{color:#ffcb05}.ss-hd .m,.ss-row .n.m{color:#8ea3c4}
 .scout #scStarsBody .hint{margin:8px 8px 6px}
+
+/* Scouting: one label style for the stars toggle and the list header (matches the league's WEEK 47 row) */
+.scout .sc-stars summary{min-height:48px;padding:0 44px 0 14px;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left}
+.scout .sc-stars summary span{font:600 13px/1 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#f4eedc}
+.scout .sc-tip{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:6px 4px 2px;font:600 12px/1.2 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#a9b8d0}
+.scout .sc-tip b{color:#ffcb05;font-weight:600;white-space:nowrap}
