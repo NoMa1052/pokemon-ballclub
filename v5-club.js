@@ -128,7 +128,7 @@
   const top=favs.slice(0,5);
   const cardsHTML=top.length?`<div class="c3-h"><b>Most drafted</b><span>Top ${top.length}</span></div><div class="c3-cards">${top.map(x=>{const [k1,k2]=colors(x.m);return `<button type="button" class="c3-mc" style="--c1:${k1};--c2:${k2}" data-history-mon="${x.m.id}" aria-label="${esc(x.m.name)}, drafted in ${x.n} seasons. Open card"><i>×${x.n}</i><span><img src="${SPRITE_URL(x.m.num,false)}" alt="" loading="lazy"><b>${esc(x.m.name)}</b></span></button>`}).join('')}</div>`:'';
   // Four tiles, each opens its full view underneath
-  const got=ach.filter(a=>earned.has(a[0])).length,ds=typeof dexStats==='function'?dexStats():{got:0,total:493};
+  const got=ach.filter(a=>earned.has(a[0])).length,ds=typeof dexStats==='function'?dexStats():{got:0,total:649};
   const ring=p=>`<svg viewBox="0 0 36 36" class="c3-ring" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="rgba(5,12,26,.55)" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(p*94.2).toFixed(1)} 94.2" transform="rotate(-90 18 18)"/></svg>`;
   const marks=hist.slice(0,8).reverse().map(h=>h.champ?'<i>★</i>':'<s>|</s>').join('');
   const tile=(k,cls,label,inner,big,sub,aria)=>`<button type="button" class="c3-tile ${cls}" data-ctile="${k}" aria-expanded="${tileOpen===k}" aria-controls="c3p-${k}" aria-label="${aria}"><small>${label}</small>${inner}<span class="c3-tv"><b>${big}</b><em>${sub}</em></span></button>`;

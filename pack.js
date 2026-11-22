@@ -11,7 +11,7 @@ const wrinkles=(y,dir)=>{let d1="",d2="";for(let i=0;i<44;i++){const x=6+i*4.4+(
   const seg=`M${x.toFixed(1)} ${y} l${lean} ${len*dir} `;if(i%2)d1+=seg;else d2+=seg}return `<path d="${d1}" stroke="#fff" stroke-opacity=".09" stroke-width="1.4" stroke-linecap="round"/><path d="${d2}" stroke="#000" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>`};
 let tornPackSource=null,burstPendingSpin=null,openingBurstTier="base";
 function packArt(opened=false){
- return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="pack-foil-v4.webp" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
+ return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="pack-foil-v5.webp" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
 }
 
 // Tilt: the pack leans toward your finger or cursor and a glare follows it.
@@ -256,15 +256,15 @@ const rollPack=function(run,taken){
   run.packs=(run.packs||0)+1;
   if(rand(run)<rollPack.godOdds){
     const good=m=>{setOverall(m);return m.ovr>=90&&free(m)};
-    const legs=LEGENDS.filter(good),shin=BASE.map(m=>BYID.get(m.id+SHINY_ID)).filter(Boolean).filter(good);
+    const legs=LEGENDS.filter(m=>inPool(run,m)).filter(good),shin=BASE.filter(m=>inPool(run,m)).map(m=>BYID.get(m.id+SHINY_ID)).filter(Boolean).filter(good);
     if(legs.length&&shin.length&&legs.length+shin.length>=PACK_SIZE){
       const first=[...pick(legs,1),...pick(shin,1)],ids=[...first,...pick([...legs,...shin].filter(m=>!first.includes(m)),PACK_SIZE-2)].map(m=>m.id);
       for(let i=ids.length-1;i>0;i--){const j=Math.floor(rand(run)*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
       return{pack:true,legend:false,god:true,shiny:true,shinies:ids.filter(id=>id>=SHINY_ID).length,bonus:null,bonuses:0,n:run.packs,ids};
     }
   }
-  const ids=pick(BASE,PACK_SIZE).map(m=>rand(run)<SHINY_PER_CARD?m.id+SHINY_ID:m.id);
-  const shinies=ids.filter(id=>id>=SHINY_ID).length,legPool=LEGENDS.filter(free),bonus=[];
+  const ids=pick(BASE.filter(m=>inPool(run,m)),PACK_SIZE).map(m=>rand(run)<SHINY_PER_CARD?m.id+SHINY_ID:m.id);
+  const shinies=ids.filter(id=>id>=SHINY_ID).length,legPool=LEGENDS.filter(m=>inPool(run,m)).filter(free),bonus=[];
   while(legPool.length&&rand(run)<LEGEND_PER_PACK)bonus.push(legPool.splice(Math.floor(rand(run)*legPool.length),1)[0].id);
   return{pack:true,legend:false,shiny:shinies>0,shinies,bonus:bonus[0]||null,bonuses:bonus.length,n:run.packs,ids:shuffle([...ids,...bonus],()=>rand(run))};
 };

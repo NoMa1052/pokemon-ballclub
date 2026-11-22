@@ -1358,7 +1358,7 @@ body.rv-open>.wrap{visibility:visible!important}
 .pdx-chips{display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .pdx-chips em{padding:3px 7px;border-radius:5px;background:#163522;color:#dfe9d8;font:600 10.5px/1 var(--f-data);letter-spacing:.06em;font-style:normal}
 .pdx-bar{height:6px;margin:9px 0 10px;border-radius:3px;background:#b8c8b0;overflow:hidden}.pdx-bar i{display:block;height:100%;background:#2e7d46;border-radius:3px}
-.pdx-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.pdx-tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
 .pdx-tabs button{display:grid;gap:3px;justify-items:center;padding:7px 2px;border-radius:8px;border:2px solid #9fb398;background:#cfdcc7;color:#1d2b22;cursor:pointer;font:inherit}
 .pdx-tabs b{font:700 12.5px/1 var(--f-data);letter-spacing:.04em}.pdx-tabs small{font:600 10.5px/1 var(--f-data);color:#4b6653}
 .pdx-tabs button[aria-selected="true"]{background:#163522;border-color:#163522;color:#dfe9d8}.pdx-tabs button[aria-selected="true"] small{color:#9fd3a9}

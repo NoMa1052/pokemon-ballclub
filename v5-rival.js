@@ -2,7 +2,7 @@
 (() => {
  const $=id=>document.getElementById(id);
  // ---------- collection ----------
- const DEX='pbc5-dex',REGIONS=['Kanto','Johto','Hoenn','Sinnoh'];
+ const DEX='pbc5-dex',REGIONS=['Kanto','Johto','Hoenn','Sinnoh','Unova'];
  function dex(){
   let d;try{d=JSON.parse(store.get(DEX)||'null')}catch(e){}
   if(!d||!Array.isArray(d.nums))d={nums:[],shiny:[]};
@@ -43,7 +43,7 @@
    <div class="pdx-screen">
     <div class="pdx-head"><div class="pdx-count"><b>${got}</b><small>of ${all.length}<br>caught</small></div><div class="pdx-chips"><em>${gotLegs}/${legs.length} legendaries</em><em>${shiny.size} shin${shiny.size===1?'y':'ies'}</em></div></div>
     <div class="pdx-bar" aria-hidden="true"><i style="width:${(100*got/all.length).toFixed(1)}%"></i></div>
-    <div class="pdx-tabs" role="tablist" aria-label="Region">${[1,2,3,4].map(tab).join('')}</div>
+    <div class="pdx-tabs" role="tablist" aria-label="Region">${REGIONS.map((_,i)=>tab(i+1)).join('')}</div>
     <div class="pdx-grid">${dexGrid(dexRegion)}</div>
    </div>
    <div class="pdx-foot"><span class="pdx-dpad" aria-hidden="true"></span><small>Caught means rostered in a finished season. Tap one for its card.</small><span class="pdx-ab" aria-hidden="true"><i></i><i></i></span></div>

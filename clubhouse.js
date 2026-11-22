@@ -15,7 +15,7 @@ const Clubhouse = (() => {
     ['shiny','Shining star','Finish a season with a shiny.',(_,r)=>Object.values(r.slots).some(m=>m?.shiny)],
     ['dynasty','Dynasty','Win three World Series.',b=>Object.values(b.boards).reduce((n,v)=>n+(v.championships||0),0)>=3],
     ['perfect','Perfect season','Go 162–0.',(_,r)=>r.result.wins===162],
-    ['allgens','Gotta draft \'em all','Win the World Series with Pokémon from all four gens.',(_,r)=>!!r.result.post.champ&&allGens(Object.values(r.slots))],
+    ['allgens','Gotta draft \'em all','Win the World Series with Pokémon from all five gens.',(_,r)=>!!r.result.post.champ&&allGens(Object.values(r.slots))],
     ['leglineup','Legendary lineup','Finish a season with 3 or more legendaries.',(_,r)=>Object.values(r.slots).filter(m=>m?.leg).length>=3],
     ['fullevo','Full evolution','Evolve a Pokémon from first form to final form in one draft.',(_,r)=>Object.values(r.slots).some(m=>(m?.evolutionSteps||0)>=2)],
     ['ironman','Iron man','Play 50 seasons.',b=>b.seasons>=50],
@@ -23,7 +23,7 @@ const Clubhouse = (() => {
     ['week','Week winner','Finish #1 in a league for a week.',b=>!!b.weekWin,true],
     ['shinyhunt','Shiny hunter','Finish seasons with 10 different shinies.',()=>shinies()>=10,true]
   ];
-  const allGens=mons=>new Set(mons.filter(Boolean).map(m=>m.gen)).size>=4;
+  const allGens=mons=>new Set(mons.filter(Boolean).map(m=>m.gen)).size>=5;
   const json=k=>{try{return JSON.parse(store.get(k)||'null')}catch(_){return null}};
   const seriesWon=()=>Object.values(json('pbc5-rivals')||{}).reduce((n,x)=>n+(+x?.w||0),0);
   const shinies=()=>(json('pbc5-dex')?.shiny||[]).length;

@@ -141,12 +141,12 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   close();const u=session.user,av=avatarNum()||(typeof favoriteMon==='function'?favoriteMon():null)||25,m=BYID.get(av);
   const el=document.createElement('div');el.id='acct';el.className='sheet acct-sheet acct-manage';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','acctTitle');
   const leagues=json('pbc5-leagues',[]).length,devs=uniq([...devices,dev()]).length;
-  const q=pick?.q||'',hits=q.length>=2?MONS.filter(x=>x.id<=493&&x.name.toLowerCase().includes(q.toLowerCase())).slice(0,12):[];
+  const q=pick?.q||'',hits=q.length>=2?MONS.filter(x=>x.id<=649&&x.name.toLowerCase().includes(q.toLowerCase())).slice(0,12):[];
   const tc=m?[TYPE_COLORS[m.types[0]]||'#5f7fb6',TYPE_COLORS[m.types[1]]||TYPE_COLORS[m.types[0]]||'#5f7fb6']:['#5f7fb6','#5f7fb6'];
   el.innerHTML=`<div class="sheet-in"><div class="sheet-top"><h2 id="acctTitle">Account</h2><button class="btn" id="acctClose">Done</button></div><div class="sheet-body">
    <div class="am-me"><button type="button" class="am-av" id="amAv" style="--c1:${tc[0]};--c2:${tc[1]}" aria-label="Change profile Pokémon">${m?`<img src="${ART_URL(m.num,false)}" alt="" onerror="this.onerror=null;this.src='${SPRITE_URL(m.num,false)}'">`:''}<i>Edit</i></button><b>${esc(u.name||'No screen name yet')}</b><small>Signed in · ${esc(u.email||'')}</small></div>
    ${note?`<p class="am-note" role="status">${esc(note)}</p>`:''}
-   ${pick?`<section class="am-pick" aria-label="Pick a profile Pokémon"><label for="amQ">Profile Pokémon</label><input id="amQ" placeholder="Search Gen 1–4 Pokémon" autocomplete="off" value="${esc(q)}"><div class="am-mons">${hits.map(x=>`<button type="button" data-av="${x.id}"><img src="${SPRITE_URL(x.id,false)}" alt="">${esc(x.name)}</button>`).join('')||`<p class="hint">${q.length>=2?'No match.':'Type at least 2 letters.'}</p>`}</div><button type="button" class="btn" id="amPickX">Cancel</button></section>`:''}
+   ${pick?`<section class="am-pick" aria-label="Pick a profile Pokémon"><label for="amQ">Profile Pokémon</label><input id="amQ" placeholder="Search Gen 1–5 Pokémon" autocomplete="off" value="${esc(q)}"><div class="am-mons">${hits.map(x=>`<button type="button" data-av="${x.id}"><img src="${SPRITE_URL(x.id,false)}" alt="">${esc(x.name)}</button>`).join('')||`<p class="hint">${q.length>=2?'No match.':'Type at least 2 letters.'}</p>`}</div><button type="button" class="btn" id="amPickX">Cancel</button></section>`:''}
    <div class="am-list">
     <div class="am-r"><div><small>Screen name</small><b>${esc(u.name||'Not set')}</b></div><button type="button" class="am-btn" data-am="name">${u.name?'Change':'Add'}</button></div>
     <div class="am-r"><div><small>Profile Pokémon</small><b>${m?esc(m.name):'None'}${avatarNum()?'':' <em>(most drafted)</em>'}</b></div><button type="button" class="am-btn" data-am="pic">Change</button></div>
@@ -163,7 +163,7 @@ const RPC=BASE_URL+'/rest/v1/rpc/ballclub_name_free';
   if($('amPickX'))$('amPickX').onclick=()=>{pick=null;manage()};
   const wire=()=>el.querySelectorAll('[data-av]').forEach(b=>b.onclick=async()=>{const n=BYID.get(+b.dataset.av)?.num||+b.dataset.av;pick=null;try{await setAvatar(n);manage('Profile Pokémon saved.')}catch(e){manage('Saved on this device. It syncs next time you\'re online.')}refresh()});
   wire();
-  if($('amQ'))$('amQ').oninput=e=>{pick.q=e.target.value;const q=pick.q,hits=q.length>=2?MONS.filter(x=>x.id<=493&&x.name.toLowerCase().includes(q.toLowerCase())).slice(0,12):[];
+  if($('amQ'))$('amQ').oninput=e=>{pick.q=e.target.value;const q=pick.q,hits=q.length>=2?MONS.filter(x=>x.id<=649&&x.name.toLowerCase().includes(q.toLowerCase())).slice(0,12):[];
    el.querySelector('.am-mons').innerHTML=hits.map(x=>`<button type="button" data-av="${x.id}"><img src="${SPRITE_URL(x.id,false)}" alt="">${esc(x.name)}</button>`).join('')||`<p class="hint">${q.length>=2?'No match.':'Type at least 2 letters.'}</p>`;wire()};
   if(!pick)$('acctClose').focus();
  }

@@ -121,7 +121,7 @@ function renderSettings(){
 }
 function poolHead(sp){
   if(sp.pack)return `<div class="poolhead packhead"><span class="tchip">Pack ${sp.n||""}</span><span class="reg">Random mix<small>${sp.ids.length} cards</small></span></div>`;
-  if(sp.legend)return `<div class="poolhead legend"><span class="tchip">Legend</span><span class="reg">Gen 1–4 legendaries</span></div>`;
+  if(sp.legend)return `<div class="poolhead legend"><span class="tchip">Legend</span><span class="reg">Gen 1–5 legendaries</span></div>`;
   return `<div class="poolhead" style="--tc:${TYPE_COLORS[sp.type]}"><span class="tchip">${cap(sp.type)}</span><span class="reg">${REGIONS[sp.gen]}<small>Gen ${sp.gen}</small></span></div>`;
 }
 // Base stats renamed for the job they do on a ball field.
@@ -319,7 +319,7 @@ function doSpin(keep){
   const duration=1900;
   btn.style.animation='none';
   btn.animate([{transform:'rotate(0deg)'},{transform:'rotate(1440deg)'}],{duration,easing:'cubic-bezier(.15,.65,.25,1)',fill:'forwards'});
-  for(const [id,values,final] of [['typeReel',Object.keys(TYPE_COLORS).map(cap),sp.legend?'Legendary':cap(sp.type)],['regionReel',Object.values(REGIONS),sp.legend?'Gen 1–4':REGIONS[sp.gen]]]){
+  for(const [id,values,final] of [['typeReel',Object.keys(TYPE_COLORS).map(cap),sp.legend?'Legendary':cap(sp.type)],['regionReel',Object.values(REGIONS),sp.legend?'Gen 1–5':REGIONS[sp.gen]]]){
     const reel=document.getElementById(id);if(!reel)continue;
     const track=document.createElement('span');track.className='reel-track';
     const words=[reel.textContent,...Array.from({length:24},(_,i)=>values[i%values.length]),final];

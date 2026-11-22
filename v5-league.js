@@ -267,7 +267,7 @@
  }
  let edit=null;
  function logoEditor(cur){
-  const g=edit.g,k=g.e.k,q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
+  const g=edit.g,k=g.e.k,q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=649&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
   const sw=(list,key,cur0)=>list.map(c=>`<button type="button" class="lg-sw${cur0===c?' on':''}" data-${key}="${c}" style="--sw:${c}" aria-label="${c}" aria-pressed="${cur0===c}"></button>`).join('');
   const seg=(list,key,val)=>`<div class="lg-emk n${list.length}">${list.map(([v,l])=>`<button type="button" data-${key}="${v}" aria-pressed="${val===v}" class="${val===v?'on':''}">${l}</button>`).join('')}</div>`;
   const p=g.p||'solid';
@@ -279,7 +279,7 @@
    ${p==='solid'?'':`<h4>Pattern color</h4><div class="lg-sws">${sw(ACCENTS,'a',g.a||g.t)}</div>`}
    <h4>Trim</h4><div class="lg-sws">${sw(TRIMS,'t',g.t)}</div>
    <h4>Emblem</h4>${seg([['txt','Letters'],['mon','Pokémon'],['ico','Icon']],'emk',k)}
-   ${k==='mon'?`<input id="lgMonQ" placeholder="Search Gen 1–4 Pokémon" autocomplete="off" value="${esc(q)}"><div class="lg-mons">${hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>')}</div>`
+   ${k==='mon'?`<input id="lgMonQ" placeholder="Search Gen 1–5 Pokémon" autocomplete="off" value="${esc(q)}"><div class="lg-mons">${hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>')}</div>`
     :k==='ico'?`<div class="lg-icons">${Object.keys(ICONS).map(n=>`<button type="button" data-ico="${n}" class="${g.e.v===n?'on':''}" aria-pressed="${g.e.v===n}" aria-label="${ICON_NAMES[n]}"><svg viewBox="20 22 60 64" aria-hidden="true">${ICONS[n]('#f4eedc','#1d3866')}</svg></button>`).join('')}</div>`
     :`<input id="lgTxt" maxlength="3" autocomplete="off" autocapitalize="characters" value="${esc(g.e.v)}" aria-label="Letters, up to 3">`}
    ${edit.msg?`<p class="lg-note" role="status">${esc(edit.msg)}</p>`:''}
@@ -288,7 +288,7 @@
  function wireEditor(cur){
   const box=document.querySelector('#lg .lg-edit');if(!box)return;
   const preview=()=>{const top=box.querySelector('.lg-edit-top svg');if(top)top.outerHTML=crestSVG(edit.g,'big')};
-  const monList=()=>{const q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=493&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
+  const monList=()=>{const q=edit.q||'',hits=q.length>=2?MONS.filter(m=>m.id<=649&&m.name.toLowerCase().includes(q.toLowerCase())).slice(0,10):[];
    box.querySelector('.lg-mons').innerHTML=hits.map(m=>`<button type="button" data-mon="${m.id}" class="${+edit.g.e.v===m.id?'on':''}"><img src="${SPRITE_URL(m.id,false)}" alt="">${esc(m.name)}</button>`).join('')||(q.length>=2?'<p class="hint">No match.</p>':'<p class="hint">Type at least 2 letters.</p>');
    wireMons()};
   const wireMons=()=>box.querySelectorAll('[data-mon]').forEach(b=>b.onclick=()=>{edit.g.e={k:'mon',v:b.dataset.mon};edit.lastMon=b.dataset.mon;box.querySelectorAll('[data-mon]').forEach(x=>x.classList.toggle('on',x===b));preview()});
