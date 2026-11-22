@@ -1691,3 +1691,9 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 #lb .lb-cards .lbc-top{display:flex;align-items:center;gap:8px;min-width:0}
 #lb .lb-cards .lbc-top b{min-width:0}
 #lb .lb-cards .lbc-rk{position:static;flex:none;min-width:24px;height:24px;font-size:13px}
+
+/* How to play: Reading a card worked example */
+.help-math{display:grid;grid-template-columns:1fr auto;gap:6px 0;padding:10px 12px;border-radius:10px;background:#0b1b38;border:1px solid #2c4470}
+.help-math b{grid-column:1/-1;font:700 13px/1.2 var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:#a9b8d0}
+.help-math span{color:#f4eedc}.help-math em{font:600 16px/1.2 var(--f-data);font-style:normal;text-align:right;padding-left:12px;color:#f4eedc;font-variant-numeric:tabular-nums}
+.help-math .t{padding-top:6px;border-top:1px solid #2c4470;font-weight:700}.help-math em.t{color:#ffcb05}

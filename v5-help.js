@@ -11,6 +11,10 @@
  const movePic=()=>{const a=byName('Machamp'),b=byName('Pikachu');if(!a||!b)return '';return pic(`<figure>${tok(a)}<figcaption>1B</figcaption></figure><i>⇄</i><figure>${tok(b)}<figcaption>3B</figcaption></figure>`)};
  const seasonPic=()=>pic(`<div class="hp-rec"><span>1</span><span>0</span><span>4</span><i>–</i><span>5</span><span>8</span></div><span class="ch-stamp"><b>A</b><small>GRADE</small></span>`);
  const leaguePic=()=>pic(`<div class="hp-rows">${[['m1','1','You','104–58'],['m2','2','Your friend','97–65'],['m3','3','Their friend','91–71']].map(([c,n,t,r])=>`<div><span class="rk ${c}">${n}</span><b>${t}</b><em>${r}</em></div>`).join('')}</div>`);
+ // Worked example for Reading a card: the sample's bat and glove, in runs, at its best fielding spot.
+ const mathBox=m=>{setOverall(m);const s=FIELD_SLOTS.find(x=>x!=='DH'&&lbl(x)===m.hspot);if(!s)return '';
+  const b=Math.round(m.batR),g=Math.round(m.fldR[s]),sg=n=>(n>=0?'+':'')+n;
+  return `<div class="help-math"><b>${esc(m.name)} at ${lbl(s)}</b><span>Bat</span><em>${sg(b)} runs</em><span>Glove</span><em>${sg(g)} runs</em><span class="t">Total</span><em class="t">${sg(b+g)} runs = ${posOvr(m,s)}</em></div>`};
  const seriesPic=()=>pic(`<div class="hp-series"><b>Best of 7</b>${['w','l','w','w','w'].map(x=>`<span class="${x}">${x.toUpperCase()}</span>`).join('')}<em>4–1</em></div>`);
  howHTML=function(){
   const sample=pick(461)||pick(143)||BASE[0],leg=pick(150),shiny=BYID.get(SHINY_ID+212)||BYID.get(SHINY_ID+6);
@@ -23,11 +27,12 @@
    item(art('master-ball'),'Master Ball','1 per run','Keep two cards from one pack.')+
    item(art('rare-candy'),'Rare Candy','1 per run','Evolve or boost one teammate. It does not use a pick.')+
    item(`<span class="help-ico">${tok(sample)}</span>`,'Release','1 per run','Tap a player on your roster to let him go and draft a replacement.'))}
-  ${topic('Reading a card',`<div class="help-card">${tcardHTML(sample)}</div><p>The big number is the card's best rating and where it gets it. Ratings run 40 to 99.</p>${list([
-   '<b>OFF</b>: hitting only. This is the DH rating.',
-   '<b>DEF</b>: glove at its best fielding spot.',
-   '<b>SP / RP</b>: pitching as a starter or reliever.',
-   'A fielder\'s rating is bat plus glove, so go by the number on the spot, not OFF and DEF added up.'])}
+  ${topic('Reading a card',`<div class="help-card">${tcardHTML(sample)}</div><p>The big number is the card's best rating and the spot where it gets it. Ratings run 40 to 99.</p>${list([
+   '<b>OFF</b>: hitting only. This is its rating as a DH.',
+   '<b>DEF</b>: its glove alone, at its best fielding spot.',
+   '<b>SP / RP</b>: pitching as a starter or reliever.'])}
+   <h4>Why the big number is higher</h4><p>A fielder's rating adds up what his bat and his glove are each worth, in runs above an average player at that spot. Great at both beats either one alone.</p>${mathBox(sample)}
+   <p>OFF and DEF each show one half, so both can sit below the big number. When you place a player, go by the rating on the spot.</p><p class="help-note">If the big number says SP or RP, it matches the pitching box.</p>
    <h4>The eight bars</h4><div class="keygrid">${KEY.map(([k,,orig,g,desc])=>`<div><b style="color:var(--${g})">${k}</b><span>${desc}</span><i>From ${orig}</i></div>`).join("")}</div>`)}
   ${topic('Evolve and train',evoPic()+list([
    'Pull the <b>next evolution</b> of a player you own to evolve him: +5 to his ratings, +8 after a second evolution.',
