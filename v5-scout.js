@@ -13,15 +13,16 @@
   el.innerHTML=`<div class="bg-in"><header class="bg-top"><span>Scouting sheet</span><button type="button" class="btn" id="scClose">Close</button></header>
    <div class="sc-bar"><input id="scQ" type="search" autocomplete="off" placeholder="Find a Pokémon" aria-label="Find a Pokémon" value="${esc(q)}"><div class="seg" role="group" aria-label="Which Pokémon"><button type="button" data-pool="base">Regular</button><button type="button" data-pool="leg">Legendary</button><button type="button" data-pool="all">Everyone</button></div></div>
    <div class="sc-chips" id="scChips" role="group" aria-label="Rank by position"><button type="button" data-sort="best">Best</button>${SPOTS.map(s=>`<button type="button" data-sort="${s}">${lab(s)}</button>`).join('')}</div>
+   <details class="sc-stars" id="scStars"><summary><span>Stars at each spot</span><small>How many rate 85+, 90+, 95+</small></summary><div id="scStarsBody"></div></details>
    <p class="sc-tip" id="scTip"></p>
    <div class="sc-list" id="scTable"></div>
-   <details class="sc-stars"><summary>How many stars at each spot</summary><div class="bg-board"><table class="sc-dist"><thead><tr><th></th>${SPOTS.map(s=>`<th scope="col">${lab(s)}</th>`).join('')}</tr></thead><tbody>${[95,90,85].map(t=>`<tr><th scope="row">${t}+</th>${SPOTS.map(s=>`<td>${BASE.filter(m=>posOvr(m,s)>=t).length}</td>`).join('')}</tr>`).join('')}</tbody></table></div><p class="hint">Regular Pokémon only, out of ${BASE.length}.</p></details>
    <div class="sc-card" id="scCard" hidden></div></div>`;
   document.body.appendChild(el);document.documentElement.classList.add('lg-lock');
   $('scClose').onclick=close;el.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('scCard').hidden)hideCard();else close()}});
   $('scQ').oninput=e=>{q=e.target.value;list()};
   el.querySelectorAll('[data-pool]').forEach(b=>b.onclick=()=>{pool=b.dataset.pool;list()});
   $('scChips').onclick=e=>{const h=e.target.closest('[data-sort]');if(h){sortBy=h.dataset.sort;list();h.scrollIntoView({block:'nearest',inline:'center'})}};
+  $('scStarsBody').onclick=e=>{const h=e.target.closest('[data-sort]');if(h){sortBy=h.dataset.sort;list();$('scTip').scrollIntoView({block:'start',behavior:'smooth'})}};
   $('scTable').onclick=e=>{const r=e.target.closest('[data-id]');if(r)card(BYID.get(+r.dataset.id),r)};
   list();
  };
@@ -29,6 +30,19 @@
  const rowOf=m=>{let r=cache.get(m.id);if(!r){const v=SPOTS.map(s=>posOvr(m,s)),bi=v.indexOf(Math.max(...v));r={m,v,best:v[bi],bs:SPOTS[bi]};cache.set(m.id,r)}return r};
  const SPOTNAME={C:'catcher','1B':'first base','2B':'second base','3B':'third base',SS:'shortstop',LF:'left field',CF:'center field',RF:'right field',DH:'designated hitter',SP1:'starting pitcher',RP1:'reliever'};
  const LEGSET=new Set(LEGENDS.map(m=>m.id));
+ const starCache=new Map();
+ function starCounts(){
+  if(!starCache.has(pool)){const ms=(pool==='leg'?LEGENDS:pool==='base'?BASE:ALL).map(rowOf);
+   starCache.set(pool,{n:ms.length,c:SPOTS.map((s,i)=>({s,a:ms.filter(r=>r.v[i]>=95).length,b:ms.filter(r=>r.v[i]>=90).length,c:ms.filter(r=>r.v[i]>=85).length}))})}
+  return starCache.get(pool);
+ }
+ function starsHTML(){
+  const {n,c}=starCounts(),max=Math.max(1,...c.map(x=>x.c)),pct=v=>(v/max*100).toFixed(1)+'%';
+  const who=pool==='leg'?'legendary':pool==='base'?'regular':'';
+  return `<div class="ss-hd" aria-hidden="true"><span>Spot</span><span></span><span class="g">95+</span><span>90+</span><span class="m">85+</span></div>`+
+   c.map(x=>`<button type="button" class="ss-row" data-sort="${x.s}" aria-pressed="${sortBy===x.s}" aria-label="${SPOTNAME[x.s]}: ${x.a} rate 95 or better, ${x.b} rate 90 or better, ${x.c} rate 85 or better"><b>${lab(x.s)}</b><span class="ss-bar"><i class="m" style="width:${pct(x.c)}"></i><i style="width:${pct(x.b)}"></i><i class="g" style="width:${pct(x.a)}"></i></span><span class="n g">${x.a}</span><span class="n">${x.b}</span><span class="n m">${x.c}</span></button>`).join('')+
+   `<p class="hint">Out of ${n} ${who?who+' ':''}Pokémon. Tap a spot to rank it.</p>`;
+ }
  function list(){
   const el=$('scout');if(!el)return;
   if(sortBy==='name')sortBy='best';
@@ -38,7 +52,9 @@
   let rows=(pool==='leg'?LEGENDS:pool==='base'?BASE:ALL).map(rowOf).sort((a,b)=>key(b)-key(a)||b.best-a.best);
   rows.forEach((r,i)=>r.rank=i+1);
   if(term)rows=rows.filter(r=>r.m.name.toLowerCase().includes(term));
-  $('scTip').textContent=`${rows.length} Pokémon, ranked ${si<0?'by their best spot':'at '+SPOTNAME[sortBy]}. Tap one for its card.`;
+  $('scStarsBody').innerHTML=starsHTML();
+  const st=si<0?null:starCounts().c[si];
+  $('scTip').textContent=`${rows.length} Pokémon, ranked ${si<0?'by their best spot':'at '+SPOTNAME[sortBy]}.${st?` ${st.b} rate 90+ here.`:''} Tap one for its card.`;
   const ty=m=>m.types.map(t=>`<span style="background:${TYPE_COLORS[t]||'#777'}">${t}</span>`).join('');
   $('scTable').innerHTML=rows.length?rows.map(r=>{const v=key(r),leg=LEGSET.has(r.m.id);
    return `<button type="button" class="sc-row${leg?' leg':''}${r.m.shiny?' shy':''}" data-id="${r.m.id}"><i>${r.rank}</i>${tok(r.m)}<span class="who"><b>${esc(r.m.name)}${leg?'<small>Legendary</small>':''}</b><span class="ty">${ty(r.m)}<em>Best ${lab(r.bs)} ${r.best}</em></span></span><span class="rt ${tier(v)}">${v}${si<0?`<small>${lab(r.bs)}</small>`:''}</span></button>`}).join(''):`<p class="sc-none">No Pokémon named "${esc(q)}".</p>`;

@@ -1722,3 +1722,26 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .help-math b{grid-column:1/-1;font:700 13px/1.2 var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:#a9b8d0}
 .help-math span{color:#f4eedc}.help-math em{font:600 16px/1.2 var(--f-data);font-style:normal;text-align:right;padding-left:12px;color:#f4eedc;font-variant-numeric:tabular-nums}
 .help-math .t{padding-top:6px;border-top:1px solid #2c4470;font-weight:700}.help-math em.t{color:#ffcb05}
+
+/* Scouting: Stars at each spot, one row per spot (replaces the chalkboard table) */
+.scout .sc-stars{margin:0 0 10px;border-radius:12px;background:#142c55;border:1px solid #2c4470}
+.scout .sc-stars summary{list-style:none;min-height:52px;padding:8px 44px 8px 14px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:left;gap:2px;cursor:pointer;position:relative}
+.scout .sc-stars summary::-webkit-details-marker{display:none}
+.scout .sc-stars summary span{font:700 15px/1.2 var(--f-body);color:#f4eedc}
+.scout .sc-stars summary small{font:400 13px/1.2 var(--f-body);color:#a9b8d0}
+.scout .sc-stars summary::after{content:"";position:absolute;right:18px;top:50%;width:8px;height:8px;border-right:2px solid #ffcb05;border-bottom:2px solid #ffcb05;transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.scout .sc-stars[open] summary::after{transform:translateY(-30%) rotate(-135deg)}
+.scout #scStarsBody{padding:0 8px 6px}
+.ss-hd,.ss-row{display:grid;grid-template-columns:38px 1fr 34px 34px 38px;align-items:center;gap:8px}
+.ss-hd{padding:0 8px 4px;font:600 11px/1 var(--f-data);letter-spacing:.08em;text-transform:uppercase;color:#a9b8d0}
+.ss-hd span:nth-child(n+3){text-align:right}
+.ss-row{width:100%;min-height:36px;padding:0 8px;border:0;border-radius:8px;background:transparent;color:#f4eedc;font:inherit;text-align:left;cursor:pointer}
+.ss-row:nth-of-type(even){background:rgba(255,255,255,.03)}
+.ss-row[aria-pressed="true"]{background:#1f3d70;box-shadow:inset 3px 0 0 #ffcb05}
+.ss-row b{font:600 14px/1 var(--f-data);letter-spacing:.04em}
+.ss-bar{position:relative;height:10px;border-radius:5px;background:#0b1b38;overflow:hidden}
+.ss-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:#5b8def}
+.ss-bar i.m{background:#2f4f86}.ss-bar i.g{background:#ffcb05}
+.ss-row .n{font:600 15px/1 var(--f-data);text-align:right;font-variant-numeric:tabular-nums}
+.ss-hd .g,.ss-row .n.g{color:#ffcb05}.ss-hd .m,.ss-row .n.m{color:#8ea3c4}
+.scout #scStarsBody .hint{margin:8px 8px 6px}
