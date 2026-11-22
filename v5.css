@@ -1751,3 +1751,10 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .scout .sc-stars summary span{font:600 13px/1 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#f4eedc}
 .scout .sc-tip{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:6px 4px 2px;font:600 12px/1.2 var(--f-data);letter-spacing:.12em;text-transform:uppercase;color:#a9b8d0}
 .scout .sc-tip b{color:#ffcb05;font-weight:600;white-space:nowrap}
+/* Scouting: stars toggle is a compact, centered row (label + chevron), no stray padding below it */
+.scout .sc-stars{padding:0;margin:0}
+.scout .sc-stars summary{min-height:44px;padding:0 14px;justify-content:center;gap:10px}
+.scout .sc-stars summary::after{position:static;flex:none;transform:translateY(-3px) rotate(45deg)}
+.scout .sc-stars[open] summary::after{transform:translateY(2px) rotate(-135deg)}
+.scout .sc-stars[open] summary{border-bottom:1px solid #2c4470;margin-bottom:8px}
+.scout .sc-tip{margin:2px 4px 0}
