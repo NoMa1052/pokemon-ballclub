@@ -82,7 +82,9 @@ function wireRip(pk){
  const pieces=Array.from({length:0},(_,i)=>{const piece=art.cloneNode(true);piece.classList.replace('pk-art','pk-foil-piece');piece.setAttribute('aria-hidden','true');pk.appendChild(piece);return piece});
  const tip=document.createElement('span');tip.className='pk-tear-tip';pk.appendChild(tip);
 
- let start=null,r=0,direction=1,moved=false,opening=false,frame=0,dragFrame=0,pendingRip=0,lastPulse=0,suppressClick=false,committed=0;
+ let start=null,r=0,direction=1,moved=false,opening=false,frame=0,dragFrame=0,pendingRip=0,lastPulse=0,suppressClick=false,committed=0,scrolling=false,lastY=0;
+ // How far a swipe has to travel, as a share of the pack's width, to tear it fully.
+ const SWIPE=.62;
  const paint=p=>{
   r=p;pk.style.setProperty('--rip',p);const seam=12.8;
   if(p<=0){art.style.clipPath='';strip.style.opacity='0';pieces.forEach(piece=>piece.style.opacity='0');tip.style.opacity='0';cut.setAttribute('d','');return;}
@@ -138,27 +140,33 @@ function wireRip(pk){
   cancelAnimationFrame(frame);frame=requestAnimationFrame(finish);
  };
  const reset=()=>{if(r>0){committed=r;pk.classList.remove('dragging');return}pk.classList.remove('dragging');pk.classList.add('rip-reset');const begin=performance.now(),origin=r;const tick=now=>{const t=reduce()?1:Math.min(1,(now-begin)/170);paint(origin*(1-t));if(t<1)frame=requestAnimationFrame(tick);else pk.classList.remove('rip-reset');};cancelAnimationFrame(frame);frame=requestAnimationFrame(tick);};
- pk.addEventListener('pointerdown',e=>{if(!e.isPrimary||e.button!==0||opening||spinning)return;cancelAnimationFrame(frame);try{pk.setPointerCapture(e.pointerId)}catch(_){}start={id:e.pointerId,x:e.clientX,y:e.clientY,rect:pk.getBoundingClientRect(),time:performance.now(),progress:r};committed=r;pendingRip=r;moved=false;suppressClick=false;lastPulse=0;pk.classList.remove('rip-reset');});
+ pk.addEventListener('pointerdown',e=>{if(!e.isPrimary||e.button!==0||opening||spinning)return;cancelAnimationFrame(frame);try{pk.setPointerCapture(e.pointerId)}catch(_){}start={id:e.pointerId,x:e.clientX,y:e.clientY,rect:pk.getBoundingClientRect(),time:performance.now(),progress:r};committed=r;pendingRip=r;moved=false;scrolling=false;lastY=e.clientY;suppressClick=false;lastPulse=0;pk.classList.remove('rip-reset');});
  pk.addEventListener('pointermove',e=>{
   if(!start||start.id!==e.pointerId||opening)return;const dx=e.clientX-start.x,dy=e.clientY-start.y;
-  if(!moved&&Math.abs(dy)>Math.abs(dx)&&Math.abs(dy)>10){start=null;suppressClick=true;reset();return;}
-  if(!moved&&Math.abs(dx)>6){if(committed===0)direction=dx>0?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
-  if(!moved)return;e.preventDefault();const p=Math.max(r,Math.min(1,start.progress+direction*dx/(start.rect.width*.82)));pendingRip=Math.max(pendingRip,p);if(!dragFrame){let last=performance.now();const follow=now=>{dragFrame=0;if(opening)return;const dt=Math.min(40,now-last);last=now;const next=r+(pendingRip-r)*(1-Math.exp(-dt/30));paint(pendingRip-next<.001?pendingRip:next);if(r>=.985){open();return}if(pendingRip-r>.001)dragFrame=requestAnimationFrame(follow)};dragFrame=requestAnimationFrame(follow)};
+  // Clearly vertical: scroll the page like a normal drag. Diagonal thumb swipes still tear.
+  if(scrolling){window.scrollBy(0,lastY-e.clientY);lastY=e.clientY;return;}
+  if(!moved&&Math.abs(dy)>14&&Math.abs(dy)>Math.abs(dx)*1.8){scrolling=true;suppressClick=true;reset();window.scrollBy(0,lastY-e.clientY);lastY=e.clientY;return;}
+  lastY=e.clientY;
+  if(!moved&&Math.abs(dx)>6&&Math.abs(dx)>=Math.abs(dy)*.55){if(committed===0)direction=dx>0?1:-1;moved=true;pk.classList.add('dragging');try{pk.setPointerCapture(e.pointerId)}catch(_){};}
+  if(!moved)return;e.preventDefault();const p=Math.max(r,Math.min(1,start.progress+direction*dx/(start.rect.width*SWIPE)));pendingRip=Math.max(pendingRip,p);if(!dragFrame){let last=performance.now();const follow=now=>{dragFrame=0;if(opening)return;const dt=Math.min(40,now-last);last=now;const next=r+(pendingRip-r)*(1-Math.exp(-dt/16));paint(pendingRip-next<.001?pendingRip:next);if(r>=.985){open();return}if(pendingRip-r>.001)dragFrame=requestAnimationFrame(follow)};dragFrame=requestAnimationFrame(follow)};
   const step=Math.floor(p*5);if(step>lastPulse){try{navigator.vibrate?.(5)}catch(_){}lastPulse=step;}
 
  },{passive:false});
  pk.addEventListener('pointerup',e=>{
   if(!start||start.id!==e.pointerId||opening)return;
-  const dx=e.clientX-start.x,dy=e.clientY-start.y;
-  if(Math.abs(dx)>6&&Math.abs(dx)>Math.abs(dy)){
+  const dx=e.clientX-start.x,dy=e.clientY-start.y,ms=Math.max(1,performance.now()-start.time);
+  if(scrolling){start=null;scrolling=false;return;}
+  if(Math.abs(dx)>6&&Math.abs(dx)>=Math.abs(dy)*.55){
    if(!moved&&start.progress===0)direction=dx>0?1:-1;
    moved=true;
-   pendingRip=Math.max(pendingRip,Math.min(1,start.progress+direction*dx/(start.rect.width*.82)));
+   pendingRip=Math.max(pendingRip,Math.min(1,start.progress+direction*dx/(start.rect.width*SWIPE)));
   }
+  // A quick flick across the seam opens it even if it was short.
+  const flick=moved&&Math.abs(dx)>=40&&Math.abs(dx)/ms>=.45&&Math.sign(dx)===direction;
   start=null;
   if(!moved)return;
   suppressClick=true;cancelAnimationFrame(dragFrame);dragFrame=0;
-  if(pendingRip>=.82){open();return}
+  if(pendingRip>=.5||flick){open();return}
   paint(pendingRip);reset();
  });
  pk.addEventListener('pointercancel',e=>{if(!start||start.id!==e.pointerId)return;cancelAnimationFrame(dragFrame);dragFrame=0;start=null;suppressClick=true;if(!opening)reset();});

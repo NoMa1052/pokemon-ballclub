@@ -1758,3 +1758,6 @@ ol.c2-favs em{font:600 12.5px/1 var(--f-data);font-style:normal;color:#a9b8d0;wh
 .scout .sc-stars[open] summary::after{transform:translateY(2px) rotate(-135deg)}
 .scout .sc-stars[open] summary{border-bottom:1px solid #2c4470;margin-bottom:8px}
 .scout .sc-tip{margin:2px 4px 0}
+
+/* Pack swipe: the pack owns every touch gesture so the page never scrolls or cancels mid-tear (vertical drags scroll by hand in pack.js) */
+#spinBtn.pack{touch-action:none!important}
