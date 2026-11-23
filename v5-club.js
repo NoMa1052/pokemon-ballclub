@@ -121,8 +121,7 @@
    ${!user?'<p class="c2-sub">Sign in to keep your Clubhouse on every device.</p>':''}${note?`<p class="c2-note" role="status">${esc(note)}</p>`:''}
    ${av?artImg(av,'c2-tc-art'):''}
    ${bd?`<div class="c2-stats"><div>Best<b>${best.wins}</b></div><div>Avg wins<b>${avg}</b></div><div>100-win<b>${hundreds}</b></div><div>Titles<b>${titles}</b></div></div>`:'<div class="c2-stats c2-stats-0"></div>'}</section>`;
-  const lineup=h=>FULL.map((s,i)=>{const m=BYID.get(h.roster[i]);return m?`<button type="button" data-history-mon="${m.id}" aria-label="Inspect ${esc(m.name)} card">${tok(m)}<i>${lbl(s)}</i><em>${posOvr(m,s)}</em></button>`:''}).join('');
-  const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r">${h.team?`<em>${esc(h.team)}</em>`:''}<b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary><div class="ch-lineup">${lineup(h)}</div></details>`};
+  const season=h=>{const mvp=BYID.get(h.mvp?.id);return `<details class="ch-season${h.champ?' champ':''}"><summary><span class="g">${h.grade}</span><span class="r">${h.team?`<em>${esc(h.team)}</em>`:''}<b>${h.wins}–${162-h.wins}</b><small>${h.champ?'World champions · ':''}Roster ${h.rating}${h.date?' · '+day(h.date):''}</small></span>${mvp?`<span class="m">${tok(mvp)}<small>MVP</small></span>`:''}</summary>${lineupHTML(h.roster)}</details>`};
   let rv={w:0,l:0};try{Object.values(JSON.parse(store.get('pbc5-rivals')||'{}')).forEach(x=>{rv.w+=+x?.w||0;rv.l+=+x?.l||0})}catch(e){}
   // Most drafted: mini trading cards
   const top=favs.slice(0,5);
