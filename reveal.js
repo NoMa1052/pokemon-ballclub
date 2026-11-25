@@ -4,7 +4,7 @@ const ART_URL=(n,shiny)=>`https://raw.githubusercontent.com/PokeAPI/sprites/mast
 function tcardHTML(m,mini){
   setOverall(m);
   const c1=TYPE_COLORS[m.types[0]]||"#777",c2=TYPE_COLORS[m.types[1]]||c1;
-  const tier=m.leg?"leg":m.shiny?"shiny":m.ovr>=90?"gold":m.ovr>=80?"silver":"base";
+  const tier=m.leg?"leg":m.shiny?"shiny":m.ovr>=90?"gold":m.ovr>=65?"silver":"bronze";
   const img=`<img src="${ART_URL(m.num,m.shiny)}" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="async" onload="pokemonImageLoaded(this)" onerror="pokemonImageError(this)">`;
   const tag=m.leg?'<span class="tc-tag">Legend</span>':m.shiny?'<span class="tc-tag">Shiny</span>':"";
   const best=`<span class="tc-best ${ovCls(m.ovr)}"><b>${m.ovr}</b><small>${m.hspot}</small></span>`;

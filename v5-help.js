@@ -27,7 +27,7 @@
    item(art('master-ball'),'Master Ball','1 per run','Keep two cards from one pack.')+
    item(art('rare-candy'),'Rare Candy','1 per run','Evolve or boost one teammate. It does not use a pick.')+
    item(`<span class="help-ico">${tok(sample)}</span>`,'Release','1 per run','Tap a player on your roster to let him go and draft a replacement.'))}
-  ${topic('Reading a card',`<div class="help-card">${tcardHTML(sample)}</div><p>The big number is the card's best rating and the spot where it gets it. Ratings run 40 to 99.</p>${list([
+  ${topic('Reading a card',`<div class="help-card">${tcardHTML(sample)}</div><p>The big number is the card's best rating and the spot where it gets it. Ratings run 40 to 99.</p><p>The frame shows the tier: <b>bronze</b> under 65, <b>silver</b> 65 to 89, <b>gold</b> 90 and up.</p>${list([
    '<b>OFF</b>: hitting only. This is its rating as a DH.',
    '<b>DEF</b>: its glove alone, at its best fielding spot.',
    '<b>SP / RP</b>: pitching as a starter or reliever.'])}

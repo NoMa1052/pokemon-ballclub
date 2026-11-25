@@ -9,7 +9,7 @@ const star=(cx,cy,R,r,n)=>{let p=[];for(let i=0;i<n*2;i++){const a=Math.PI*i/n-M
 const BODY="M9 35 C2 80 0 118 0 148 C0 182 2 222 9 261 H191 C198 222 200 182 200 148 C200 118 198 80 191 35 Z";
 const wrinkles=(y,dir)=>{let d1="",d2="";for(let i=0;i<44;i++){const x=6+i*4.4+((i*53)%7)/3,len=2.5+((i*37)%7)*.8,lean=(x-100)/100*3+((i*29)%5-2)*.4;
   const seg=`M${x.toFixed(1)} ${y} l${lean} ${len*dir} `;if(i%2)d1+=seg;else d2+=seg}return `<path d="${d1}" stroke="#fff" stroke-opacity=".09" stroke-width="1.4" stroke-linecap="round"/><path d="${d2}" stroke="#000" stroke-opacity=".2" stroke-width="1.4" stroke-linecap="round"/>`};
-let tornPackSource=null,burstPendingSpin=null,openingBurstTier="base";
+let tornPackSource=null,burstPendingSpin=null,openingBurstTier="bronze";
 function packArt(opened=false){
  return '<svg class="pk-art"'+(opened?' style="clip-path:polygon(0 12.8%,100% 12.8%,100% 100%,0 100%)"':'')+' viewBox="0 0 922 1706" aria-hidden="true"><image href="pack-foil-v6.webp" width="922" height="1706" preserveAspectRatio="xMidYMid meet"/></svg>';
 }
@@ -178,16 +178,16 @@ const decoratePack=()=>{const pk=document.getElementById('spinBtn');if(!pk||!pk.
 {const base=render;render=function(){base();decoratePack()}}
 
 // Opening sequence, before the card-by-card reveal. Like the big card games, the light behind
-// the pack hints at the best card inside: muted for a normal pack, gold for a 90+, rainbow for
+// the pack hints at the best card inside: muted for bronze or silver, gold for a 90+, rainbow for
 // a shiny, purple and gold for a legend. Then it shakes, flashes, and the cards burst out.
 function bestTier(sp){
   if(sp.god)return "god";
-  let best="base";const rank={base:0,silver:1,gold:2,shiny:3,leg:4};
+  let best="bronze";const rank={bronze:0,silver:1,gold:2,shiny:3,leg:4};
   for(const id of sp.ids){const m=BYID.get(id);if(!m)continue;setOverall(m);
-    const t=m.leg?"leg":m.shiny?"shiny":m.ovr>=90?"gold":m.ovr>=80?"silver":"base";if(rank[t]>rank[best])best=t}
+    const t=m.leg?"leg":m.shiny?"shiny":m.ovr>=90?"gold":m.ovr>=65?"silver":"bronze";if(rank[t]>rank[best])best=t}
   return best;
 }
-const TIER={base:["#c9b98f","#7d8aa3"],silver:["#bfe0ff","#5e8fe6"],gold:["#ffd84a","#fff1b0"],shiny:["#ff9ad5","#8fe3ff"],leg:["#b07cff","#ffcb05"],god:["#ffcb05","#fff6c4"]};
+const TIER={bronze:["#e0a872","#9c6533"],silver:["#bfe0ff","#5e8fe6"],gold:["#ffd84a","#fff1b0"],shiny:["#ff9ad5","#8fe3ff"],leg:["#b07cff","#ffcb05"],god:["#ffcb05","#fff6c4"]};
 function playIntro(sp,done){
  const source=tornPackSource;tornPackSource=null;done();
  const reveal=document.querySelector('.reveal'),stack=reveal?.querySelector('.physical-stack');
