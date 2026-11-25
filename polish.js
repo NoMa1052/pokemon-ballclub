@@ -11,7 +11,8 @@
     let html=originalCard(m,mini);if(mini)return html;
     const tools=KEY.slice().sort((a,b)=>m.r[b[1]]-m.r[a[1]]).slice(0,2);
     html=html.replace(`<small>${m.hspot}</small>`,`<small>Best ${m.hspot}</small>`);
-    html=html.replace(/<div class="tc-meta">[^<]*<\/div>/,`<div class="tc-meta">#${dex(m.num)}</div><div class="tc-strengths">${tools.map(([n,k])=>`<span>${n} <b>${m.r[k]}</b></span>`).join('')}</div>`);
+    html=html.replace(/<div class="tc-meta">[^<]*<\/div>/,`<div class="tc-strengths">${tools.map(([n,k])=>`<span>${n} <b>${m.r[k]}</b></span>`).join('')}</div>`);
+    html=html.replace(/(<div class="tc-art">[\s\S]*?)(<\/div>)/,`$1<span class="tc-dex">#${dex(m.num)}</span>$2`);
     return html;
   };
 

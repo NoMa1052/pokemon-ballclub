@@ -9,7 +9,7 @@ body.rv-open{overflow:hidden}
 
 /* the card */
 .tcard{--frame:linear-gradient(135deg,#d9d4c6,#f4efe2 45%,#b9b3a4);position:relative;width:min(300px,80vw);border-radius:16px;padding:9px;background:var(--frame);box-shadow:0 18px 40px rgba(0,0,0,.55);color:#14233a;text-align:left}
-.tcard.bronze{--frame:linear-gradient(135deg,#5c3a20,#9a6843 42%,#6a4428 58%,#a77a55)}
+.tcard.bronze{--frame:linear-gradient(135deg,#9b7a5e,#b0927a 50%,#9b7a5e)}
 .tcard.silver{--frame:linear-gradient(135deg,#9aa6b8,#eef2f8 40%,#8793a6 60%,#dfe5ee)}
 .tcard.gold{--frame:linear-gradient(135deg,#b8860b,#ffe27a 40%,#c99a1c 60%,#fff1b0)}
 .tcard.shiny{--frame:linear-gradient(135deg,#ffd84a,#fff6c2 30%,#ff9ad5 55%,#8fe3ff 80%,#ffd84a)}
@@ -45,7 +45,7 @@ body.rv-open{overflow:hidden}
 .rv-mini{padding:0;border:0;background:none;cursor:pointer;border-radius:12px}
 .rv-mini:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 .tcard.mini{width:100%;padding:5px;border-radius:11px;box-shadow:0 8px 18px rgba(0,0,0,.5)}
-.tcard.bronze{padding:6px}.tcard.mini.bronze{padding:3px}
+.tcard.bronze{padding:5px}.tcard.mini.bronze{padding:3px}
 .tcard.mini .tc-in{padding:6px 6px 7px;border-radius:7px;display:grid;justify-items:center}
 .tcard.mini .tc-name{font-size:12px;text-align:center;min-height:2.2em;display:flex;align-items:center}
 .tcard.mini .tc-art{width:100%;margin:4px 0}
@@ -104,8 +104,8 @@ body.rv-open{overflow:hidden}
 .tcard.mini .tc-art .tc-evo-pill img{display:none}
 /* type orbs, set into the top edge of the picture frame. --s is the orb size; the icon image is sized and shifted
    so its round symbol fills the circle. The ring takes the card's tier color. */
-.tcard{--ring:#e3e8f0}.tcard.bronze{--ring:#9a6843}.tcard.silver{--ring:#e3e8f0}.tcard.gold{--ring:#f3cd55}.tcard.shiny{--ring:#ffc2e6}.tcard.leg{--ring:#c79bff}
-.tcard .tc-art{overflow:visible;margin-top:12px}
+.tcard{--ring:#e3e8f0}.tcard.bronze{--ring:#b0927a}.tcard.silver{--ring:#e3e8f0}.tcard.gold{--ring:#f3cd55}.tcard.shiny{--ring:#ffc2e6}.tcard.leg{--ring:#c79bff}
+.tcard .tc-art{overflow:visible;margin-top:8px}
 .tc-types{--s:32px;position:absolute;left:10px;top:calc(var(--s)/-2 - 1px);z-index:3;display:flex;gap:6px;pointer-events:none}
 .tc-type{position:relative;display:block;width:var(--s);height:var(--s);border-radius:50%;overflow:hidden;background:var(--tb);
  box-shadow:0 0 0 3px var(--ring),0 0 0 4.5px rgba(20,35,58,.5),0 3px 5px rgba(20,35,58,.4)}
@@ -117,3 +117,10 @@ body.rv-open{overflow:hidden}
 .tcard.mini .tc-types{--s:18px;left:5px;gap:4px}
 .tcard.mini .tc-type{box-shadow:0 0 0 2px var(--ring),0 0 0 3px rgba(20,35,58,.5),0 1px 2px rgba(20,35,58,.4)}
 .tcard.mini .tc-type::after{border-width:1px}
+/* dex number, bottom-left inside the art */
+.tc-dex{position:absolute;left:8px;bottom:6px;z-index:2;font:600 11px/1 var(--f-data);letter-spacing:.04em;color:rgba(20,35,58,.5);pointer-events:none}
+.tcard.mini .tc-dex{display:none}
+/* the pack reveal's card edge takes the tier color instead of a fixed light grey */
+.tcard{--edge1:#d7d8d8;--edge2:#7e8791}
+.tcard.bronze{--edge1:#a88a70;--edge2:#6e5641}.tcard.gold{--edge1:#e8c766;--edge2:#8f6d1e}
+.tcard.shiny{--edge1:#f5c6e3;--edge2:#8d7c9a}.tcard.leg{--edge1:#c7a3f5;--edge2:#5b3b8f}

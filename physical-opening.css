@@ -1,7 +1,7 @@
 /* Physical opening preview, layered onto the existing Ballclub artwork. */
 .physical-stage{perspective:1100px;touch-action:pan-y}
 .physical-stack{display:grid;position:relative;isolation:isolate;perspective:1000px;overflow:visible;transform-origin:50% 65%}
-.physical-stack>.tcard{grid-area:1/1;position:relative!important;align-self:center;justify-self:center;transform-origin:50% 65%;backface-visibility:hidden;animation:none!important;will-change:transform,opacity;box-shadow:1px 1px 0 #d7d8d8,2px 2px 0 #7e8791,0 12px 24px #0005}
+.physical-stack>.tcard{grid-area:1/1;position:relative!important;align-self:center;justify-self:center;transform-origin:50% 65%;backface-visibility:hidden;animation:none!important;will-change:transform,opacity;box-shadow:1px 1px 0 var(--edge1,#d7d8d8),2px 2px 0 var(--edge2,#7e8791),0 12px 24px #0005}
 .physical-stack>.tcard[hidden]{display:none!important}
 .physical-stack>.tcard:not(.physical-front){pointer-events:none}
 .physical-stage .tc-in::after{animation:none!important;opacity:0!important}
