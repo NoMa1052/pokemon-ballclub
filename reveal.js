@@ -3,8 +3,8 @@
 // Type chips: white or navy text, whichever reads better on that type's color.
 const typeInk=h=>{const L=[1,3,5].map(i=>{const c=parseInt(h.substr(i,2),16)/255;return c<=.03928?c/12.92:((c+.055)/1.055)**2.4}).reduce((a,c,i)=>a+c*[.2126,.7152,.0722][i],0);return 1.05/(L+.05)>=(L+.05)/.0665?"#fff":"#14233a"};
 // Type orbs: the round type icon from PokéAPI's Scarlet/Violet labels (linked like the card art), cropped to a
-// circle with a glossy finish. They sit in the card header next to the rating. If an icon fails to load, the orb
-// keeps the plain type color.
+// circle with a glossy finish. They're set into the top edge of the picture frame, ringed in the card's tier color.
+// If an icon fails to load, the orb keeps the plain type color.
 const TYPE_ID={normal:1,fighting:2,flying:3,poison:4,ground:5,rock:6,bug:7,ghost:8,steel:9,fire:10,water:11,grass:12,electric:13,psychic:14,ice:15,dragon:16,dark:17,fairy:18};
 const TYPE_ICON=t=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${TYPE_ID[t]}.png`;
 const typeChips=m=>`<span class="tc-types" role="img" aria-label="${m.types.map(cap).join(" and ")} type">${m.types.map(t=>`<span class="tc-type" title="${cap(t)}" style="--tb:${TYPE_COLORS[t]||"#777"}">${TYPE_ID[t]?`<img src="${TYPE_ICON(t)}" alt="" decoding="async" onerror="this.remove()">`:""}</span>`).join("")}</span>`;
@@ -16,11 +16,11 @@ function tcardHTML(m,mini){
   const img=`<img src="${ART_URL(m.num,m.shiny)}" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="async" onload="pokemonImageLoaded(this)" onerror="pokemonImageError(this)">`;
   const tag=m.leg?'<span class="tc-tag">Legend</span>':m.shiny?'<span class="tc-tag">Shiny</span>':"";
   const best=`<span class="tc-best ${ovCls(m.ovr)}"><b>${m.ovr}</b><small>${m.hspot}</small></span>`;
-  if(mini)return `<div class="tcard mini ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in"><b class="tc-name">${esc(m.name)}</b><div class="tc-art">${img}</div>${typeChips(m)}${best}${tag}</div></div>`;
+  if(mini)return `<div class="tcard mini ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in"><b class="tc-name">${esc(m.name)}</b><div class="tc-art">${img}${typeChips(m)}</div>${best}${tag}</div></div>`;
   const bars=KEY.map(([k,f,,g])=>{const v=m.r[f];return `<div class="tc-bar"><i style="color:var(--${g})">${k}</i><span><b style="width:${Math.max(4,(v-40)/59*100)}%;background:var(--${g})"></b></span><em>${v}</em></div>`}).join("");
   return `<div class="tcard ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in">
-    <div class="tc-top"><b class="tc-name">${esc(m.name)}</b>${typeChips(m)}${best}</div>
-    ${tag}<div class="tc-art">${img}</div>
+    <div class="tc-top"><b class="tc-name">${esc(m.name)}</b>${best}</div>
+    <div class="tc-art">${img}${typeChips(m)}${tag}</div>
     <div class="tc-meta">#${dex(m.num)} · ${m.types.map(cap).join("/")} · ${m.body} · ${ftin(m.ht)}, ${lbs(m.wt)} lb</div>
     <div class="tc-boxes"><span><b class="${ovCls(m.off)}">${m.off}</b><i>OFF</i></span><span><b class="${ovCls(m.def)}">${m.def}</b><i>DEF ${m.dspot}</i></span><span><b class="${ovCls(m.pit)}">${m.pit}</b><i>${m.pspot}</i></span></div>
     <div class="tc-bars">${bars}</div></div></div>`;

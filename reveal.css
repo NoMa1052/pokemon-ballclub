@@ -101,13 +101,17 @@ body.rv-open{overflow:hidden}
 .packpool .packctl+.hint{margin:0 0 4px!important;text-align:center;font-size:13px}
 .tcard.mini .tc-art .tc-evo-pill{bottom:2px;right:2px;padding:2px 4px;font-size:10px}
 .tcard.mini .tc-art .tc-evo-pill img{display:none}
-/* type orbs. --s is the orb size; the icon image is sized and shifted so its round symbol fills the circle. */
-.tc-types{--s:24px;display:flex;gap:4px;flex:none;margin:5px 0 0 auto;pointer-events:none}
+/* type orbs, set into the top edge of the picture frame. --s is the orb size; the icon image is sized and shifted
+   so its round symbol fills the circle. The ring takes the card's tier color. */
+.tcard{--ring:#e3e8f0}.tcard.bronze{--ring:#c98a52}.tcard.silver{--ring:#e3e8f0}.tcard.gold{--ring:#f3cd55}.tcard.shiny{--ring:#ffc2e6}.tcard.leg{--ring:#c79bff}
+.tcard .tc-art{overflow:visible;margin-top:12px}
+.tc-types{--s:30px;position:absolute;left:10px;top:calc(var(--s)/-2 - 1px);z-index:3;display:flex;gap:6px;pointer-events:none}
 .tc-type{position:relative;display:block;width:var(--s);height:var(--s);border-radius:50%;overflow:hidden;background:var(--tb);
- box-shadow:0 0 0 1.5px rgba(20,35,58,.7),0 2px 3px rgba(20,35,58,.4)}
-.tc-type img{position:absolute;left:calc(var(--s)*-.297);top:calc(var(--s)*-.027);width:calc(var(--s)*5.405);height:calc(var(--s)*1.081);max-width:none;margin:0;filter:none}
+ box-shadow:0 0 0 3px var(--ring),0 0 0 4.5px rgba(20,35,58,.5),0 3px 5px rgba(20,35,58,.4)}
+.tc-art .tc-type img{position:absolute;left:calc(var(--s)*-.297);top:calc(var(--s)*-.027);width:calc(var(--s)*5.405);height:calc(var(--s)*1.081);max-width:none;margin:0;filter:none}
 .tc-type::after{content:"";position:absolute;inset:0;border-radius:50%;
  background:radial-gradient(circle at 34% 26%,rgba(255,255,255,.85) 0,rgba(255,255,255,.35) 16%,rgba(255,255,255,0) 38%),radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 58%,rgba(0,0,0,.32) 100%)}
-.tcard.mini .tc-types{--s:16px;grid-row:3;grid-column:1;justify-self:start;align-self:center;margin:0 0 0 2px;gap:3px;flex-direction:column}
-.tcard.mini .tc-best{grid-row:3;grid-column:1}
-.tcard.mini .tc-type{box-shadow:0 0 0 1px rgba(20,35,58,.7),0 1px 2px rgba(20,35,58,.4)}
+.tcard .tc-art .tc-tag{position:absolute;top:8px;right:8px;left:auto;margin:0;z-index:2}
+.tcard.mini .tc-art{margin-top:9px}
+.tcard.mini .tc-types{--s:16px;left:5px;gap:4px}
+.tcard.mini .tc-type{box-shadow:0 0 0 2px var(--ring),0 0 0 3px rgba(20,35,58,.5),0 1px 2px rgba(20,35,58,.4)}
