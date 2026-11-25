@@ -9,7 +9,10 @@ const TYPE_ID={normal:1,fighting:2,flying:3,poison:4,ground:5,rock:6,bug:7,ghost
 const TYPE_ICON=t=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-viii/sword-shield/${TYPE_ID[t]}.png`;
 // Orb fill = the label's own color, so the area around the shrunken symbol blends with the image.
 const TYPE_ORB={normal:"#919aa2",fighting:"#ce416b",flying:"#8fa9de",poison:"#aa6bc8",ground:"#d97845",rock:"#c5b78c",bug:"#91c12f",ghost:"#5269ad",steel:"#5a8ea2",fire:"#ff9d55",water:"#5090d6",grass:"#63bc5a",electric:"#f4d23c",psychic:"#fa7179",ice:"#73cec0",dragon:"#0b6dc3",dark:"#5a5465",fairy:"#ec8fe6"};
-const typeChips=m=>`<span class="tc-types" role="img" aria-label="${m.types.map(cap).join(" and ")} type">${m.types.map(t=>`<span class="tc-type" title="${cap(t)}" style="--tb:${TYPE_ORB[t]||TYPE_COLORS[t]||"#777"}">${TYPE_ID[t]?`<img src="${TYPE_ICON(t)}" alt="" decoding="async" onerror="this.remove()">`:""}</span>`).join("")}</span>`;
+// Optical center of each symbol inside its 200x44 label (halfway between its bounding box center and its visual
+// weight, measured), so every symbol looks centered in its orb.
+const TYPE_CENTER={normal:[24,22],fighting:[23,22.5],flying:[23.5,23],poison:[23,22.5],ground:[23,23],rock:[23.5,22.5],bug:[23,23],ghost:[22,22],steel:[23,22],fire:[23,23.5],water:[23,23],grass:[24,21.5],electric:[22.5,19.5],psychic:[24,21.5],ice:[24,22],dragon:[23,23],dark:[22.5,22],fairy:[24,22]};
+const typeChips=m=>`<span class="tc-types" role="img" aria-label="${m.types.map(cap).join(" and ")} type">${m.types.map(t=>`<span class="tc-type" title="${cap(t)}" style="--tb:${TYPE_ORB[t]||TYPE_COLORS[t]||"#777"};--cx:${(TYPE_CENTER[t]||[23,22])[0]};--cy:${(TYPE_CENTER[t]||[23,22])[1]}">${TYPE_ID[t]?`<img src="${TYPE_ICON(t)}" alt="" decoding="async" onerror="this.remove()">`:""}</span>`).join("")}</span>`;
 const ART_URL=(n,shiny)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny?"shiny/":""}${n}.png`;
 function tcardHTML(m,mini){
   setOverall(m);
