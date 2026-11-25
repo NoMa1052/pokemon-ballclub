@@ -258,6 +258,11 @@ document.addEventListener("click",e=>{
 // - about 1 pack in 750 is a god pack: five cards that are all legends or shinies rated 90+,
 //   with at least one of each. It looks like any other pack until you rip it; the opening goes gold.
 const SHINY_PER_CARD=.0008,LEGEND_PER_PACK=.015;
+// Cards rated 90+ are 4% more likely to land in a pack than other cards. The weekly challenge picks this up
+// from BOOST_WEEK, so every player in a given week still opens the same packs.
+const TOP_CARD_BOOST=1.04,BOOST_WEEK='2026-W49',TOP_CARD=new Map();
+const boostOn=r=>!(r&&r.week&&r.week<BOOST_WEEK);
+const cardWeight=m=>{let t=TOP_CARD.get(m.id);if(t===undefined){setOverall(m);t=m.ovr>=90;TOP_CARD.set(m.id,t)}return t?TOP_CARD_BOOST:1};
 const rollPack=function(run,taken){
   const t=taken||[],free=m=>!t.includes(m.num);
   const pick=(arr,n)=>{const a=arr.slice(),out=[];while(out.length<n&&a.length)out.push(a.splice(Math.floor(rand(run)*a.length),1)[0]);return out};
@@ -271,7 +276,9 @@ const rollPack=function(run,taken){
       return{pack:true,legend:false,god:true,shiny:true,shinies:ids.filter(id=>id>=SHINY_ID).length,bonus:null,bonuses:0,n:run.packs,ids};
     }
   }
-  const ids=pick(BASE.filter(m=>inPool(run,m)),PACK_SIZE).map(m=>rand(run)<SHINY_PER_CARD?m.id+SHINY_ID:m.id);
+  const wpick=(arr,n)=>{const a=arr.slice(),out=[];while(out.length<n&&a.length){let tot=0;for(const m of a)tot+=cardWeight(m);let x=rand(run)*tot,j=0;for(;j<a.length-1;j++){x-=cardWeight(a[j]);if(x<0)break}out.push(a.splice(j,1)[0])}return out};
+  const src=BASE.filter(m=>inPool(run,m));
+  const ids=(boostOn(run)?wpick(src,PACK_SIZE):pick(src,PACK_SIZE)).map(m=>rand(run)<SHINY_PER_CARD?m.id+SHINY_ID:m.id);
   const shinies=ids.filter(id=>id>=SHINY_ID).length,legPool=LEGENDS.filter(m=>inPool(run,m)).filter(free),bonus=[];
   while(legPool.length&&rand(run)<LEGEND_PER_PACK)bonus.push(legPool.splice(Math.floor(rand(run)*legPool.length),1)[0].id);
   return{pack:true,legend:false,shiny:shinies>0,shinies,bonus:bonus[0]||null,bonuses:bonus.length,n:run.packs,ids:shuffle([...ids,...bonus],()=>rand(run))};
