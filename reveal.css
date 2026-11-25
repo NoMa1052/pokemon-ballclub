@@ -101,10 +101,11 @@ body.rv-open{overflow:hidden}
 .packpool .packctl+.hint{margin:0 0 4px!important;text-align:center;font-size:13px}
 .tcard.mini .tc-art .tc-evo-pill{bottom:2px;right:2px;padding:2px 4px;font-size:10px}
 .tcard.mini .tc-art .tc-evo-pill img{display:none}
-/* type labels, top-left of the art: full label on big cards, just the round icon on mini cards */
-.tc-types{position:absolute;top:6px;left:6px;z-index:2;display:flex;gap:4px;pointer-events:none}
-.tc-type{position:relative;display:block;width:90px;height:18px;border-radius:9px;overflow:hidden;font:700 10px/18px var(--f-data);letter-spacing:.08em;text-transform:uppercase;text-align:center;box-shadow:0 1px 3px rgba(20,35,58,.35)}
-.tc-art .tc-type img{position:absolute;left:0;top:0;width:90px;height:18px;max-width:none;margin:0;object-fit:fill;filter:none;image-rendering:auto}
-.tcard.mini .tc-types{top:3px;left:3px;gap:3px;flex-direction:column}
-.tcard.mini .tc-type{width:17px;height:17px;border-radius:50%;font-size:0;box-shadow:0 0 0 1.5px rgba(255,255,255,.85),0 1px 2px rgba(20,35,58,.35)}
-.tcard.mini .tc-art .tc-type img{width:85px;height:17px;left:-1.3px}
+/* type labels, top-left of the art. The pixel labels scale by whole steps of their 50x20 art where possible. */
+.tc-types{position:absolute;top:6px;left:6px;z-index:2;display:flex;gap:3px;pointer-events:none}
+.tc-type{position:relative;display:block;width:75px;height:30px;color:transparent;font:700 11px/30px var(--f-data);letter-spacing:.08em;text-transform:uppercase;text-align:center;filter:drop-shadow(0 1px 1px rgba(20,35,58,.35))}
+.tc-type.noimg{height:20px;margin-top:5px;line-height:20px;border-radius:10px;background:var(--tb);color:var(--ti)}
+.tc-art .tc-type img{position:absolute;inset:0;width:100%;height:100%;max-width:none;margin:0;object-fit:fill;filter:none;image-rendering:pixelated}
+.tcard.mini .tc-types{top:3px;left:3px;gap:1px;flex-direction:column}
+.tcard.mini .tc-type{width:45px;height:18px;font-size:8px;line-height:18px}
+.tcard.mini .tc-type.noimg{height:13px;margin:0;line-height:13px}
