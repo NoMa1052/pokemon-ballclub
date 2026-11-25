@@ -258,9 +258,9 @@ document.addEventListener("click",e=>{
 // - about 1 pack in 750 is a god pack: five cards that are all legends or shinies rated 90+,
 //   with at least one of each. It looks like any other pack until you rip it; the opening goes gold.
 const SHINY_PER_CARD=.0008,LEGEND_PER_PACK=.015;
-// Cards rated 90+ are 4% more likely to land in a pack than other cards. The weekly challenge picks this up
+// Cards rated 90+ are 10% more likely to land in a pack than other cards. The weekly challenge picks this up
 // from BOOST_WEEK, so every player in a given week still opens the same packs.
-const TOP_CARD_BOOST=1.04,BOOST_WEEK='2026-W49',TOP_CARD=new Map();
+const TOP_CARD_BOOST=1.10,BOOST_WEEK='2026-W49',TOP_CARD=new Map();
 const boostOn=r=>!(r&&r.week&&r.week<BOOST_WEEK);
 const cardWeight=m=>{let t=TOP_CARD.get(m.id);if(t===undefined){setOverall(m);t=m.ovr>=90;TOP_CARD.set(m.id,t)}return t?TOP_CARD_BOOST:1};
 const rollPack=function(run,taken){
