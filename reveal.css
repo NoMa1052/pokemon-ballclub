@@ -9,7 +9,7 @@ body.rv-open{overflow:hidden}
 
 /* the card */
 .tcard{--frame:linear-gradient(135deg,#d9d4c6,#f4efe2 45%,#b9b3a4);position:relative;width:min(300px,80vw);border-radius:16px;padding:9px;background:var(--frame);box-shadow:0 18px 40px rgba(0,0,0,.55);color:#14233a;text-align:left}
-.tcard.bronze{--frame:linear-gradient(135deg,#7a4a22,#e3a874 40%,#94602f 60%,#f2cfa4)}
+.tcard.bronze{--frame:linear-gradient(135deg,#5c3a20,#9a6843 42%,#6a4428 58%,#a77a55)}
 .tcard.silver{--frame:linear-gradient(135deg,#9aa6b8,#eef2f8 40%,#8793a6 60%,#dfe5ee)}
 .tcard.gold{--frame:linear-gradient(135deg,#b8860b,#ffe27a 40%,#c99a1c 60%,#fff1b0)}
 .tcard.shiny{--frame:linear-gradient(135deg,#ffd84a,#fff6c2 30%,#ff9ad5 55%,#8fe3ff 80%,#ffd84a)}
@@ -45,6 +45,7 @@ body.rv-open{overflow:hidden}
 .rv-mini{padding:0;border:0;background:none;cursor:pointer;border-radius:12px}
 .rv-mini:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 .tcard.mini{width:100%;padding:5px;border-radius:11px;box-shadow:0 8px 18px rgba(0,0,0,.5)}
+.tcard.bronze{padding:6px}.tcard.mini.bronze{padding:3px}
 .tcard.mini .tc-in{padding:6px 6px 7px;border-radius:7px;display:grid;justify-items:center}
 .tcard.mini .tc-name{font-size:12px;text-align:center;min-height:2.2em;display:flex;align-items:center}
 .tcard.mini .tc-art{width:100%;margin:4px 0}
@@ -103,7 +104,7 @@ body.rv-open{overflow:hidden}
 .tcard.mini .tc-art .tc-evo-pill img{display:none}
 /* type orbs, set into the top edge of the picture frame. --s is the orb size; the icon image is sized and shifted
    so its round symbol fills the circle. The ring takes the card's tier color. */
-.tcard{--ring:#e3e8f0}.tcard.bronze{--ring:#c98a52}.tcard.silver{--ring:#e3e8f0}.tcard.gold{--ring:#f3cd55}.tcard.shiny{--ring:#ffc2e6}.tcard.leg{--ring:#c79bff}
+.tcard{--ring:#e3e8f0}.tcard.bronze{--ring:#9a6843}.tcard.silver{--ring:#e3e8f0}.tcard.gold{--ring:#f3cd55}.tcard.shiny{--ring:#ffc2e6}.tcard.leg{--ring:#c79bff}
 .tcard .tc-art{overflow:visible;margin-top:12px}
 .tc-types{--s:32px;position:absolute;left:10px;top:calc(var(--s)/-2 - 1px);z-index:3;display:flex;gap:6px;pointer-events:none}
 .tc-type{position:relative;display:block;width:var(--s);height:var(--s);border-radius:50%;overflow:hidden;background:var(--tb);
