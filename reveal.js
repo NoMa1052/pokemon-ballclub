@@ -1,5 +1,8 @@
 // Pack reveal: after a pack is ripped, its Pokémon pop up one at a time as trading cards.
 // Tap through them in shuffled pack order, then pick one from the spread. "Full stats" drops to the regular list.
+// Type chips: white or navy text, whichever reads better on that type's color.
+const typeInk=h=>{const L=[1,3,5].map(i=>{const c=parseInt(h.substr(i,2),16)/255;return c<=.03928?c/12.92:((c+.055)/1.055)**2.4}).reduce((a,c,i)=>a+c*[.2126,.7152,.0722][i],0);return 1.05/(L+.05)>=(L+.05)/.0665?"#fff":"#14233a"};
+const typeChips=m=>`<span class="tc-types">${m.types.map(t=>{const c=TYPE_COLORS[t]||"#777";return `<span style="background:${c};color:${typeInk(c)}">${t}</span>`}).join("")}</span>`;
 const ART_URL=(n,shiny)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny?"shiny/":""}${n}.png`;
 function tcardHTML(m,mini){
   setOverall(m);
@@ -8,11 +11,11 @@ function tcardHTML(m,mini){
   const img=`<img src="${ART_URL(m.num,m.shiny)}" data-num="${m.num}" data-shiny="${m.shiny?1:0}" data-art="1" alt="" decoding="async" onload="pokemonImageLoaded(this)" onerror="pokemonImageError(this)">`;
   const tag=m.leg?'<span class="tc-tag">Legend</span>':m.shiny?'<span class="tc-tag">Shiny</span>':"";
   const best=`<span class="tc-best ${ovCls(m.ovr)}"><b>${m.ovr}</b><small>${m.hspot}</small></span>`;
-  if(mini)return `<div class="tcard mini ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in"><b class="tc-name">${esc(m.name)}</b><div class="tc-art">${img}</div>${best}${tag}</div></div>`;
+  if(mini)return `<div class="tcard mini ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in"><b class="tc-name">${esc(m.name)}</b><div class="tc-art">${img}${typeChips(m)}</div>${best}${tag}</div></div>`;
   const bars=KEY.map(([k,f,,g])=>{const v=m.r[f];return `<div class="tc-bar"><i style="color:var(--${g})">${k}</i><span><b style="width:${Math.max(4,(v-40)/59*100)}%;background:var(--${g})"></b></span><em>${v}</em></div>`}).join("");
   return `<div class="tcard ${tier}" style="--c1:${c1};--c2:${c2}"><div class="tc-in">
     <div class="tc-top"><b class="tc-name">${esc(m.name)}</b>${best}</div>
-    ${tag}<div class="tc-art">${img}</div>
+    ${tag}<div class="tc-art">${img}${typeChips(m)}</div>
     <div class="tc-meta">#${dex(m.num)} · ${m.types.map(cap).join("/")} · ${m.body} · ${ftin(m.ht)}, ${lbs(m.wt)} lb</div>
     <div class="tc-boxes"><span><b class="${ovCls(m.off)}">${m.off}</b><i>OFF</i></span><span><b class="${ovCls(m.def)}">${m.def}</b><i>DEF ${m.dspot}</i></span><span><b class="${ovCls(m.pit)}">${m.pit}</b><i>${m.pspot}</i></span></div>
     <div class="tc-bars">${bars}</div></div></div>`;
