@@ -109,6 +109,7 @@ body.rv-open{overflow:hidden}
 .tc-type{position:relative;display:block;width:var(--s);height:var(--s);border-radius:50%;overflow:hidden;background:var(--tb);
  box-shadow:0 0 0 3px var(--ring),0 0 0 4.5px rgba(20,35,58,.5),0 3px 5px rgba(20,35,58,.4)}
 .tc-art .tc-type img{position:absolute;left:calc(var(--s)*-.11);top:calc(var(--s)*.097);width:calc(var(--s)*4.133);height:calc(var(--s)*.827);max-width:none;margin:0;filter:none}
+.tc-art .tc-type.swsh img{left:calc(var(--s)*.083);top:calc(var(--s)*.073);width:calc(var(--s)*3.883);height:calc(var(--s)*.854)}
 .tc-type::after{content:"";position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(20,35,58,.6);
  background:linear-gradient(rgba(255,255,255,.28),rgba(255,255,255,0) 30%)}
 .tcard .tc-art .tc-tag{position:absolute;top:8px;right:8px;left:auto;margin:0;z-index:2}

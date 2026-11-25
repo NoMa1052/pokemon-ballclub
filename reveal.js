@@ -6,10 +6,11 @@ const typeInk=h=>{const L=[1,3,5].map(i=>{const c=parseInt(h.substr(i,2),16)/255
 // circle with a glossy finish. They're set into the top edge of the picture frame, ringed in the card's tier color.
 // If an icon fails to load, the orb keeps the plain type color.
 const TYPE_ID={normal:1,fighting:2,flying:3,poison:4,ground:5,rock:6,bug:7,ghost:8,steel:9,fire:10,water:11,grass:12,electric:13,psychic:14,ice:15,dragon:16,dark:17,fairy:18};
-const TYPE_ICON=t=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${TYPE_ID[t]}.png`;
+// Rock uses the Sword/Shield symbol (a boulder): the Scarlet/Violet one is a plain white octagon that reads as a blank orb.
+const TYPE_ICON=t=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/${t==="rock"?"generation-viii/sword-shield":"generation-ix/scarlet-violet"}/${TYPE_ID[t]}.png`;
 // Orb fill = the label's own color, so the area around the shrunken symbol blends with the image.
-const TYPE_ORB={normal:"#9fa19f",fighting:"#ff8000",flying:"#81b9ef",poison:"#9040cc",ground:"#915121",rock:"#afa981",bug:"#91a119",ghost:"#704170",steel:"#60a1b8",fire:"#e62829",water:"#2980ef",grass:"#3fa129",electric:"#fac000",psychic:"#ef4179",ice:"#3fd8ff",dragon:"#5061e1",dark:"#50413f",fairy:"#ef71ef"};
-const typeChips=m=>`<span class="tc-types" role="img" aria-label="${m.types.map(cap).join(" and ")} type">${m.types.map(t=>`<span class="tc-type" title="${cap(t)}" style="--tb:${TYPE_ORB[t]||TYPE_COLORS[t]||"#777"}">${TYPE_ID[t]?`<img src="${TYPE_ICON(t)}" alt="" decoding="async" onerror="this.remove()">`:""}</span>`).join("")}</span>`;
+const TYPE_ORB={normal:"#9fa19f",fighting:"#ff8000",flying:"#81b9ef",poison:"#9040cc",ground:"#915121",rock:"#c5b78c",bug:"#91a119",ghost:"#704170",steel:"#60a1b8",fire:"#e62829",water:"#2980ef",grass:"#3fa129",electric:"#fac000",psychic:"#ef4179",ice:"#3fd8ff",dragon:"#5061e1",dark:"#50413f",fairy:"#ef71ef"};
+const typeChips=m=>`<span class="tc-types" role="img" aria-label="${m.types.map(cap).join(" and ")} type">${m.types.map(t=>`<span class="tc-type${t==="rock"?" swsh":""}" title="${cap(t)}" style="--tb:${TYPE_ORB[t]||TYPE_COLORS[t]||"#777"}">${TYPE_ID[t]?`<img src="${TYPE_ICON(t)}" alt="" decoding="async" onerror="this.remove()">`:""}</span>`).join("")}</span>`;
 const ART_URL=(n,shiny)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny?"shiny/":""}${n}.png`;
 function tcardHTML(m,mini){
   setOverall(m);
