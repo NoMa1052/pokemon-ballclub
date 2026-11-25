@@ -61,7 +61,7 @@ if(mode!=='pack'||run.size!==16)setMode('pack');
   let label='';
   if(m.shiny){const n=Object.values(run.slots).filter(x=>sparkLink(m,x)).length;label=n?`Spark: links ${Math.min(n,SPARK_CAP)} teammate${n===1?'':'s'}`:'Spark: lifts teammates that share its type'}
   else{const s=shinies().find(x=>sparkLink(x,m));if(s)label='Spark link with '+s.name.replace(/^Shiny /,'')}
-  return label?html.replace('<div class="tc-art">',`<div class="tc-spark">${label}</div><div class="tc-art">`):html;
+  return label?html.replace(/(<div class="tc-art">[\s\S]*?<\/div>)/,`$1<div class="tc-spark">${label}</div>`):html;
  };
  mark();
 })();

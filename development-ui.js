@@ -15,7 +15,8 @@
   const opts=developmentOptions(m),chains=chainOptions(m);
   if(!label&&(opts.length||chains.length))label=[...opts.map(o=>o.maxedDuplicate?'Friendship maxed · 10/10':`${o.kind==='evolve'?'Evolve':o.kind==='family'?'Family train':'Train'} ${o.owned.name} · +${o.added} friendship`),...chains.map(o=>`Candy: ${o.owned.name} → ${o.next.name} → ${m.name}`)].join(' / ');
   if(mini&&(opts.length||chains.length)&&!m.friendship)label=[...opts.map(o=>o.maxedDuplicate?'Friendship maxed · 10/10':`${o.kind==='evolve'?'Evolve':o.kind==='family'?'Family train':'Train'} ${o.owned.name}`),...chains.map(o=>`Candy combo: ${o.owned.name}`)].join(' / ');
-  if(label)html=html.replace('<div class="tc-art">',`<div class="tc-growth">${esc(label)}</div><div class="tc-art">`);
+  // Under the art: the art's top edge holds the type orbs. The art box only holds spans and an img, so its first </div> closes it.
+  if(label)html=html.replace(/(<div class="tc-art">[\s\S]*?<\/div>)/,`$1<div class="tc-growth">${esc(label)}</div>`);
   return html;
  };
  function closeChoice(){choice=null;$('developmentChoice')?.remove();lastTrigger?.focus?.()}
