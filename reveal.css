@@ -99,3 +99,5 @@ body.rv-open{overflow:hidden}
 .packpool .packctl{margin:8px 0 2px}
 .packpool .packctl .label{display:none}
 .packpool .packctl+.hint{margin:0 0 4px!important;text-align:center;font-size:13px}
+.tcard.mini .tc-art .tc-evo-pill{bottom:2px;right:2px;padding:2px 4px;font-size:10px}
+.tcard.mini .tc-art .tc-evo-pill img{display:none}

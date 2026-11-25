@@ -19,13 +19,12 @@
  const base=tcardHTML;
  tcardHTML=function(m,mini){
   const html=base(m,mini);
-  // Evolving is possible in Packs, or anywhere while a Rare Candy is unused.
-  if(mini||!m||!(run?.mode==='pack'||run?.candies))return html;
+  if(!m)return html;
   const e=evolved(m);if(!e)return html;
-  const r=best(e);if(r<=best(m))return html;
+  const r=best(e);
   const mid=path.length>1?path[0]:null,mr=mid?best(mid):0;
   const say=mid?`Evolves into ${esc(mid.name)}, rated ${mr}, then ${esc(e.name)}, rated ${r}`:`Evolves into ${esc(e.name)}, rated ${r}`;
-  const pill=`<span class="tc-evo-pill${mid?' two':''}" title="${say}" aria-label="${say}"><img src="${SPRITE_URL(e.num,e.shiny)}" alt=""><i aria-hidden="true">▲</i>${mid?`<em>${mr}</em><u aria-hidden="true">›</u>`:''}${r}</span>`;
+  const pill=`<span class="tc-evo-pill${mid?' two':''}" title="${say}" aria-label="${say}"><img src="${SPRITE_URL(e.num,e.shiny)}" alt=""><i aria-hidden="true">›</i>${mid?`<em>${mr}</em><u aria-hidden="true">›</u>`:''}${r}</span>`;
   return html.replace(/(<div class="tc-art">[\s\S]*?)(<\/div>)/,`$1${pill}$2`);
  };
  if(typeof render==='function')render();
