@@ -384,3 +384,8 @@ body.pack-min:not(.is-packs) #draft #poolHead{margin-top:10px}
 .candy-sheet .cr-gain.flat b{color:#b6c3d5}
 .candy-sheet .cc-score em.down,.candy-confirm .cc-score em.down{background:rgba(255,122,102,.2)!important;color:#ff9a8a!important}
 .candy-sheet .candy-warn{margin:12px 0 10px;padding:8px 10px;border-radius:8px;background:rgba(255,122,102,.12);border:1px solid rgba(255,122,102,.35);color:#ffc2b8;font:500 13px/1.4 var(--f-body)}
+/* End of season: Play again is the main button, full width under the post row. Post and Share image are secondary. */
+#season .season-actions .share{grid-template-columns:1fr!important}
+#season .season-actions #again{order:-1;min-height:56px!important;font-size:22px!important}
+#season .season-actions #shareBtn{background:transparent!important;color:var(--chalk)!important;border:2px solid rgba(244,238,220,.3)!important;box-shadow:none!important}
+#season .season-actions #submitBtn{background:var(--cream)!important;color:var(--navy)!important;border-color:var(--cream)!important;box-shadow:none!important;min-width:96px}

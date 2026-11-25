@@ -52,7 +52,7 @@
   ${topic('The season and your results',seasonPic()+list([
    'The season plays out month by month, then October if you make it.',
    'Results show your record, grade, MVP, best pitcher and your <b>weak link</b>: the spot that cost you the most wins.',
-   '<b>Post team</b> puts you on the leaderboard under a team name.',
+   '<b>Post</b> puts your team on the leaderboard, and on your league for a weekly team. <b>Share image</b> makes a picture of your team to send. <b>Play again</b> starts a new draft.',
    'Records holds the leaderboard and My Clubhouse: your best season, trophy case, season log, series records and collection.']))}
   ${topic('League and weekly challenge',leaguePic()+list([
    'Tap <b>League</b> to start a league or join one with a 5-character code.',

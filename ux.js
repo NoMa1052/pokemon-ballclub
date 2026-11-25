@@ -166,10 +166,12 @@
         catch(e){if(e.name==='AbortError')return;msg.innerHTML='<label>Copy your result<textarea readonly></textarea></label>';const t=msg.querySelector('textarea');t.value=text;t.focus();t.select();}
       };
     }
-    const postLabel=season.querySelector('.submit .label');if(postLabel)postLabel.textContent='Post your team';
-    const submit=$('submitBtn');if(submit)submit.textContent='Post team';
+    // Three different jobs, three different words: Post (where it posts is listed under the box), Play again (the
+    // main button), Share image.
+    const postLabel=season.querySelector('.submit .label');if(postLabel)postLabel.textContent='Name your team';
+    const submit=$('submitBtn');if(submit){submit.textContent='Post';submit.classList.remove('primary');}
     const name=$('teamName');if(name)name.setAttribute('aria-label','Team name');
-    const again=$('again');if(again)again.textContent='Play again';
+    const again=$('again');if(again){again.textContent='Play again';again.classList.add('primary');}
     const share=season.querySelector('.share'),submitBox=$('submitBox');if(share&&submitBox)submitBox.after(share);
     season.querySelectorAll('.tbl').forEach(t=>{t.setAttribute('tabindex','0');t.setAttribute('aria-label','Season stats. Scroll horizontally for more columns.');});
   }

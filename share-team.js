@@ -184,7 +184,7 @@ async function open(){
     const a=document.createElement('a');a.href=out.url;a.download=out.name;document.body.append(a);a.click();a.remove();setStatus('Download requested. If it did not start, open the full-size image.');
    }
   };
-  setStatus((out.fallback?'Simple image (screen capture failed: '+(window.PBCShareError||'unknown')+'). ':'')+(native?'Image ready. Tap Share Team to send it.':'Image ready. Save it, then send it in your chat.'));
+  setStatus((out.fallback?'Simple image (screen capture failed: '+(window.PBCShareError||'unknown')+'). ':'')+(native?'Image ready. Tap Share image to send it.':'Image ready. Save it, then send it in your chat.'));
  }catch(e){if(modal===overlay){overlay.querySelector('#pb-share-spinner').textContent='The roster image could not be generated.';setStatus(e.message||'Image export error.')}}
 }
 // iOS requires navigator.share to run directly inside the user's tap. Prepare the
@@ -196,7 +196,7 @@ function buttonState(label,disabled){shareButtons().forEach(b=>{if(b.textContent
 function schedule(){clearTimeout(prepareTimer);prepareTimer=setTimeout(prep,250)}
 function prep(){
  let s;try{s=snapshot()}catch(_){return}
- const key=keyOf(s);if(key===readyKey&&readyFile){buttonState('Share Team',false);return}if(buildingKey||key===failedKey)return;
+ const key=keyOf(s);if(key===readyKey&&readyFile){buttonState('Share image',false);return}if(buildingKey||key===failedKey)return;
  buildingKey=key;buttonState('Preparing image…',true);
  // Draw the roster directly instead of waiting on a potentially stalled DOM screenshot.
  // All sprite requests run together and are cached for changes to the team name.
@@ -205,7 +205,7 @@ function prep(){
   URL.revokeObjectURL(out.url);if(key!==buildingKey)return;
   buildingKey=null;readyFile=new File([out.blob],out.name,{type:'image/png'});readyKey=key;failedKey=null;
   let current;try{current=keyOf(snapshot())}catch(_){}
-  if(current!==key){schedule();return}buttonState('Share Team',false);
+  if(current!==key){schedule();return}buttonState('Share image',false);
  }).catch(()=>{
   if(buildingKey!==key)return;buildingKey=null;readyKey=null;readyFile=null;failedKey=key;
   let current;try{current=keyOf(snapshot())}catch(_){}
