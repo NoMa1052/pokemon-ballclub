@@ -2,7 +2,11 @@
 // Tap through them in shuffled pack order, then pick one from the spread. "Full stats" drops to the regular list.
 // Type chips: white or navy text, whichever reads better on that type's color.
 const typeInk=h=>{const L=[1,3,5].map(i=>{const c=parseInt(h.substr(i,2),16)/255;return c<=.03928?c/12.92:((c+.055)/1.055)**2.4}).reduce((a,c,i)=>a+c*[.2126,.7152,.0722][i],0);return 1.05/(L+.05)>=(L+.05)/.0665?"#fff":"#14233a"};
-const typeChips=m=>`<span class="tc-types">${m.types.map(t=>{const c=TYPE_COLORS[t]||"#777";return `<span style="background:${c};color:${typeInk(c)}">${t}</span>`}).join("")}</span>`;
+// Official type labels from PokéAPI's sprite set (Scarlet/Violet style), linked like the card art. If one fails
+// to load, the colored text chip underneath stays visible.
+const TYPE_ID={normal:1,fighting:2,flying:3,poison:4,ground:5,rock:6,bug:7,ghost:8,steel:9,fire:10,water:11,grass:12,electric:13,psychic:14,ice:15,dragon:16,dark:17,fairy:18};
+const TYPE_ICON=t=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/types/generation-ix/scarlet-violet/${TYPE_ID[t]}.png`;
+const typeChips=m=>`<span class="tc-types">${m.types.map(t=>{const c=TYPE_COLORS[t]||"#777";return `<span class="tc-type" style="background:${c};color:${typeInk(c)}">${t}${TYPE_ID[t]?`<img src="${TYPE_ICON(t)}" alt="" decoding="async" onerror="this.remove()">`:""}</span>`}).join("")}</span>`;
 const ART_URL=(n,shiny)=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny?"shiny/":""}${n}.png`;
 function tcardHTML(m,mini){
   setOverall(m);
